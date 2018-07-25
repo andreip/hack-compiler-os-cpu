@@ -2,6 +2,9 @@
 #include <list>
 #include <fstream>
 #include <iostream>
+#include <sstream>
+
+#include <boost/filesystem.hpp>
 
 #include "assembler.h"
 
@@ -26,9 +29,9 @@ void Assembler::assemble() {
 }
 
 void Assembler::writeToFile(const std::list<std::string> *lines) {
-  std::string inputWithoutExt = _inputFile.substr(0, _inputFile.rfind("."));
-  std::string outputFile = inputWithoutExt + _outputExt;
-  std::ofstream out(outputFile);
+  // extract base filename from path, w/o extension
+  boost::filesystem::path path(_inputFile);
+  std::ofstream out(path.stem().string() + _outputExt);
 
   if (lines)
     for (const std::string &s: *lines)
