@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
   }
 
   std::string filename(argv[1]);
-  std::list<Builder> builders = {};
+  std::list<Builder*> builders = {};
 
   Assembler hack(filename, ".hack", &builders);
   hack.assemble();

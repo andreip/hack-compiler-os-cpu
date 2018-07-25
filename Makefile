@@ -2,7 +2,7 @@ CC=g++
 CPPFLAGS=-std=c++11
 EXEC=asm
 
-all: main.o assembler.o
+all: main.o assembler.o builder.o instruction.o
 	$(CC) $^ -o $(EXEC)
 
 .o: .cpp

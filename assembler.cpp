@@ -6,37 +6,38 @@
 #include "assembler.h"
 
 Assembler::Assembler(std::string inputFile, std::string outputExt,
-                     std::list<Builder> *builders)
+                     std::list<Builder*> *builders)
     : _inputFile(inputFile), _outputExt(outputExt), _builders(builders) {
-    std::cout << "Assembling " << inputFile << "\n";
-  }
-
-void Assembler::assemble() {
-  std::list<std::string> *lines = splitLines();
-  for (const Builder &builder: *_builders) {
-    //builder.init(lines);
-    //// modify inline the lines until we get the final result.
-    //builder.computeResult();
-  }
-
-  writeToFile(lines);
-
-  delete lines;
+  std::cout << "Assembling " << inputFile << "\n";
+  std::list<std::string> *_lines = splitLines(inputFile);
 }
 
-void Assembler::writeToFile(std::list<std::string> *lines) {
+Assembler::~Assembler() {
+  delete _lines;
+}
+
+void Assembler::assemble() {
+  const std::list<std::string> *crtLines = _lines;
+  for (Builder *builder: *_builders) {
+    builder->init(crtLines);
+    crtLines = builder->computeResult();
+  }
+  writeToFile(crtLines);
+}
+
+void Assembler::writeToFile(const std::list<std::string> *lines) {
   std::string inputWithoutExt = _inputFile.substr(0, _inputFile.rfind("."));
   std::string outputFile = inputWithoutExt + _outputExt;
   std::ofstream out(outputFile);
 
-  for (const std::string &s: *lines)
-    out << s << '\n';
-
+  if (lines)
+    for (const std::string &s: *lines)
+      out << s << '\n';
   out.close();
 }
 
-std::list<std::string>* Assembler::splitLines() {
-  std::ifstream in(_inputFile);
+std::list<std::string>* Assembler::splitLines(const std::string &inputFile) {
+  std::ifstream in(inputFile);
   std::string line;
 
   auto lines = new std::list<std::string>;
