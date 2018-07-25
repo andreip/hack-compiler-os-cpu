@@ -4,17 +4,20 @@
 #include <string>
 #include <list>
 
-#include "parser.h"
+#include "builder.h"
 
 class Assembler {
 public:
   Assembler(std::string inputFile, std::string outputExt,
-            std::list<Parser> *parsers);
+            std::list<Builder> *builders);
   void assemble();
+protected:
+  std::list<std::string> *splitLines();
+  void writeToFile(std::list<std::string>*);
 private:
   std::string _inputFile;
   std::string _outputExt;
-  std::list<Parser> *_parsers;
+  std::list<Builder> *_builders;
 };
 
 #endif

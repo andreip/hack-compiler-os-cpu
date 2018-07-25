@@ -1,3 +1,7 @@
 *.sw*
+*.o
 asm
 a.out
+
+*.asm
+*.hack

@@ -3,18 +3,18 @@
 #include <string>
 
 #include "assembler.h"
-#include "parser.h"
+#include "builder.h"
 
 /* Whole architecture:
- * - class Assembler(inputFile="sth.asm", outputExt="", parserList)
- *   - List<Parser> parsers;
+ * - class Assembler(inputFile="sth.asm", outputExt="", builderList)
+ *   - List<Builder> builders;
  *   - void assemble()
- * - abstract class Parser
+ * - abstract class Builder
  *   - void init(string)
  *   - string getResult()
  *   - Instruction* parseLine()
  *   |
- *   |- class HackParser
+ *   |- class HackBuilder
  *      - parseAInstruction()
  *      - parseCInstruction()
  *      - parseLabel()
@@ -49,11 +49,9 @@ int main(int argc, char **argv) {
   }
 
   std::string filename(argv[1]);
-  std::cout << filename << '\n';
+  std::list<Builder> builders = {};
 
-  std::list<Parser> parsers = {};
-
-  Assembler hack(filename, ".hack", &parsers);
+  Assembler hack(filename, ".hack", &builders);
   hack.assemble();
 
   return 0;
