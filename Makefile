@@ -3,7 +3,7 @@ CPPFLAGS=-std=c++14
 LDFLAGS=-lboost_system -lboost_filesystem
 EXEC=asm
 
-all: main.o assembler.o builder.o instruction.o hack/builder.o hack/instruction.o
+all: main.o assembler.o builder.o instruction.o hack/builder.o hack/instruction.o utils.o
 	$(CC) $(CPPFLAGS) $(LDFLAGS) $^ -o $(EXEC)
 
 .o: .cpp .h

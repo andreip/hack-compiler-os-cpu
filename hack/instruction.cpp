@@ -1,5 +1,6 @@
 #include <string>
 
+#include "../utils.h"
 #include "./instruction.h"
 #include "./builder.h"
 
@@ -22,7 +23,16 @@ void AInstruction::setValue(std::string value) {
   set("@" + value);
 }
 
+bool AInstruction::isNumericValue() {
+  return isNumber(value());
+}
+
 bool AInstruction::isValid() {
+  std::string val = value();
+  if (isNumber(val)) {
+    int num = getNumber(val);
+    return num >= 0 && num < 32768;  // at most a 15-bit number
+  }
   return true;
 }
 
@@ -55,7 +65,12 @@ void CInstruction::accept(Builder *builder) {
 Label::Label(std::string line): HackInstruction(line) {}
 
 bool Label::isValid() {
-  return true;
+  std::string name = toString();
+  return (
+    name.size() > 2 &&
+    name[0] == '(' &&
+    name[name.size()-1] == ')'
+  );
 }
 
 std::string Label::toBinary() {
@@ -66,3 +81,7 @@ void Label::accept(Builder *builder) {
   dynamic_cast<HackBuilder*>(builder)->visit(this);
 }
 
+std::string Label::getName() {
+  std::string name = toString();
+  return name.substr(1, name.size() - 2);
+}

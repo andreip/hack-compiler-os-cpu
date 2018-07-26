@@ -23,17 +23,21 @@ std::list<std::string>* Builder::getResult() {
 
 void Builder::processLines(const std::list<std::string> *lines) {
   std::cout << "visiting " << lines->size() << " lines\n";
+  int lineNo = 0;
   for (const auto &line: *lines) {
-    Instruction *i = parseLine(line);
+    Instruction *instr = parseLine(line);
     // this will cause visitInstruction() to get called, where
     // you define in the Instruction subclass what the builder method's
     // name is that gets called.
-    if (i) {
-      if (!i->isValid())
-        throw "Error parsing line: x";
-      i->accept(this);
+    if (instr) {
+      if (!instr->isValid()) {
+        std::cout << "Error parsing line: " << lineNo << '\n';
+        throw "Error parsing line";
+      }
+      instr->accept(this);
     }
-    delete i;
+    delete instr;
+    ++lineNo;
   }
 }
 

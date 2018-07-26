@@ -27,13 +27,20 @@ private:
 class HackSymbolTranslator: public HackBuilder {
 public:
   HackSymbolTranslator();
+  virtual std::list<std::string>* getResult() override;
   virtual void visit(Label *i) override;
   virtual void visit(CInstruction *i) override;
   virtual void visit(AInstruction *i) override;
 private:
+  void initPredefinedSymbols();
+private:
   bool _firstPass;
   int _crtInstructionNo;
+  int _crtVariableNo;
   std::unordered_map<std::string, std::string> _symbolsTable;
+
+  // memory address where variables start.
+  static constexpr int VARIABLE_START = 16;
 };
 
 #endif

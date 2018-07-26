@@ -19,6 +19,7 @@ public:
   std::string value();
   void setValue(std::string);
   bool isValid() override;
+  bool isNumericValue();
   std::string toBinary() override;
 
   virtual void accept(Builder*) override;
@@ -41,6 +42,9 @@ public:
   std::string toBinary() override;
 
   virtual void accept(Builder*) override;
+
+  std::string getName();
+private:
 };
 
 #endif
