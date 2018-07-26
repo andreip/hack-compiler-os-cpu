@@ -66,10 +66,10 @@ bool CInstruction::isValid() {
   std::string d = dest();
   std::string j = jmp();
 
-  std::cout << "CInstr isValid? "
-            << "comp: '" << c
-            << "', dest: '" << d
-            << "', jump: '" << j << "'\n";
+  //std::cout << "CInstr isValid? "
+  //          << "comp: '" << c
+  //          << "', dest: '" << d
+  //          << "', jump: '" << j << "'\n";
 
   if (_compToBinary.find(c) == _compToBinary.end())
     return false;
@@ -180,7 +180,7 @@ std::unordered_map<std::string, std::string> CInstruction::createComputationTabl
       map[kCommutative] = v;
     }
   }
-  std::cout << "Computation map: " << map << '\n';
+  //std::cout << "Computation map: " << map << '\n';
   return map;
 }
 

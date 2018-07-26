@@ -24,7 +24,7 @@ std::list<std::string>* Builder::getResult() {
 }
 
 void Builder::processLines(const std::list<std::string> *lines) {
-  std::cout << "visiting " << lines->size() << " lines\n";
+  //std::cout << "visiting " << lines->size() << " lines\n";
   int lineNo = 1;
   for (const auto &line: *lines) {
     Instruction *instr = parseLine(line);
