@@ -3,6 +3,8 @@
 
 #include <list>
 #include <iostream>
+#include <string>
+#include <unordered_map>
 
 #include "../builder.h"
 
@@ -10,12 +12,12 @@
 
 class HackBuilder: public Builder {
 public:
-  virtual void visitLabel(const Label *i) const = 0;
-  virtual void visitCInstruction(const CInstruction *i) const = 0;
-  virtual void visitAInstruction(const AInstruction *i) const = 0;
+  virtual void visit(Label *i) = 0;
+  virtual void visit(CInstruction *i) = 0;
+  virtual void visit(AInstruction *i) = 0;
   virtual Instruction* parseLine(const std::string &line);
 
-  void visitHackInstruction() const;
+  virtual void visit(HackInstruction *i);
 protected:
   HackBuilder();  // abstract
 private:
@@ -25,10 +27,13 @@ private:
 class HackSymbolTranslator: public HackBuilder {
 public:
   HackSymbolTranslator();
-  virtual void visitLabel(const Label *i) const override;
-  virtual void visitCInstruction(const CInstruction *i) const override;
-  virtual void visitAInstruction(const AInstruction *i) const override;
+  virtual void visit(Label *i) override;
+  virtual void visit(CInstruction *i) override;
+  virtual void visit(AInstruction *i) override;
 private:
+  bool _firstPass;
+  int _crtInstructionNo;
+  std::unordered_map<std::string, std::string> _symbolsTable;
 };
 
 #endif

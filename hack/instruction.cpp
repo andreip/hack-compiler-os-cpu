@@ -5,8 +5,8 @@
 
 HackInstruction::HackInstruction(std::string line): Instruction(line) {}
 
-void HackInstruction::accept(const Builder *builder) {
-  dynamic_cast<const HackBuilder*>(builder)->visitHackInstruction();
+void HackInstruction::accept(Builder *builder) {
+  dynamic_cast<HackBuilder*>(builder)->visit(this);
 }
 
 // AInstruction
@@ -30,8 +30,8 @@ std::string AInstruction::toBinary() {
   return "0todo";
 }
 
-void AInstruction::accept(const Builder *builder) {
-  dynamic_cast<const HackBuilder*>(builder)->visitAInstruction(this);
+void AInstruction::accept(Builder *builder) {
+  dynamic_cast<HackBuilder*>(builder)->visit(this);
 }
 
 // CInstruction
@@ -46,8 +46,8 @@ std::string CInstruction::toBinary() {
   return "111todo";
 }
 
-void CInstruction::accept(const Builder *builder) {
-  dynamic_cast<const HackBuilder*>(builder)->visitCInstruction(this);
+void CInstruction::accept(Builder *builder) {
+  dynamic_cast<HackBuilder*>(builder)->visit(this);
 }
 
 // Label
@@ -62,7 +62,7 @@ std::string Label::toBinary() {
   throw "Label doesn't support toBinary()";
 }
 
-void Label::accept(const Builder *builder) {
-  dynamic_cast<const HackBuilder*>(builder)->visitLabel(this);
+void Label::accept(Builder *builder) {
+  dynamic_cast<HackBuilder*>(builder)->visit(this);
 }
 

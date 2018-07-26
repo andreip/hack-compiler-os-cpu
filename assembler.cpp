@@ -33,7 +33,7 @@ void Assembler::writeToFile(const std::list<std::string> *lines) {
   boost::filesystem::path path(_inputFile);
   std::ofstream out(path.stem().string() + _outputExt);
 
-  if (lines)
+  if (lines && !lines->empty())
     for (const std::string &s: *lines)
       out << s << '\n';
   out.close();

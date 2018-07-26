@@ -16,7 +16,7 @@ public:
   // visitor pattern. You should call a method like
   // builder->visitMyInstructionType(this) on the builder
   // in the new instruction subclasses you define.
-  virtual void accept(const Builder *builder);
+  virtual void accept(Builder *builder);
 protected:
   Instruction(std::string);  // abstract
   void set(std::string line);

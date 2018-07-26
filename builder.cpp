@@ -17,11 +17,11 @@ void Builder::init(const std::list<std::string> *lines) {
 }
 
 std::list<std::string>* Builder::getResult() {
-  visit(_lines);
+  processLines(_lines);
   return output;
 }
 
-void Builder::visit(const std::list<std::string> *lines) {
+void Builder::processLines(const std::list<std::string> *lines) {
   std::cout << "visiting " << lines->size() << " lines\n";
   for (const auto &line: *lines) {
     Instruction *i = parseLine(line);
@@ -37,4 +37,4 @@ void Builder::visit(const std::list<std::string> *lines) {
   }
 }
 
-void Builder::visitInstruction(const Instruction *i) const { }
+void Builder::visit(Instruction *i) { }

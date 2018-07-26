@@ -10,14 +10,14 @@ class Builder {
 public:
   void init(const std::list<std::string> *lines);
   std::list<std::string> *getResult();
-  void visitInstruction(const Instruction*) const;
+  virtual void visit(Instruction*);
 
   virtual ~Builder();
 protected:
   Builder();  // abstract
   virtual Instruction* parseLine(const std::string&) = 0;
 private:
-  virtual void visit(const std::list<std::string>*);
+  virtual void processLines(const std::list<std::string>*);
 
 protected:
   std::list<std::string> *output;

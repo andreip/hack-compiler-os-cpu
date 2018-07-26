@@ -10,7 +10,7 @@ class HackBuilder;
 class HackInstruction: public Instruction {
 protected:
   HackInstruction(std::string);  // abstract
-  virtual void accept(const Builder*) override;
+  virtual void accept(Builder*) override;
 };
 
 class AInstruction: public HackInstruction {
@@ -21,7 +21,7 @@ public:
   bool isValid() override;
   std::string toBinary() override;
 
-  virtual void accept(const Builder*) override;
+  virtual void accept(Builder*) override;
 private:
 };
 
@@ -31,7 +31,7 @@ public:
   bool isValid() override;
   std::string toBinary() override;
 
-  virtual void accept(const Builder*) override;
+  virtual void accept(Builder*) override;
 };
 
 class Label: public HackInstruction {
@@ -40,7 +40,7 @@ public:
   bool isValid() override;
   std::string toBinary() override;
 
-  virtual void accept(const Builder*) override;
+  virtual void accept(Builder*) override;
 };
 
 #endif
