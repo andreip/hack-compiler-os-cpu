@@ -1,6 +1,8 @@
 #include <list>
 #include <string>
 #include <iostream>
+#include <sstream>
+#include <stdexcept>
 
 #include "builder.h"
 #include "instruction.h"
@@ -23,7 +25,7 @@ std::list<std::string>* Builder::getResult() {
 
 void Builder::processLines(const std::list<std::string> *lines) {
   std::cout << "visiting " << lines->size() << " lines\n";
-  int lineNo = 0;
+  int lineNo = 1;
   for (const auto &line: *lines) {
     Instruction *instr = parseLine(line);
     // this will cause visitInstruction() to get called, where
@@ -31,8 +33,10 @@ void Builder::processLines(const std::list<std::string> *lines) {
     // name is that gets called.
     if (instr) {
       if (!instr->isValid()) {
-        std::cout << "Error parsing line: " << lineNo << '\n';
-        throw "Error parsing line";
+        std::ostringstream oss;
+        oss << "Error parsing line: " << lineNo << '\n';
+        std::string msg = oss.str();
+        throw std::runtime_error(msg);
       }
       instr->accept(this);
     }

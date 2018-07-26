@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <stdexcept>
 
 #include "assembler.h"
 #include "builder.h"
@@ -24,7 +25,7 @@
  *      |
  *      |- class HackErrorChecker
  *      |- class HackSymbolTranslator
- *      |- class HackBinaryTranslator
+ *      |- class HackHackBinaryTranslator
  *
  * - abstract class Instruction
  *   - string toString()
@@ -51,10 +52,14 @@ int main(int argc, char **argv) {
   }
 
   std::string filename(argv[1]);
-  std::list<Builder*> builders {new HackSymbolTranslator};
+  std::list<Builder*> builders {new HackSymbolTranslator, new HackBinaryTranslator};
 
   Assembler hack(filename, ".hack", &builders);
-  hack.assemble();
+  try {
+    hack.assemble();
+  } catch (std::runtime_error &e) {
+    std::cout << e.what();
+  }
 
   return 0;
 }

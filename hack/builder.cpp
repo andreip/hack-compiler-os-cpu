@@ -35,6 +35,8 @@ std::string HackBuilder::trimComment(const std::string &line) {
 
 void HackBuilder::visit(HackInstruction *i) { }
 
+// HackSymbolTranslator
+
 HackSymbolTranslator::HackSymbolTranslator(): _firstPass(true), _crtInstructionNo(0) {
   initPredefinedSymbols();
   _crtVariableNo = VARIABLE_START;
@@ -113,3 +115,18 @@ void HackSymbolTranslator::initPredefinedSymbols() {
     _symbolsTable["R" + num] = num;
   }
 }
+
+// HackBinaryTranslator
+
+HackBinaryTranslator::HackBinaryTranslator() { }
+
+void HackBinaryTranslator::visit(Label *i) { }
+
+void HackBinaryTranslator::visit(CInstruction *i) {
+  output->push_back(i->toBinary());
+}
+
+void HackBinaryTranslator::visit(AInstruction *i) {
+  output->push_back(i->toBinary());
+}
+

@@ -24,6 +24,9 @@ public:
 
   virtual void accept(Builder*) override;
 private:
+  // A-instruction's value can hold at most a 15-bit integer.
+  static constexpr int BITS_VALUE = 15;
+  static constexpr int MAX_VALUE = 1 << BITS_VALUE;
 };
 
 class CInstruction: public HackInstruction {
@@ -33,6 +36,17 @@ public:
   std::string toBinary() override;
 
   virtual void accept(Builder*) override;
+private:
+  std::string dest();
+  std::string comp();
+  std::string jmp();
+
+  static std::unordered_map<std::string, std::string> createComputationTable();
+
+private:
+  static std::unordered_map<std::string, std::string> _compToBinary;
+  static std::unordered_map<std::string, std::string> _destToBinary;
+  static std::unordered_map<std::string, std::string> _jumpToBinary;
 };
 
 class Label: public HackInstruction {

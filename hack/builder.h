@@ -43,4 +43,12 @@ private:
   static constexpr int VARIABLE_START = 16;
 };
 
+class HackBinaryTranslator: public HackBuilder {
+public:
+  HackBinaryTranslator();
+  virtual void visit(Label *i) override;
+  virtual void visit(CInstruction *i) override;
+  virtual void visit(AInstruction *i) override;
+};
+
 #endif
