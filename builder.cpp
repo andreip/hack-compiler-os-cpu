@@ -1,30 +1,40 @@
 #include <list>
 #include <string>
+#include <iostream>
 
 #include "builder.h"
 #include "instruction.h"
+
+Builder::Builder() {
+  output = new std::list<std::string>;
+}
+Builder::~Builder() {
+  delete output;
+}
 
 void Builder::init(const std::list<std::string> *lines) {
   _lines = lines;
 }
 
-// in case your builder needs to do several passes through
-// the data, call computeOnce() several times and feed its output
-// back as its new input.
-std::list<std::string>* Builder::computeResult() {
-  return computeOnce(_lines);
+std::list<std::string>* Builder::getResult() {
+  visit(_lines);
+  return output;
 }
 
-std::list<std::string>* Builder::computeOnce(const std::list<std::string> *lines) {
+void Builder::visit(const std::list<std::string> *lines) {
+  std::cout << "visiting " << lines->size() << " lines\n";
   for (const auto &line: *lines) {
     Instruction *i = parseLine(line);
     // this will cause visitInstruction() to get called, where
     // you define in the Instruction subclass what the builder method's
     // name is that gets called.
-    i->accept(this);
+    if (i) {
+      if (!i->isValid())
+        throw "Error parsing line: x";
+      i->accept(this);
+    }
+    delete i;
   }
-
-  return nullptr;
 }
 
 void Builder::visitInstruction(const Instruction *i) const { }

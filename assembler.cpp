@@ -12,7 +12,7 @@ Assembler::Assembler(std::string inputFile, std::string outputExt,
                      std::list<Builder*> *builders)
     : _inputFile(inputFile), _outputExt(outputExt), _builders(builders) {
   std::cout << "Assembling " << inputFile << "\n";
-  std::list<std::string> *_lines = splitLines(inputFile);
+  _lines = splitLines(inputFile);
 }
 
 Assembler::~Assembler() {
@@ -23,7 +23,7 @@ void Assembler::assemble() {
   const std::list<std::string> *crtLines = _lines;
   for (Builder *builder: *_builders) {
     builder->init(crtLines);
-    crtLines = builder->computeResult();
+    crtLines = builder->getResult();
   }
   writeToFile(crtLines);
 }

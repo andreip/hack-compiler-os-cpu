@@ -5,6 +5,8 @@
 #include "assembler.h"
 #include "builder.h"
 
+#include "hack/builder.h"
+
 /* Whole architecture:
  * - class Assembler(inputFile="sth.asm", outputExt="", builderList)
  *   - List<Builder> builders;
@@ -49,7 +51,7 @@ int main(int argc, char **argv) {
   }
 
   std::string filename(argv[1]);
-  std::list<Builder*> builders = {};
+  std::list<Builder*> builders {new HackSymbolTranslator};
 
   Assembler hack(filename, ".hack", &builders);
   hack.assemble();

@@ -7,8 +7,9 @@
 
 class Instruction {
 public:
-  std::string toString();
+  std::string toString() const;
 
+  virtual ~Instruction();
   virtual bool isValid() = 0;
   virtual std::string toBinary() = 0;
 
@@ -17,7 +18,8 @@ public:
   // in the new instruction subclasses you define.
   virtual void accept(const Builder *builder);
 protected:
-  Instruction();  // abstract
+  Instruction(std::string);  // abstract
+  void set(std::string line);
 private:
   std::string _line;
 };
