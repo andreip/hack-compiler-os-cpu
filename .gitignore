@@ -1,7 +1,7 @@
 *.sw*
 *.o
-asm
-a.out
+compile
 
+*.vm
 *.asm
 *.hack

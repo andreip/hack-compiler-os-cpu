@@ -1,48 +1,26 @@
 #include <cstdlib>
+#include <vector>
 #include <iostream>
 #include <string>
 #include <stdexcept>
 
-#include "assembler.h"
-#include "builder.h"
+#include "compiler/assembler.h"
+#include "compiler/builder.h"
+#include "compiler/hack/builder.h"
 
-#include "hack/builder.h"
-
-/* Whole architecture:
- * - class Assembler(inputFile="sth.asm", outputExt="", builderList)
- *   - List<Builder> builders;
- *   - void assemble()
- * - abstract class Builder
- *   - void init(string)
- *   - string getResult()
- *   - Instruction* parseLine()
- *   |
- *   |- class HackBuilder
- *      - parseAInstruction()
- *      - parseCInstruction()
- *      - parseLabel()
- *      - parseComment()
- *      |
- *      |- class HackErrorChecker
- *      |- class HackSymbolTranslator
- *      |- class HackHackBinaryTranslator
- *
- * - abstract class Instruction
- *   - string toString()
- *   - bool isValid()
- *   - string toBinary()
- *   |
- *   |- class Comment
- *   |- class Label
- *      - string name()
- *   |- class AInstruction
- *      - string value()
- *      - setValue(string)
- *   |- class CInstruction
- */
+const std::string EXEC = "compile";
 
 void usage() {
-  std::cout << "Usage:\n\t./exec file.asm\n";
+  std::vector<std::string> ways {
+    "./" + EXEC + " file.asm",
+    "Assemble .asm files and get .hack files out",
+    "./" + EXEC + " file.vm",
+    "Compile .vm files and get .asm files out",
+  };
+
+  std::cout << "Usage:\n";
+  for (auto it = ways.begin(); it != ways.end(); it += 2)
+    std::cout << "\t" << *it << "\t" << *(it+1) << "\n";
 }
 
 int main(int argc, char **argv) {

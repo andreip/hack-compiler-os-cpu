@@ -1,15 +1,23 @@
-CC=g++
-CPPFLAGS=-std=c++14
+export CC=g++
+export CPPFLAGS=-std=c++14
+
 LDFLAGS=-lboost_system -lboost_filesystem
-EXEC=asm
+OUTPUT=compile
+FILES=main.o
+SUBDIRS=compiler compiler/hack
 
-all: main.o assembler.o builder.o instruction.o hack/builder.o hack/instruction.o utils.o
-	$(CC) $(CPPFLAGS) $(LDFLAGS) $^ -o $(EXEC)
+$(OUTPUT): $(FILES) $(SUBDIRS)
+	$(CC) $(CPPFLAGS) $(LDFLAGS) -o $@ $< $(wildcard $(addsuffix /*.o,$(SUBDIRS)))
 
-.o: .cpp .h
-	$(CC) $(CPPFLAGS) -c
+%.o: %.cpp
+	$(CC) $(CPPFLAGS) -c $^ -o $@
+
+$(SUBDIRS):
+	$(MAKE) -C $@
 
 clean:
-	rm $(EXEC) *.o hack/*.o
+	rm -f $(OUTPUT) *.o
+	$(MAKE) -C compiler/ clean
+	$(MAKE) -C compiler/hack/ clean
 
-.PHONY: clean
+.PHONY: clean $(SUBDIRS)
