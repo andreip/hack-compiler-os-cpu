@@ -20,8 +20,6 @@ public:
   virtual void visit(HackInstruction *i);
 protected:
   HackBuilder();  // abstract
-private:
-  std::string trimComment(const std::string &line);
 };
 
 class HackSymbolTranslator: public HackBuilder {

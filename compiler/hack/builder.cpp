@@ -1,13 +1,12 @@
-#include <algorithm>
 #include <string>
 #include <sstream>
-#include <unordered_map>
 
 #include <boost/algorithm/string/trim.hpp>
 
 #include "../utils.h"
-#include "builder.h"
-#include "instruction.h"
+#include "./utils.h"
+#include "./builder.h"
+#include "./instruction.h"
 
 HackBuilder::HackBuilder() {}
 
@@ -23,14 +22,6 @@ Instruction* HackBuilder::parseLine(const std::string &line) {
     return new Label(instr);
   else
     return new CInstruction(instr);
-}
-
-std::string HackBuilder::trimComment(const std::string &line) {
-  std::string comment = "//";
-  std::string trimmed = line;  // clone it
-  auto it = std::search(trimmed.begin(), trimmed.end(), comment.begin(), comment.end());
-  trimmed.erase(it, trimmed.end());  // up to the end.
-  return trimmed;
 }
 
 void HackBuilder::visit(HackInstruction *i) { }
