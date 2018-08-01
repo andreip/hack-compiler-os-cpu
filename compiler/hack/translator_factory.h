@@ -9,11 +9,14 @@
 class HACKTranslatorFactory: public TranslatorFactory {
 public:
   HACKTranslatorFactory();
+  virtual ~HACKTranslatorFactory() override;
   virtual Translator* getTranslator(const std::string&) override;
 protected:
   Translator* getAssembler(const std::string&);
   Translator* getVMTranslator(const std::string&);
   // Translator* getJackCompiler();
+private:
+  std::list<Builder*> *_builders;
 };
 
 #endif

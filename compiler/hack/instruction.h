@@ -20,7 +20,7 @@ public:
   void setValue(std::string);
   bool isValid() override;
   bool isNumericValue();
-  std::string toBinary() override;
+  std::string translate() override;
 
   virtual void accept(Builder*) override;
 private:
@@ -33,7 +33,7 @@ class CInstruction: public HackInstruction {
 public:
   CInstruction(std::string);
   bool isValid() override;
-  std::string toBinary() override;
+  std::string translate() override;
 
   virtual void accept(Builder*) override;
 private:
@@ -53,7 +53,7 @@ class Label: public HackInstruction {
 public:
   Label(std::string);
   bool isValid() override;
-  std::string toBinary() override;
+  std::string translate() override;
 
   virtual void accept(Builder*) override;
 

@@ -114,10 +114,10 @@ HackBinaryTranslator::HackBinaryTranslator() { }
 void HackBinaryTranslator::visit(Label *i) { }
 
 void HackBinaryTranslator::visit(CInstruction *i) {
-  output->push_back(i->toBinary());
+  output->push_back(i->translate());
 }
 
 void HackBinaryTranslator::visit(AInstruction *i) {
-  output->push_back(i->toBinary());
+  output->push_back(i->translate());
 }
 

@@ -8,6 +8,12 @@
 
 HACKTranslatorFactory::HACKTranslatorFactory(): TranslatorFactory() {}
 
+HACKTranslatorFactory::~HACKTranslatorFactory() {
+  for (Builder *b: *_builders)
+    delete b;
+  delete _builders;
+}
+
 Translator* HACKTranslatorFactory::getTranslator(const std::string &filename) {
   std::string extension = pathExtension(filename);
   if (extension == ".asm")
@@ -19,11 +25,11 @@ Translator* HACKTranslatorFactory::getTranslator(const std::string &filename) {
 }
 
 Translator* HACKTranslatorFactory::getAssembler(const std::string &filename) {
-  std::list<Builder*> builders {new HackSymbolTranslator, new HackBinaryTranslator};
-  return new Translator(filename, ".hack", &builders);
+  _builders = new std::list<Builder*> {new HackSymbolTranslator, new HackBinaryTranslator};
+  return new Translator(filename, ".hack", _builders);
 }
 
 Translator* HACKTranslatorFactory::getVMTranslator(const std::string &filename) {
-  std::list<Builder*> builders {new HackVMTranslator};
-  return new Translator(filename, ".asm", &builders);
+  _builders = new std::list<Builder*> {new HackVMTranslator};
+  return new Translator(filename, ".asm", _builders);
 }

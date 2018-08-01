@@ -11,7 +11,7 @@ public:
 
   virtual ~Instruction();
   virtual bool isValid() = 0;
-  virtual std::string toBinary() = 0;
+  virtual std::string translate() = 0;
 
   // visitor pattern. You should call a method like
   // builder->visitMyInstructionType(this) on the builder

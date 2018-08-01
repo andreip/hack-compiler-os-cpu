@@ -41,9 +41,9 @@ bool AInstruction::isValid() {
   return true;
 }
 
-std::string AInstruction::toBinary() {
+std::string AInstruction::translate() {
   if (!isNumericValue())
-    throw std::runtime_error("Cannot call toBinary() yet on symbol AInstruction: " + toString());
+    throw std::runtime_error("Cannot call translate() yet on symbol AInstruction: " + toString());
 
   std::string val = value();
   int num = getNumber(val);
@@ -83,7 +83,7 @@ bool CInstruction::isValid() {
   return true;
 }
 
-std::string CInstruction::toBinary() {
+std::string CInstruction::translate() {
   std::string c = comp();
   std::string d = dest();
   std::string j = jmp();
@@ -222,8 +222,8 @@ bool Label::isValid() {
   );
 }
 
-std::string Label::toBinary() {
-  throw std::runtime_error("Label doesn't support toBinary()");
+std::string Label::translate() {
+  throw std::runtime_error("Label doesn't support translate()");
 }
 
 void Label::accept(Builder *builder) {
