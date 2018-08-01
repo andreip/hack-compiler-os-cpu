@@ -11,7 +11,8 @@
 HackVMTranslator::HackVMTranslator(): Builder() {}
 
 std::vector<std::string> HackVMTranslator::arithmetic_ops = {
-  "eq", "add", "neg", "sub"
+  "add", "sub", "neg", "eq",
+  "gt", "lt", "and", "or", "not",
 };
 
 Instruction* HackVMTranslator::parseLine(const std::string &line) {
@@ -34,9 +35,15 @@ Instruction* HackVMTranslator::parseLine(const std::string &line) {
 }
 
 void HackVMTranslator::visit(MemoryAccessCmd *i) {
-  std::cout << "Visiting " << i->toString() << '\n';
+  // adding a comment about what generated that code is going to be
+  // helpful.
+  output->push_back(getComment(i->toString()));
+  output->push_back(i->translate());
 }
 
 void HackVMTranslator::visit(ArithmeticLogicCmd *i) {
-  std::cout << "Visiting " << i->toString() << '\n';
+  // adding a comment about what generated that code is going to be
+  // helpful.
+  output->push_back(getComment(i->toString()));
+  output->push_back(i->translate());
 }

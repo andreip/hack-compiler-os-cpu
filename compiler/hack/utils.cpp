@@ -14,6 +14,6 @@ std::string trimComment(const std::string &line, const std::string &comment) {
 }
 
 std::string getComment(const std::string &line, const std::string &comment) {
-  return comment + line;
+  return comment + " " + line;
 }
 
