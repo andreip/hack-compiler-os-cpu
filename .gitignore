@@ -1,6 +1,6 @@
 *.sw*
 *.o
-compile
+cpl
 
 *.vm
 *.asm

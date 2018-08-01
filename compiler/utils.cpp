@@ -4,6 +4,8 @@
 #include <iostream>
 #include <unordered_map>
 
+#include <boost/filesystem.hpp>
+
 #include "utils.h"
 
 bool isNumber(const std::string &s) {
@@ -31,4 +33,10 @@ std::string toString(int n) {
   std::ostringstream oss;
   oss << n;
   return oss.str();
+}
+
+std::string pathExtension(const std::string &filename) {
+  boost::filesystem::path path(filename);
+  std::string ext = path.extension().string();
+  return ext;
 }

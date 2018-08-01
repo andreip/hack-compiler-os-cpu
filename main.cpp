@@ -4,11 +4,9 @@
 #include <string>
 #include <stdexcept>
 
-#include "compiler/assembler.h"
-#include "compiler/builder.h"
-#include "compiler/hack/builder.h"
+#include "compiler/hack/translator_factory.h"
 
-const std::string EXEC = "compile";
+const std::string EXEC = "cpl";
 
 void usage() {
   std::vector<std::string> ways {
@@ -30,14 +28,17 @@ int main(int argc, char **argv) {
   }
 
   std::string filename(argv[1]);
-  std::list<Builder*> builders {new HackSymbolTranslator, new HackBinaryTranslator};
-
-  Assembler hack(filename, ".hack", &builders);
+  TranslatorFactory *factory = new HACKTranslatorFactory;
+  Translator *translator = factory->getTranslator(filename);
   try {
-    hack.assemble();
+    translator->translate();
   } catch (std::runtime_error &e) {
     std::cout << e.what();
+    usage();
   }
+
+  delete factory;
+  delete translator;
 
   return 0;
 }

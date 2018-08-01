@@ -17,5 +17,6 @@ std::ostream& operator<<(std::ostream &out, const std::unordered_map<A, B> &map)
 bool isNumber(const std::string &s);
 int getNumber(const std::string &s);
 std::string toString(int n);
+std::string pathExtension(const std::string &filename);
 
 #endif
