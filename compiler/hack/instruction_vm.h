@@ -7,23 +7,24 @@
 
 #include "../instruction.h"
 
-class MemoryAccessCmd: public Instruction {
+
+class MemorySegment: public Instruction {
 public:
-  MemoryAccessCmd(std::string);
+  static std::vector<std::string> parse(const std::string&);
+
+  MemorySegment(std::string);
   bool isValid() override;
   std::string translate() override;
 
   virtual void accept(Builder *builder) override;
-private:
+protected:
   // <op> <segment> <value>
-  void parse();
-  std::string segment();
-  std::string op();
-  int value();
-
-  std::vector<std::string>* translateConstant();
-
-private:
+  virtual void parse();
+  virtual std::string segment();
+  virtual std::string op();
+  virtual int value();
+  virtual std::vector<std::string> _translate() = 0;
+protected:
   bool _parsed;
   std::string _segment;
   std::string _op;
@@ -31,9 +32,18 @@ private:
   static std::vector<std::string> segments;
 };
 
-class ArithmeticLogicCmd: public Instruction {
+
+class ConstantMemorySegment : public MemorySegment {
 public:
-  ArithmeticLogicCmd(std::string);
+  ConstantMemorySegment(std::string);
+protected:
+  std::vector<std::string> _translate() override;
+};
+
+
+class ArithmeticLogic: public Instruction {
+public:
+  ArithmeticLogic(std::string);
   bool isValid() override;
   std::string translate() override;
 

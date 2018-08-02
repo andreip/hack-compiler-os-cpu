@@ -12,8 +12,8 @@ public:
   HackVMTranslator();
 
   virtual Instruction* parseLine(const std::string &line);
-  virtual void visit(MemoryAccessCmd*);
-  virtual void visit(ArithmeticLogicCmd*);
+  virtual void visit(MemorySegment*);
+  virtual void visit(ArithmeticLogic*);
 private:
   static std::vector<std::string> arithmetic_ops;
 };

@@ -2,7 +2,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <memory>
 
 #include <boost/algorithm/string.hpp>
 
@@ -10,18 +9,18 @@
 #include "./instruction_vm.h"
 #include "./builder_vm.h"
 
-// MemoryAccessCmd
+// MemorySegment
 
-std::vector<std::string> MemoryAccessCmd::segments = {
+std::vector<std::string> MemorySegment::segments = {
   "local", "argument", "this", "that",
   "static", "constant", "pointer", "temp"
 };
 
-MemoryAccessCmd::MemoryAccessCmd(std::string line): Instruction(line) {
+MemorySegment::MemorySegment(std::string line): Instruction(line) {
   _parsed = false;
 }
 
-bool MemoryAccessCmd::isValid() {
+bool MemorySegment::isValid() {
   try {
     parse();
   } catch (std::runtime_error &e) {
@@ -52,59 +51,63 @@ bool MemoryAccessCmd::isValid() {
   return true;
 }
 
-std::string MemoryAccessCmd::translate() {
-  std::string s = segment();
-  std::vector<std::string> *lines;
-
+std::string MemorySegment::translate() {
   std::cout << "Translating " << toString() << '\n';
-  if (s == "constant")
-    lines = std::move(translateConstant());
-  std::string res = boost::algorithm::join(*lines, "\n");
-  delete lines;
-  return res;
+  std::vector<std::string> lines = _translate();
+  return boost::algorithm::join(lines, "\n");
 }
 
-void MemoryAccessCmd::accept(Builder *builder) {
+void MemorySegment::accept(Builder *builder) {
   dynamic_cast<HackVMTranslator*>(builder)->visit(this);
 }
 
-void MemoryAccessCmd::parse() {
+std::vector<std::string> MemorySegment::parse(const std::string &line) {
+  std::vector<std::string> parts;
+  boost::algorithm::split(parts, line, boost::is_space());
+  boost::algorithm::trim(parts[0]);
+  boost::algorithm::trim(parts[1]);
+  boost::algorithm::trim(parts[2]);
+  if (!isNumber(parts[2]))
+    throw std::runtime_error("Invalid command: " + line);
+  return parts;
+}
+
+void MemorySegment::parse() {
   if (_parsed)
     return;
 
-  std::string val = toString();
-  std::vector<std::string> parts;
-  boost::algorithm::split(parts, val, boost::is_space());
-  _op = boost::algorithm::trim_copy(parts[0]);
-  _segment = boost::algorithm::trim_copy(parts[1]);
-  std::string valueStr = boost::algorithm::trim_copy(parts[2]);
-  if (!isNumber(valueStr))
-    throw std::runtime_error("Invalid command " + val);
-  _value = getNumber(valueStr);
+  std::vector<std::string> parts = MemorySegment::parse(toString());
+  _op = parts[0];
+  _segment = parts[1];
+  _value = getNumber(parts[2]);
+  _parsed = true;
 
   std::cout << "Parsed " << "op=" << _op << ", _seg=" << _segment << ", _val=" << _value << "\n";
-
-  _parsed = true;
 }
 
-std::string MemoryAccessCmd::segment() {
+std::string MemorySegment::segment() {
   parse();
   return _segment;
 }
 
-std::string MemoryAccessCmd::op() {
+std::string MemorySegment::op() {
   parse();
   return _op;
 }
 
-int MemoryAccessCmd::value() {
+int MemorySegment::value() {
   parse();
   return _value;
 }
 
-std::vector<std::string>* MemoryAccessCmd::translateConstant() {
+// ConstantMemorySegment
+
+ConstantMemorySegment::ConstantMemorySegment(std::string s): MemorySegment(s) {}
+
+std::vector<std::string> ConstantMemorySegment::_translate() {
+  std::vector<std::string> v;
   if (op() == "push")
-    return new std::vector<std::string> {
+    v = {
       "@" + ::toString(value()),
       "D=A      // save value in D",
       "@SP",
@@ -113,29 +116,31 @@ std::vector<std::string>* MemoryAccessCmd::translateConstant() {
       "@SP",
       "M=M+1    // SP++",
     };
-  return nullptr;
+  else
+    throw std::runtime_error("Invalid instruction: " + toString());
+  return v;
 }
 
-// ArithmeticLogicCmd
+// ArithmeticLogic
 
-ArithmeticLogicCmd::ArithmeticLogicCmd(std::string line): Instruction(line) {}
+ArithmeticLogic::ArithmeticLogic(std::string line): Instruction(line) {}
 
-bool ArithmeticLogicCmd::isValid() {
+bool ArithmeticLogic::isValid() {
   return true;
 }
 
-std::string ArithmeticLogicCmd::translate() {
+std::string ArithmeticLogic::translate() {
   std::string val = toString();
   if (to_asm.find(val) != to_asm.end())
     return boost::algorithm::join(to_asm[val], "\n");
   return "";
 }
 
-void ArithmeticLogicCmd::accept(Builder *builder) {
+void ArithmeticLogic::accept(Builder *builder) {
   dynamic_cast<HackVMTranslator*>(builder)->visit(this);
 }
 
-std::unordered_map<std::string, std::vector<std::string>> ArithmeticLogicCmd::to_asm {
+std::unordered_map<std::string, std::vector<std::string>> ArithmeticLogic::to_asm {
   { "add", {"@SP",
             "M=M-1    // SP--",
             "A=M",
@@ -143,12 +148,9 @@ std::unordered_map<std::string, std::vector<std::string>> ArithmeticLogicCmd::to
             "@SP",
             "M=M-1    // SP--",
             "A=M",
-            "D=D+M    // D += *SP, holds the addition",
+            "M=D+M    // *SP += D",
             "@SP",
-            "A=M",
-            "M=D      // *SP = D, set addition",
-            "@SP",
-            "M=M+1    // SP++ back to how it was",
+            "M=M+1    // SP++",
            },
   },
   { "sub", {"@SP",
@@ -158,20 +160,40 @@ std::unordered_map<std::string, std::vector<std::string>> ArithmeticLogicCmd::to
             "@SP",
             "M=M-1    // SP--",
             "A=M",
-            "D=D-M    // D -= *SP, holds the inverse subtraction",
-            "D=-D     // makes D = SP[-2] - SP[-1]",
-            "@SP",
-            "A=M",
-            "M=D      // *SP = D, set rezult",
+            "M=D-M",
+            "M=-M     // *SP = -(D - *SP)",
             "@SP",
             "M=M+1    // SP++ back to how it was",
            },
   },
   { "neg", {"@SP",
-            "A=M-1   // address SP[-1]",
-            "M=-M    // SP[-1] = -SP[-1]",
+            "A=M-1    // address SP[-1]",
+            "M=-M     // SP[-1] = -SP[-1]",
            },
-  // TODO do more here.
-  //{ "eq", {"
+  },
+  { "eq", {"@SP",
+           "M=M-1     // SP--",
+           "A=M",
+           "D=M       // D = *SP",
+           "@SP",
+           "M=M-1     // SP--",
+           "A=M",
+           "D=D-M     // D -= *SP",
+           // TODO: move into its own class and generate
+           // unique labels for each eq call, with a suffix number.
+           "@EQ_NOT_EQUAL",
+           "D; JNE",
+           "D=-1      // writes 'true' in binary if D == 0",
+           "@EQ_DONE",
+           "0; JMP",
+       "(EQ_NOT_EQUAL)",
+           "D=0       // writes 'false' in binary if D != 0",
+       "(EQ_DONE)",
+           "@SP",
+           "A=M",
+           "M=D       // *SP = true (-1) / false (0)",
+           "@SP",
+           "M=M+1     // SP++",
+          },
   },
 };
