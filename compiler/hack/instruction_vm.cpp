@@ -124,6 +124,93 @@ std::vector<std::string> ConstantMemorySegment::_translate() {
   return v;
 }
 
+// SegmentBaseMemorySegment
+
+std::unordered_map<std::string, std::string> SegmentBaseMemorySegment::segmentToBase = {
+  { "local", "LCL" },
+  { "argument", "ARG" },
+  { "this", "THIS" },
+  { "that", "THAT" },
+};
+
+SegmentBaseMemorySegment::SegmentBaseMemorySegment(std::string s): MemorySegment(s) {
+}
+
+bool SegmentBaseMemorySegment::canHandleSegment(const std::string &seg) {
+  return segmentToBase.find(seg) != segmentToBase.end();
+}
+
+std::vector<std::string> SegmentBaseMemorySegment::_translate() {
+  std::string baseName = segmentToBase.at(segment());
+  if (op() == "pop")
+    return {
+      "@" + ::toString(value()),
+      "D=A",
+      "@" + baseName,
+      "D=D+M    // D = (baseName + i), saves address offset",
+      "@R13     // a general purpose register to use",
+      "M=D",
+      "@SP",
+      "M=M-1    // SP--",
+      "A=M",
+      "D=M      // D = *SP",
+      "@R13",
+      "A=M",
+      "M=D      // *R13 = D",
+    };
+
+  if (op() == "push")
+    return {
+      "@" + ::toString(value()),
+      "D=A",
+      "@" + baseName,
+      "A=D+M    // A = (baseName + i), go to that address",
+      "D=M      // D = *(baseName + i), save the data from that segment",
+      "@SP",
+      "A=M",
+      "M=D      // *SP = D puts the saved data into SP location",
+      "@SP",
+      "M=M+1    // SP++",
+    };
+
+  throw std::runtime_error("Invalid instruction: " + toString());
+}
+
+// TempMemorySegment
+
+TempMemorySegment::TempMemorySegment(std::string l): MemorySegment(l) {}
+
+bool TempMemorySegment::isValid() {
+  int val = value();
+  return val >= 0 && val < SIZE;
+}
+
+std::vector<std::string> TempMemorySegment::_translate() {
+  int offset = BASE_SEGMENT + value();
+  if (op() == "push")
+    return {
+      "@" + ::toString(offset),
+      "D=M    // D = TEMP[base + i], get value from temp segment",
+      "@SP",
+      "A=M",
+      "M=D    // *SP = D",
+      "@SP",
+      "M=M+1  // SP++",
+    };
+
+  if (op() == "pop")
+    return {
+      "@SP",
+      "M=M-1  // SP--",
+      "A=M",
+      "D=M    // D = *SP",
+      "@" + ::toString(offset),
+      "M=D    // TEMP[base+i] = D, puts what's in stack in temp",
+    };
+
+  throw std::runtime_error("Invalid instruction: " + toString());
+}
+
 // ArithmeticLogic
 
 std::vector<std::string> ArithmeticLogic::ops = {

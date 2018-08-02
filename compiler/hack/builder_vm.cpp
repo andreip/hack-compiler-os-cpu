@@ -21,7 +21,14 @@ Instruction* HackVMTranslator::parseLine(const std::string &line) {
     std::string segment = MemorySegment::parse(instr)[1];
     if (segment == "constant")
       return new ConstantMemorySegment(instr);
-    // else if TODO rest
+
+    if (SegmentBaseMemorySegment::canHandleSegment(segment))
+      return new SegmentBaseMemorySegment(instr);
+
+    if (segment == "temp")
+      return new TempMemorySegment(instr);
+
+    // TODO: handle static, pointer
   }
 
   if (ArithmeticLogic::isArithmeticLogicOp(instr)) {

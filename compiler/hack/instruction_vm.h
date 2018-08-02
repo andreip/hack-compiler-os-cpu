@@ -37,12 +37,32 @@ protected:
   static std::vector<std::string> segments;
 };
 
-
 class ConstantMemorySegment : public MemorySegment {
 public:
   ConstantMemorySegment(std::string);
 protected:
   std::vector<std::string> _translate() override;
+};
+
+class SegmentBaseMemorySegment : public MemorySegment {
+public:
+  SegmentBaseMemorySegment(std::string);
+  static bool canHandleSegment(const std::string&);
+protected:
+  std::vector<std::string> _translate() override;
+private:
+  static std::unordered_map<std::string, std::string> segmentToBase;
+};
+
+class TempMemorySegment : public MemorySegment {
+public:
+  TempMemorySegment(std::string);
+  bool isValid() override;
+protected:
+  std::vector<std::string> _translate() override;
+private:
+  static constexpr int BASE_SEGMENT = 5;  // fixed
+  static constexpr int SIZE = 8;
 };
 
 
