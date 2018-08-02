@@ -7,8 +7,9 @@
 #include "builder.h"
 #include "instruction.h"
 
-Builder::Builder() {
+Builder::Builder(const std::string &filename) {
   output = new std::list<std::string>;
+  _filename = filename;
 }
 Builder::~Builder() {
   delete output;
@@ -45,3 +46,7 @@ void Builder::processLines(const std::list<std::string> *lines) {
 }
 
 void Builder::visit(Instruction *i) { }
+
+std::string Builder::getFilename() const {
+  return _filename;
+}

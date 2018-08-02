@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 
 #include "../utils.h"
 #include "./instruction_vm.h"
@@ -182,7 +183,7 @@ TempMemorySegment::TempMemorySegment(std::string l): MemorySegment(l) {}
 
 bool TempMemorySegment::isValid() {
   int val = value();
-  return val >= 0 && val < SIZE;
+  return val >= 0 && val < SIZE && MemorySegment::isValid();
 }
 
 std::vector<std::string> TempMemorySegment::_translate() {
@@ -209,6 +210,86 @@ std::vector<std::string> TempMemorySegment::_translate() {
     };
 
   throw std::runtime_error("Invalid instruction: " + toString());
+}
+
+// PointerMemorySegment
+
+PointerMemorySegment::PointerMemorySegment(std::string l): MemorySegment(l) {}
+
+bool PointerMemorySegment::isValid() {
+  int val = value();
+  return val >= 0 && val < SIZE && MemorySegment::isValid();
+}
+
+std::vector<std::string> PointerMemorySegment::_translate() {
+  std::string name = value() == 0 ? "THIS" : "THAT";
+  if (op() == "push")
+    return {
+      "@" + name,
+      "D=M    // D = THIS/THAT",
+      "@SP",
+      "A=M",
+      "M=D    // *SP = D",
+      "@SP",
+      "M=M+1  // SP++",
+    };
+
+  if (op() == "pop")
+    return {
+      "@SP",
+      "M=M-1  // SP--",
+      "A=M",
+      "D=M    // D = *SP",
+      "@" + name,
+      "M=D    // THIS/THAT = D",
+    };
+
+  throw std::runtime_error("Invalid instruction: " + toString());
+}
+
+// StaticMemorySegment
+
+StaticMemorySegment::StaticMemorySegment(std::string l): MemorySegment(l), _builder(nullptr) {}
+
+void StaticMemorySegment::accept(Builder *builder) {
+  _builder = builder;  // keep a reference of builder.
+  MemorySegment::accept(builder);
+}
+
+std::vector<std::string> StaticMemorySegment::_translate() {
+  if (!_builder)
+    throw std::runtime_error("Something went wrong, no builder reference in static memory segment to get filename from.");
+
+  boost::filesystem::path path(_builder->getFilename());
+  std::string filename = path.stem().string();
+
+  // "push static 5" gets converted into "Filename.5",
+  // which we'll treat as a variable by prepending @ to it.
+  // (assuming instruction is in Filename.vm)
+  std::string varName = filename + "." + ::toString(value());
+
+  if (op() == "push")
+    return {
+      "@" + varName,
+      "D=M    // D = *(Foo.i), get data from static location",
+      "@SP",
+      "A=M",
+      "M=D    // *SP = D, puts it on stack",
+      "@SP",
+      "M=M+1  // SP++",
+    };
+
+  if (op() == "pop")
+    return {
+      "@SP",
+      "M=M-1  // SP--",
+      "A=M",
+      "D=M    // D = *SP",
+      "@" + varName,
+      "M=D    // *(Foo.i) = D, puts into static location sth from stack.",
+    };
+
+  throw std::runtime_error("Invalid command: " + toString());
 }
 
 // ArithmeticLogic

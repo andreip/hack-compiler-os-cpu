@@ -65,6 +65,27 @@ private:
   static constexpr int SIZE = 8;
 };
 
+class PointerMemorySegment: public MemorySegment {
+public:
+  PointerMemorySegment(std::string);
+  bool isValid() override;
+protected:
+  std::vector<std::string> _translate() override;
+private:
+  static constexpr int BASE_SEGMENT = 3;  // fixed
+  static constexpr int SIZE = 2;
+};
+
+class StaticMemorySegment: public MemorySegment {
+public:
+  StaticMemorySegment(std::string);
+  virtual void accept(Builder *builder) override;
+protected:
+  std::vector<std::string> _translate() override;
+private:
+  Builder *_builder;
+};
+
 
 class ArithmeticLogic: public VMTranslationInstruction {
 public:

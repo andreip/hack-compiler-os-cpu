@@ -25,11 +25,11 @@ Translator* HACKTranslatorFactory::getTranslator(const std::string &filename) {
 }
 
 Translator* HACKTranslatorFactory::getAssembler(const std::string &filename) {
-  _builders = new std::list<Builder*> {new HackSymbolTranslator, new HackBinaryTranslator};
+  _builders = new std::list<Builder*> {new HackSymbolTranslator(filename), new HackBinaryTranslator(filename)};
   return new Translator(filename, ".hack", _builders);
 }
 
 Translator* HACKTranslatorFactory::getVMTranslator(const std::string &filename) {
-  _builders = new std::list<Builder*> {new HackVMTranslator};
+  _builders = new std::list<Builder*> {new HackVMTranslator(filename)};
   return new Translator(filename, ".asm", _builders);
 }

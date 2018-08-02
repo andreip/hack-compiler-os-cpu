@@ -8,7 +8,7 @@
 #include "./builder.h"
 #include "./instruction.h"
 
-HackBuilder::HackBuilder() {}
+HackBuilder::HackBuilder(const std::string &filename): Builder(filename) {}
 
 Instruction* HackBuilder::parseLine(const std::string &line) {
   std::string instr = trimComment(line);
@@ -28,7 +28,8 @@ void HackBuilder::visit(HackInstruction *i) { }
 
 // HackSymbolTranslator
 
-HackSymbolTranslator::HackSymbolTranslator(): _firstPass(true), _crtInstructionNo(0) {
+HackSymbolTranslator::HackSymbolTranslator(const std::string &filename)
+  : HackBuilder(filename), _firstPass(true), _crtInstructionNo(0) {
   initPredefinedSymbols();
   _crtVariableNo = VARIABLE_START;
 }
@@ -109,7 +110,8 @@ void HackSymbolTranslator::initPredefinedSymbols() {
 
 // HackBinaryTranslator
 
-HackBinaryTranslator::HackBinaryTranslator() { }
+HackBinaryTranslator::HackBinaryTranslator(const std::string &filename)
+  : HackBuilder(filename) { }
 
 void HackBinaryTranslator::visit(Label *i) { }
 

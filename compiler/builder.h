@@ -11,10 +11,11 @@ public:
   virtual void init(const std::list<std::string> *lines);
   virtual std::list<std::string> *getResult();
   virtual void visit(Instruction*);
+  std::string getFilename() const;
 
   virtual ~Builder();
 protected:
-  Builder();  // abstract
+  Builder(const std::string&);  // abstract
   virtual Instruction* parseLine(const std::string&) = 0;
   virtual void processLines(const std::list<std::string>*);
 
@@ -22,6 +23,7 @@ protected:
   std::list<std::string> *output;
 private:
   const std::list<std::string> *_lines;
+  std::string _filename;
 };
 
 #endif

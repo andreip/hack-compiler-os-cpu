@@ -8,7 +8,8 @@
 #include "./builder_vm.h"
 #include "./utils.h"
 
-HackVMTranslator::HackVMTranslator(): Builder() {}
+HackVMTranslator::HackVMTranslator(const std::string &filename)
+  : Builder(filename) {}
 
 Instruction* HackVMTranslator::parseLine(const std::string &line) {
   std::string instr = trimComment(line);
@@ -21,14 +22,16 @@ Instruction* HackVMTranslator::parseLine(const std::string &line) {
     std::string segment = MemorySegment::parse(instr)[1];
     if (segment == "constant")
       return new ConstantMemorySegment(instr);
-
-    if (SegmentBaseMemorySegment::canHandleSegment(segment))
+    else if (SegmentBaseMemorySegment::canHandleSegment(segment))
       return new SegmentBaseMemorySegment(instr);
-
-    if (segment == "temp")
+    else if (segment == "temp")
       return new TempMemorySegment(instr);
+    else if (segment == "pointer")
+      return new PointerMemorySegment(instr);
+    else if (segment == "static")
+      return new StaticMemorySegment(instr);
 
-    // TODO: handle static, pointer
+    throw std::runtime_error("Unknown instruction " + instr);
   }
 
   if (ArithmeticLogic::isArithmeticLogicOp(instr)) {
