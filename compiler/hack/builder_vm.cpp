@@ -10,11 +10,6 @@
 
 HackVMTranslator::HackVMTranslator(): Builder() {}
 
-std::vector<std::string> HackVMTranslator::arithmetic_ops = {
-  "add", "sub", "neg", "eq",
-  "gt", "lt", "and", "or", "not",
-};
-
 Instruction* HackVMTranslator::parseLine(const std::string &line) {
   std::string instr = trimComment(line);
   boost::algorithm::trim(instr);
@@ -29,11 +24,28 @@ Instruction* HackVMTranslator::parseLine(const std::string &line) {
     // else if TODO rest
   }
 
-  auto arithmetic_it = std::find(arithmetic_ops.begin(),
-                                 arithmetic_ops.end(),
-                                 instr);
-  if (arithmetic_it != arithmetic_ops.end())
-    return new ArithmeticLogic(instr);
+  if (ArithmeticLogic::isArithmeticLogicOp(instr)) {
+    if (instr == "add")
+      return new AddArithmeticLogic(instr);
+    else if (instr == "sub")
+      return new SubArithmeticLogic(instr);
+    else if (instr == "neg")
+      return new NegArithmeticLogic(instr);
+    else if (instr == "eq")
+      return new EqArithmeticLogic(instr);
+    else if (instr == "gt")
+      return new GtArithmeticLogic(instr);
+    else if (instr == "lt")
+      return new LtArithmeticLogic(instr);
+    else if (instr == "and")
+      return new AndArithmeticLogic(instr);
+    else if (instr == "or")
+      return new OrArithmeticLogic(instr);
+    else if (instr == "not")
+      return new NotArithmeticLogic(instr);
+    else
+      throw std::runtime_error("Unknown instruction " + instr);
+  }
 
   return nullptr;
 }

@@ -9,6 +9,15 @@
 #include "./instruction_vm.h"
 #include "./builder_vm.h"
 
+VMTranslationInstruction::VMTranslationInstruction(std::string line): Instruction(line) {}
+
+std::string VMTranslationInstruction::translate() {
+  std::cout << "Translating " << toString() << '\n';
+  std::vector<std::string> lines = _translate();
+  return boost::algorithm::join(lines, "\n");
+}
+
+
 // MemorySegment
 
 std::vector<std::string> MemorySegment::segments = {
@@ -16,7 +25,7 @@ std::vector<std::string> MemorySegment::segments = {
   "static", "constant", "pointer", "temp"
 };
 
-MemorySegment::MemorySegment(std::string line): Instruction(line) {
+MemorySegment::MemorySegment(std::string line): VMTranslationInstruction(line) {
   _parsed = false;
 }
 
@@ -49,12 +58,6 @@ bool MemorySegment::isValid() {
     return false;
 
   return true;
-}
-
-std::string MemorySegment::translate() {
-  std::cout << "Translating " << toString() << '\n';
-  std::vector<std::string> lines = _translate();
-  return boost::algorithm::join(lines, "\n");
 }
 
 void MemorySegment::accept(Builder *builder) {
@@ -123,77 +126,223 @@ std::vector<std::string> ConstantMemorySegment::_translate() {
 
 // ArithmeticLogic
 
-ArithmeticLogic::ArithmeticLogic(std::string line): Instruction(line) {}
+std::vector<std::string> ArithmeticLogic::ops = {
+  "add", "sub", "neg", "eq",
+  "gt", "lt", "and", "or", "not",
+};
 
-bool ArithmeticLogic::isValid() {
-  return true;
+ArithmeticLogic::ArithmeticLogic(std::string line): VMTranslationInstruction(line) {}
+
+bool ArithmeticLogic::isArithmeticLogicOp(const std::string &instr) {
+  auto it = std::find(ops.begin(), ops.end(), instr);
+  return it != ops.end();
 }
 
-std::string ArithmeticLogic::translate() {
-  std::string val = toString();
-  if (to_asm.find(val) != to_asm.end())
-    return boost::algorithm::join(to_asm[val], "\n");
-  return "";
+bool ArithmeticLogic::isValid() {
+  return isArithmeticLogicOp(value());
 }
 
 void ArithmeticLogic::accept(Builder *builder) {
   dynamic_cast<HackVMTranslator*>(builder)->visit(this);
 }
 
-std::unordered_map<std::string, std::vector<std::string>> ArithmeticLogic::to_asm {
-  { "add", {"@SP",
-            "M=M-1    // SP--",
-            "A=M",
-            "D=M      // D = *SP",
-            "@SP",
-            "M=M-1    // SP--",
-            "A=M",
-            "M=D+M    // *SP += D",
-            "@SP",
-            "M=M+1    // SP++",
-           },
-  },
-  { "sub", {"@SP",
-            "M=M-1    // SP--",
-            "A=M",
-            "D=M      // D = *SP",
-            "@SP",
-            "M=M-1    // SP--",
-            "A=M",
-            "M=D-M",
-            "M=-M     // *SP = -(D - *SP)",
-            "@SP",
-            "M=M+1    // SP++ back to how it was",
-           },
-  },
-  { "neg", {"@SP",
-            "A=M-1    // address SP[-1]",
-            "M=-M     // SP[-1] = -SP[-1]",
-           },
-  },
-  { "eq", {"@SP",
-           "M=M-1     // SP--",
-           "A=M",
-           "D=M       // D = *SP",
-           "@SP",
-           "M=M-1     // SP--",
-           "A=M",
-           "D=D-M     // D -= *SP",
-           // TODO: move into its own class and generate
-           // unique labels for each eq call, with a suffix number.
-           "@EQ_NOT_EQUAL",
-           "D; JNE",
-           "D=-1      // writes 'true' in binary if D == 0",
-           "@EQ_DONE",
-           "0; JMP",
-       "(EQ_NOT_EQUAL)",
-           "D=0       // writes 'false' in binary if D != 0",
-       "(EQ_DONE)",
-           "@SP",
-           "A=M",
-           "M=D       // *SP = true (-1) / false (0)",
-           "@SP",
-           "M=M+1     // SP++",
-          },
-  },
-};
+std::string ArithmeticLogic::value() {
+  return boost::algorithm::trim_copy(toString());
+}
+
+// AddArithmeticLogic
+
+AddArithmeticLogic::AddArithmeticLogic(std::string l): ArithmeticLogic(l) {}
+
+std::vector<std::string> AddArithmeticLogic::_translate() {
+  return {
+    "@SP",
+    "M=M-1    // SP--",
+    "A=M",
+    "D=M      // D = *SP",
+    "@SP",
+    "M=M-1    // SP--",
+    "A=M",
+    "M=D+M    // *SP += D",
+    "@SP",
+    "M=M+1    // SP++",
+  };
+}
+
+// SubArithmeticLogic
+
+SubArithmeticLogic::SubArithmeticLogic(std::string l): ArithmeticLogic(l) {}
+
+std::vector<std::string> SubArithmeticLogic::_translate() {
+  return {"@SP",
+          "M=M-1    // SP--",
+          "A=M",
+          "D=M      // D = *SP",
+          "@SP",
+          "M=M-1    // SP--",
+          "A=M",
+          "M=D-M",
+          "M=-M     // *SP = -(D - *SP)",
+          "@SP",
+          "M=M+1    // SP++ back to how it was",
+  };
+}
+
+// NegArithmeticLogic
+
+NegArithmeticLogic::NegArithmeticLogic(std::string l): ArithmeticLogic(l) {}
+
+std::vector<std::string> NegArithmeticLogic::_translate() {
+  return {"@SP",
+          "A=M-1    // address SP[-1]",
+          "M=-M     // SP[-1] = -SP[-1]",
+  };
+}
+
+// EqArithmeticLogic
+
+EqArithmeticLogic::EqArithmeticLogic(std::string l): ArithmeticLogic(l) {}
+
+std::vector<std::string> EqArithmeticLogic::_translate() {
+  static int i = 0;
+  i++;
+  std::string iStr = ::toString(i);
+  return {"@SP",
+          "M=M-1     // SP--",
+          "A=M",
+          "D=M       // D = *SP",
+          "@SP",
+          "M=M-1     // SP--",
+          "A=M",
+          "D=D-M     // D -= *SP",
+          "@EQ_NOT_EQUAL" + iStr,
+          "D; JNE",
+          "D=-1      // writes 'true' in binary if D == 0",
+          "@EQ_DONE" + iStr,
+          "0; JMP",
+       "(EQ_NOT_EQUAL" + iStr + ")",
+          "D=0       // writes 'false' in binary if D != 0",
+       "(EQ_DONE" + iStr + ")",
+          "@SP",
+          "A=M",
+          "M=D       // *SP = true (-1) / false (0)",
+          "@SP",
+          "M=M+1     // SP++",
+  };
+}
+
+// GtArithmeticLogic
+
+GtArithmeticLogic::GtArithmeticLogic(std::string l): ArithmeticLogic(l) {}
+
+std::vector<std::string> GtArithmeticLogic::_translate() {
+  static int i = 0;
+  i++;
+  std::string iStr = ::toString(i);
+  return {"@SP",
+          "M=M-1      // SP--",
+          "A=M",
+          "D=M        // D = *SP",
+          "@SP",
+          "M=M-1      // SP--",
+          "A=M",
+          "D=D-M",
+          "D=-D       // D = SP[-2] - SP[-1]",
+          "@GT_THAN_ZERO" + iStr,
+          "D; JGT",
+          "D=0        // writes 'false' in binary if D <= 0",
+          "@GT_DONE" + iStr,
+          "0; JMP",
+       "(GT_THAN_ZERO" + iStr + ")",
+          "D=-1       // writes 'true' in binary if D > 0",
+       "(GT_DONE" + iStr + ")",
+          "@SP",
+          "A=M",
+          "M=D        // *SP = true (-1) / false (0)",
+          "@SP",
+          "M=M+1      // SP++",
+  };
+}
+
+// LtArithmeticLogic
+
+LtArithmeticLogic::LtArithmeticLogic(std::string l): ArithmeticLogic(l) {}
+
+std::vector<std::string> LtArithmeticLogic::_translate() {
+  static int i = 0;
+  i++;
+  std::string iStr = ::toString(i);
+  return {"@SP",
+          "M=M-1      // SP--",
+          "A=M",
+          "D=M        // D = *SP",
+          "@SP",
+          "M=M-1      // SP--",
+          "A=M",
+          "D=D-M",
+          "D=-D       // D = SP[-2] - SP[-1]",
+          "@LT_THAN_ZERO" + iStr,
+          "D; JLT",
+          "D=0        // writes 'false' in binary if D >= 0",
+          "@LT_DONE" + iStr,
+          "0; JMP",
+       "(LT_THAN_ZERO" + iStr + ")",
+          "D=-1       // writes 'true' in binary if D < 0",
+       "(LT_DONE" + iStr + ")",
+          "@SP",
+          "A=M",
+          "M=D        // *SP = true (-1) / false (0)",
+          "@SP",
+          "M=M+1      // SP++",
+  };
+}
+
+// AndArithmeticLogic
+
+AndArithmeticLogic::AndArithmeticLogic(std::string l): ArithmeticLogic(l) {}
+
+std::vector<std::string> AndArithmeticLogic::_translate() {
+  return {"@SP",
+          "M=M-1      // SP--",
+          "A=M",
+          "D=M        // D = *SP",
+          "@SP",
+          "M=M-1      // SP--",
+          "A=M",
+          "M=D&M      // puts result into sp",
+          "@SP",
+          "M=M+1      // SP++",
+  };
+}
+
+// OrArithmeticLogic
+
+OrArithmeticLogic::OrArithmeticLogic(std::string l): ArithmeticLogic(l) {}
+
+std::vector<std::string> OrArithmeticLogic::_translate() {
+  return {"@SP",
+          "M=M-1      // SP--",
+          "A=M",
+          "D=M        // D = *SP",
+          "@SP",
+          "M=M-1      // SP--",
+          "A=M",
+          "M=D|M      // puts result into sp",
+          "@SP",
+          "M=M+1      // SP++",
+  };
+}
+
+// NotArithmeticLogic
+
+NotArithmeticLogic::NotArithmeticLogic(std::string l): ArithmeticLogic(l) {}
+
+std::vector<std::string> NotArithmeticLogic::_translate() {
+  return {"@SP",
+          "M=M-1      // SP--",
+          "A=M",
+          "M=!M       // negate *SP",
+          "@SP",
+          "M=M+1      // SP++",
+  };
+}
