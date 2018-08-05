@@ -2,9 +2,11 @@ export CC=g++
 export CPPFLAGS=-std=c++14
 
 LDFLAGS=-lboost_system -lboost_filesystem
-OUTPUT=cpl
+OUTPUT=VMTranslator
 FILES=main.o
 SUBDIRS=compiler compiler/hack
+
+all: $(OUTPUT)
 
 $(OUTPUT): $(FILES) $(SUBDIRS)
 	$(CC) $(CPPFLAGS) $(LDFLAGS) -o $@ $< $(wildcard $(addsuffix /*.o,$(SUBDIRS)))
