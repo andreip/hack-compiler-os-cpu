@@ -4,7 +4,6 @@
 #include <vector>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
 
 #include "../utils.h"
 #include "./instruction_vm.h"
@@ -260,8 +259,7 @@ std::vector<std::string> StaticMemorySegment::_translate() {
   if (!_builder)
     throw std::runtime_error("Something went wrong, no builder reference in static memory segment to get filename from.");
 
-  boost::filesystem::path path(_builder->getFilename());
-  std::string filename = path.stem().string();
+  std::string filename = getStem(_builder->getFilename());
 
   // "push static 5" gets converted into "Filename.5",
   // which we'll treat as a variable by prepending @ to it.

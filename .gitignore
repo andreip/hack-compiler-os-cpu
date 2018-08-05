@@ -1,6 +1,8 @@
 *.sw*
 *.o
 cpl
+VMTranslator
+lang.txt
 
 *.vm
 *.asm

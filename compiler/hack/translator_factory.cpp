@@ -15,11 +15,12 @@ HACKTranslatorFactory::~HACKTranslatorFactory() {
 }
 
 Translator* HACKTranslatorFactory::getTranslator(const std::string &filename) {
-  std::string extension = pathExtension(filename);
-  if (extension == ".asm")
+  std::string extension = getExtension(filename);
+  if (extension == "asm")
     return getAssembler(filename);
-  if (extension == ".vm")
+  if (extension == "vm")
     return getVMTranslator(filename);
+  // TODO: handle directory.
 
   throw std::runtime_error("Unknown extension type " + extension);
 }

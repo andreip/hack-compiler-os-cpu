@@ -11,18 +11,15 @@
 #include <iostream>
 #include <sstream>
 
-#include <boost/filesystem.hpp>
-
 #include "translator.h"
+#include "utils.h"
 
 Translator::Translator(std::string inputFile, std::string outputExt,
                      std::list<Builder*> *builders)
     : _inputFile(inputFile), _builders(builders) {
 
-  // extract base filename from path, w/o extension
-  boost::filesystem::path path(_inputFile);
-  // outputs in current directory with the output extension.
-  _outputFile = path.stem().string() + outputExt;
+  // outputs in same directory as the input.
+  _outputFile = replaceExtension(_inputFile, outputExt);
 
   std::cout << "Translating " << _inputFile << " into "
             << _outputFile << "\n";
