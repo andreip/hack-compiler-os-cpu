@@ -1,8 +1,6 @@
 #include <algorithm>
 #include <string>
 
-#include <boost/algorithm/string/trim.hpp>
-
 #include "./utils.h"
 
 std::string trimComment(const std::string &line, const std::string &comment) {
