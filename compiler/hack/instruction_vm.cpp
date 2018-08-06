@@ -3,8 +3,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include <boost/algorithm/string.hpp>
-
 #include "../utils.h"
 #include "./instruction_vm.h"
 #include "./builder_vm.h"
@@ -12,9 +10,11 @@
 VMTranslationInstruction::VMTranslationInstruction(std::string line): Instruction(line) {}
 
 std::string VMTranslationInstruction::translate() {
-  std::cout << "Translating " << toString() << '\n';
+  //std::cout << "Translating " << toString() << '\n';
   std::vector<std::string> lines = _translate();
-  return boost::algorithm::join(lines, "\n");
+  //std::cout << "first line: " << lines[0] << ";\n";
+  //std::cout << "2nd line: " << lines[1] << ";\n";
+  return join(lines, "\n");
 }
 
 
@@ -66,10 +66,10 @@ void MemorySegment::accept(Builder *builder) {
 
 std::vector<std::string> MemorySegment::parse(const std::string &line) {
   std::vector<std::string> parts;
-  boost::algorithm::split(parts, line, boost::is_space());
-  boost::algorithm::trim(parts[0]);
-  boost::algorithm::trim(parts[1]);
-  boost::algorithm::trim(parts[2]);
+  split(parts, line, " ");
+  trim(parts[0]);
+  trim(parts[1]);
+  trim(parts[2]);
   if (!isNumber(parts[2]))
     throw std::runtime_error("Invalid command: " + line);
   return parts;
@@ -313,7 +313,7 @@ void ArithmeticLogic::accept(Builder *builder) {
 }
 
 std::string ArithmeticLogic::value() {
-  return boost::algorithm::trim_copy(toString());
+  return trim_copy(toString());
 }
 
 // AddArithmeticLogic

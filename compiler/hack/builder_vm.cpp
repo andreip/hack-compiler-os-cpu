@@ -2,8 +2,7 @@
 #include <iostream>
 #include <string>
 
-#include <boost/algorithm/string/trim.hpp>
-
+#include "../utils.h"
 #include "./instruction_vm.h"
 #include "./builder_vm.h"
 #include "./utils.h"
@@ -13,7 +12,7 @@ HackVMTranslator::HackVMTranslator(const std::string &filename)
 
 Instruction* HackVMTranslator::parseLine(const std::string &line) {
   std::string instr = trimComment(line);
-  boost::algorithm::trim(instr);
+  trim(instr);
 
   if (instr.empty())
     return nullptr;
@@ -64,6 +63,7 @@ void HackVMTranslator::visit(MemorySegment *i) {
   // adding a comment about what generated that code is going to be
   // helpful.
   output->push_back(getComment(i->toString()));
+  std::cout << "i translated:\n" << i->translate() << "\nend\n";
   output->push_back(i->translate());
 }
 

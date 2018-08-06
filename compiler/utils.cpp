@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iostream>
 #include <unordered_map>
+#include <vector>
 
 #include "utils.h"
 
@@ -76,4 +77,68 @@ std::string getStem(const std::string &path) {
   return replaceExtension(getFilename(path), "");
 }
 
-// string trimming
+// string manipulations
+
+void ltrim(std::string &s) {
+  s.erase(
+    s.cbegin(),
+    std::find_if(
+      s.begin(), s.end(),
+      [](char ch) { return !std::isspace(ch); }
+    )
+  );
+}
+
+void rtrim(std::string &s) {
+  s.erase(
+    std::find_if(
+      s.rbegin(), s.rend(),
+      [](char ch) { return !std::isspace(ch); }
+    ).base(),
+    s.end()
+  );
+}
+
+void trim(std::string &s) {
+  ltrim(s);
+  rtrim(s);
+}
+
+std::string ltrim_copy(std::string s) {
+  ltrim(s);
+  return s;
+}
+
+std::string rtrim_copy(std::string s) {
+  rtrim(s);
+  return s;
+}
+
+std::string trim_copy(std::string s) {
+  trim(s);
+  return s;
+}
+
+std::string join(const std::vector<std::string> &parts, const std::string &delim) {
+  if (parts.size() == 0)
+    return "";
+
+  std::ostringstream oss;
+  for (auto it = parts.cbegin(); it != parts.cend(); ++it) {
+    oss << *it;
+    if (std::next(it) != parts.cend())
+      oss << delim;
+  }
+
+  return oss.str();
+}
+
+void split(std::vector<std::string> &parts, const std::string &line, const std::string &delim) {
+  size_t last = 0;
+  size_t next = 0;
+  while ((next = line.find(delim, last)) != std::string::npos) {
+    parts.push_back(line.substr(last, next - last));
+    last = next + delim.size();
+  }
+  parts.push_back(line.substr(last, next - last));
+}

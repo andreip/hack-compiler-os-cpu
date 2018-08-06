@@ -1,8 +1,6 @@
 #include <string>
 #include <sstream>
 
-#include <boost/algorithm/string/trim.hpp>
-
 #include "../utils.h"
 #include "./utils.h"
 #include "./builder.h"
@@ -12,7 +10,7 @@ HackBuilder::HackBuilder(const std::string &filename): Builder(filename) {}
 
 Instruction* HackBuilder::parseLine(const std::string &line) {
   std::string instr = trimComment(line);
-  boost::algorithm::trim(instr);
+  trim(instr);
 
   if (instr.empty())
     return nullptr;

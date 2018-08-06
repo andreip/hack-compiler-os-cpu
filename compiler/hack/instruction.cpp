@@ -3,8 +3,6 @@
 #include <sstream>
 #include <stdexcept>
 
-#include <boost/algorithm/string/trim.hpp>
-
 #include "../utils.h"
 #include "./instruction.h"
 #include "./builder.h"
@@ -107,7 +105,7 @@ std::string CInstruction::dest() {
     start = end;
   }
   std::string d(start, end);
-  boost::algorithm::trim(d);
+  trim(d);
 
   return d;
 }
@@ -123,7 +121,7 @@ std::string CInstruction::comp() {
   auto end = std::find(start, val.end(), ';');
 
   std::string c(start, end);
-  boost::algorithm::trim(c);
+  trim(c);
 
   return c;
 }
@@ -135,7 +133,7 @@ std::string CInstruction::jmp() {
     start = start + 1;
 
   std::string j(start, val.end());
-  boost::algorithm::trim(j);
+  trim(j);
 
   return j;
 }

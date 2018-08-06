@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include "compiler/hack/translator_factory.h"
+#include "compiler/utils.h"
 
 const std::string EXEC = "cpl";
 
@@ -39,6 +40,9 @@ int main(int argc, char **argv) {
 
   delete factory;
   delete translator;
+
+  std::vector<std::string> v = {"ana", "are", "mere"};
+  std::cout << join(v, "8");
 
   return 0;
 }

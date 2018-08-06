@@ -1,7 +1,8 @@
 export CC=g++
 export CPPFLAGS=-std=c++14
 
-LDFLAGS=-lboost_system -lboost_filesystem
+#LDFLAGS=-lboost_system -lboost_filesystem
+LDFLAGS=
 OUTPUT=VMTranslator
 FILES=main.o
 SUBDIRS=compiler compiler/hack
