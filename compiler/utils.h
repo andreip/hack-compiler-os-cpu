@@ -32,6 +32,8 @@ std::string replaceExtension(const std::string &path, const std::string &newExt)
 std::string getFilename(const std::string &path);
 std::string getStem(const std::string &path);
 std::string joinPaths(const std::string &path, const std::string &filename);
+template <class ContainerT>
+void getDirFiles(ContainerT &files, const std::string &dirPath);
 
 // string manipulations
 

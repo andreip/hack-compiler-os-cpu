@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cctype>
+#include <dirent.h>
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -100,6 +101,23 @@ std::string joinPaths(const std::string &path, const std::string &filename) {
     filename
   );
 }
+
+// https://stackoverflow.com/questions/612097/how-can-i-get-the-list-of-files-in-a-directory-using-c-or-c
+template <class ContainerT>
+void getDirFiles(ContainerT &files, const std::string &dirPath) {
+  DIR *dir;
+  struct dirent *ent;
+  if ((dir = opendir(dirPath.c_str())) != NULL) {
+    while ((ent = readdir(dir)) != NULL) {
+      files.push_back(std::string(ent->d_name));
+    }
+    closedir(dir);
+  } else {
+    throw std::runtime_error("Cannot open dir " + dirPath);
+  }
+}
+
+template void getDirFiles<std::vector<std::string>>(std::vector<std::string>&, const std::string&);
 
 // string manipulations
 
