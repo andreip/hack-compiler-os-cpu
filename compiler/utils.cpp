@@ -29,52 +29,76 @@ int getNumber(const std::string &s) {
   return res;
 }
 
-std::string toString(int n) {
+template <typename T>
+std::string toString(T n) {
   std::ostringstream oss;
   oss << n;
   return oss.str();
 }
 
+template std::string toString<int>(int);
+template std::string toString<char>(char);
+
 // filesystem stuff
 
+/*
+ * "filename.asm" => ".asm"
+ * "filename.asm.ast" => ".ast" (who uses two extensions anyway?)
+ * "dir/" => ""
+ */
 std::string getExtension(const std::string &path) {
-  // "filename.asm" => ".asm"
-  // "filename.asm.ast" => ".ast" (who uses two extensions anyway?)
-  // "dir/" => "dir/"
-  auto it = std::find(path.crbegin(), path.crend(), '.').base();
-  std::string ext = std::string(it, path.cend());
+  // best to first get filename, since it could be a path that has
+  // dot in it, like ./dir/ which might confuse the extension finder.
+  std::string filename = getFilename(path);
+  auto it = std::find(filename.crbegin(), filename.crend(), '.').base();
+  // no extension
+  if (it == filename.cbegin())
+    return "";
+
+  std::string ext = std::string(it, filename.cend());
   return ext;
 }
 
 std::string replaceExtension(const std::string &path, const std::string &newExt) {
-  auto it = std::prev(std::find(path.crbegin(), path.crend(), '.').base());
-  if (it == path.cend())
+  if (getExtension(path).empty())
     throw std::runtime_error("Path " + path + " has no extension to replace.\n");
+
+  auto it = std::prev(std::find(path.crbegin(), path.crend(), '.').base());
+  std::string pathWithoutExt = std::string(path.cbegin(), it);
 
   std::string newExtWithDot = newExt;
   if (std::find(newExt.cbegin(), newExt.cend(), '.') == newExt.cend())
     newExtWithDot = "." + newExt;
 
-  std::string pathWithoutExt = std::string(path.cbegin(), it);
   return pathWithoutExt + newExtWithDot;
 }
 
 std::string getFilename(const std::string &path) {
-  std::string s(
+  std::string p = rstrip_copy(path, toString(PATHSEP));
+
+  std::string filename(
     // find right-most separator char using a reverse iterator,
     // then get back forward iterator for std::string constructor.
-    std::find_if(path.rbegin(), path.rend(),
-                 [](char ch) { return ch == '\\' || ch == '/'; }
+    std::find_if(p.rbegin(), p.rend(),
+                 [](char ch) { return ch == PATHSEP; }
                 ).base(),
-    path.cend()
+    p.end()
   );
 
-  std::cout << "Got filename " << s << " from path " << path << "\n";
-  return s;
+  return filename;
 }
 
 std::string getStem(const std::string &path) {
   return replaceExtension(getFilename(path), "");
+}
+
+std::string joinPaths(const std::string &path, const std::string &filename) {
+  std::string sep = toString(PATHSEP);
+  return (
+    rstrip_copy(path, sep) +
+    sep +
+    filename
+  );
 }
 
 // string manipulations
@@ -116,6 +140,52 @@ std::string rtrim_copy(std::string s) {
 
 std::string trim_copy(std::string s) {
   trim(s);
+  return s;
+}
+
+void lstrip(std::string &s, const std::string &chars) {
+  bool stripped = true;
+  while (stripped) {
+    stripped = false;
+    for (const int &c : chars) {
+      if (s.front() == c) {
+        s.erase(s.front());
+        stripped = true;
+      }
+    }
+  }
+}
+
+void rstrip(std::string &s, const std::string &chars) {
+  bool stripped = true;
+  while (stripped) {
+    stripped = false;
+    for (const int &c : chars) {
+      if (s.back() == c) {
+        s.erase(std::prev(s.end()));
+        stripped = true;
+      }
+    }
+  }
+}
+
+void strip(std::string &s, const std::string &chars) {
+  lstrip(s, chars);
+  rstrip(s, chars);
+}
+
+std::string lstrip_copy(std::string s, const std::string &chars) {
+  lstrip(s, chars);
+  return s;
+}
+
+std::string rstrip_copy(std::string s, const std::string &chars) {
+  rstrip(s, chars);
+  return s;
+}
+
+std::string strip_copy(std::string s, const std::string &chars) {
+  strip(s, chars);
   return s;
 }
 
