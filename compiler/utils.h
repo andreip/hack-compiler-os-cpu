@@ -49,7 +49,9 @@ std::string rstrip_copy(std::string s, const std::string &chars);
 std::string lstrip_copy(std::string s, const std::string &chars);
 std::string strip_copy(std::string s, const std::string &chars);
 
-std::string join(const std::vector<std::string> &parts, const std::string &delim);
-void split(std::vector<std::string> &parts, const std::string &line, const std::string &delim);
+template <class ContainerT>
+std::string join(const ContainerT &parts, const std::string &delim);
+template <class ContainerT>
+void split(ContainerT &parts, const std::string &line, const std::string &delim);
 
 #endif

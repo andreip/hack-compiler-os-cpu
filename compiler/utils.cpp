@@ -189,7 +189,8 @@ std::string strip_copy(std::string s, const std::string &chars) {
   return s;
 }
 
-std::string join(const std::vector<std::string> &parts, const std::string &delim) {
+template <class ContainerT>
+std::string join(const ContainerT &parts, const std::string &delim) {
   if (parts.size() == 0)
     return "";
 
@@ -203,7 +204,10 @@ std::string join(const std::vector<std::string> &parts, const std::string &delim
   return oss.str();
 }
 
-void split(std::vector<std::string> &parts, const std::string &line, const std::string &delim) {
+template std::string join<std::vector<std::string>>(const std::vector<std::string>&, const std::string&);
+
+template <class ContainerT>
+void split(ContainerT &parts, const std::string &line, const std::string &delim) {
   size_t last = 0;
   size_t next = 0;
   while ((next = line.find(delim, last)) != std::string::npos) {
@@ -212,3 +216,5 @@ void split(std::vector<std::string> &parts, const std::string &line, const std::
   }
   parts.push_back(line.substr(last, next - last));
 }
+
+template void split<std::vector<std::string>>(std::vector<std::string>&, const std::string&, const std::string&);
