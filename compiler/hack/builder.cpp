@@ -35,16 +35,11 @@ HackSymbolTranslator::HackSymbolTranslator(const std::string &filename)
 std::list<std::string>* HackSymbolTranslator::getResult() {
   HackBuilder::getResult();
   _firstPass = false;
-  //std::cout << _symbolsTable << '\n';
-  //std::cout << "Doing a 2nd pass.\n";
-  //std::cout << _symbolsTable << '\n';
   return HackBuilder::getResult();
 }
 
 void HackSymbolTranslator::visit(Label *i) {
-  //std::cout << "processing a Label " << i->toString() << "\n";
   if (_firstPass) {
-    //std::cout << "Remembering label " << i->getName() << " at position " << _crtInstructionNo << "\n";
     std::ostringstream oss;
     oss << _crtInstructionNo;
     _symbolsTable[i->getName()] = oss.str();
@@ -55,7 +50,6 @@ void HackSymbolTranslator::visit(Label *i) {
 }
 
 void HackSymbolTranslator::visit(CInstruction *i) {
-  //std::cout << "processing a C-Instruction " << i->toString() << "\n";
   if (_firstPass)
     _crtInstructionNo++;
   else
@@ -63,7 +57,6 @@ void HackSymbolTranslator::visit(CInstruction *i) {
 }
 
 void HackSymbolTranslator::visit(AInstruction *i) {
-  //std::cout << "processing an A-Instruction " << i->toString() << " in symbol translator.\n";
   if (_firstPass)
     _crtInstructionNo++;
   else {
@@ -79,7 +72,6 @@ void HackSymbolTranslator::visit(AInstruction *i) {
         newVal = toString(_crtVariableNo++);
         _symbolsTable[val] = newVal;
       }
-      //std::cout << "Translating " << val << " to " << newVal << "\n";
       i->setValue(newVal);
     }
 

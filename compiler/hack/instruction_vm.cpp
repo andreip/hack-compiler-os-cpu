@@ -11,10 +11,7 @@
 VMTranslationInstruction::VMTranslationInstruction(std::string line): Instruction(line) {}
 
 std::string VMTranslationInstruction::translate() {
-  //std::cout << "Translating " << toString() << '\n';
   std::vector<std::string> lines = _translate();
-  //std::cout << "first line: " << lines[0] << ";\n";
-  //std::cout << "2nd line: " << lines[1] << ";\n";
   return join(lines, "\n");
 }
 
@@ -85,8 +82,6 @@ void MemorySegment::parse() {
   _segment = parts[1];
   _value = getNumber(parts[2]);
   _parsed = true;
-
-  std::cout << "Parsed " << "op=" << _op << ", _seg=" << _segment << ", _val=" << _value << "\n";
 }
 
 std::string MemorySegment::segment() {

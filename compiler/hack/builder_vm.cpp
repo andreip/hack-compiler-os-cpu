@@ -63,7 +63,6 @@ void HackVMTranslator::visit(MemorySegment *i) {
   // adding a comment about what generated that code is going to be
   // helpful.
   output->push_back(getComment(i->toString()));
-  std::cout << "i translated:\n" << i->translate() << "\nend\n";
   output->push_back(i->translate());
 }
 
