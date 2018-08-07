@@ -4,9 +4,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include "../utils.h"
-#include "./instruction_vm.h"
-#include "./builder_vm.h"
+#include "../../utils.h"
+#include "./builder.h"
+#include "./instruction.h"
 
 VMTranslationInstruction::VMTranslationInstruction(std::string line): Instruction(line) {}
 

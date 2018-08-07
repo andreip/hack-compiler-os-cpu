@@ -2,10 +2,10 @@
 #include <stdexcept>
 
 #include "../utils.h"
-#include "./builder.h"
-#include "./builder_vm.h"
+#include "./asm/builder.h"
 #include "./translator_factory.h"
 #include "./translator.h"
+#include "./vm/builder.h"
 
 HACKTranslatorFactory::HACKTranslatorFactory(): TranslatorFactory() {}
 

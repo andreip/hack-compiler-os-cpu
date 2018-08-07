@@ -3,9 +3,9 @@
 
 #include <vector>
 
-#include "../builder.h"
-#include "./instruction_vm.h"
-#include "./utils.h"
+#include "../../builder.h"
+#include "../utils.h"
+#include "./instruction.h"
 
 class HackBuilderVMTranslator: public Builder {
 public:

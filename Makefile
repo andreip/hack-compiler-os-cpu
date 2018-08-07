@@ -5,7 +5,7 @@ export CPPFLAGS=-std=c++14
 LDFLAGS=
 OUTPUT=VMTranslator
 FILES=main.o
-SUBDIRS=compiler compiler/hack
+SUBDIRS=compiler compiler/hack compiler/hack/asm compiler/hack/vm
 
 all: $(OUTPUT)
 
@@ -22,5 +22,7 @@ clean:
 	rm -f $(OUTPUT) *.o
 	$(MAKE) -C compiler/ clean
 	$(MAKE) -C compiler/hack/ clean
+	$(MAKE) -C compiler/hack/asm clean
+	$(MAKE) -C compiler/hack/vm clean
 
 .PHONY: clean $(SUBDIRS)

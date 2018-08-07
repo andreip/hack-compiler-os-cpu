@@ -2,10 +2,10 @@
 #include <iostream>
 #include <string>
 
+#include "../../utils.h"
 #include "../utils.h"
-#include "./instruction_vm.h"
-#include "./builder_vm.h"
-#include "./utils.h"
+#include "./instruction.h"
+#include "./builder.h"
 
 HackBuilderVMTranslator::HackBuilderVMTranslator(): Builder() {}
 

@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "../instruction.h"
+#include "../../instruction.h"
 
 class HackBuilder;
 

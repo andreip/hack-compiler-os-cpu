@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "../instruction.h"
+#include "../../instruction.h"
 
 
 class VMTranslationInstruction: public Instruction {
