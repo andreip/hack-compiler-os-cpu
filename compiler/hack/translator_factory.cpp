@@ -35,14 +35,14 @@ Translator* HACKTranslatorFactory::getAssembler(const std::string &path) {
 }
 
 Translator* HACKTranslatorFactory::getVMTranslator(const std::string &path) {
-  _builders = new std::list<Builder*> {new HackVMTranslator(path)};
+  _builders = new std::list<Builder*> {new HackBuilderVMTranslator(path)};
   // outputs in same directory as the input.
   std::string newPath = replaceExtension(path, ".asm");
   return new HackTranslator(path, newPath, _builders);
 }
 
 Translator* HACKTranslatorFactory::getVMTranslatorForDir(const std::string &path) {
-  _builders = new std::list<Builder*> {new HackVMTranslator};
+  _builders = new std::list<Builder*> {new HackBuilderVMTranslator};
 
   // gather all .vm files from given directory path/
   std::vector<std::string> files, vmfiles;

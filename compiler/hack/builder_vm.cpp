@@ -7,12 +7,12 @@
 #include "./builder_vm.h"
 #include "./utils.h"
 
-HackVMTranslator::HackVMTranslator(): Builder() {}
+HackBuilderVMTranslator::HackBuilderVMTranslator(): Builder() {}
 
-HackVMTranslator::HackVMTranslator(const std::string &filename)
+HackBuilderVMTranslator::HackBuilderVMTranslator(const std::string &filename)
   : Builder(filename) {}
 
-Instruction* HackVMTranslator::parseLine(const std::string &line) {
+Instruction* HackBuilderVMTranslator::parseLine(const std::string &line) {
   std::string instr = trimComment(line);
   trim(instr);
 
@@ -61,14 +61,14 @@ Instruction* HackVMTranslator::parseLine(const std::string &line) {
   return nullptr;
 }
 
-void HackVMTranslator::visit(MemorySegment *i) {
+void HackBuilderVMTranslator::visit(MemorySegment *i) {
   // adding a comment about what generated that code is going to be
   // helpful.
   output->push_back(getComment(i->toString()));
   output->push_back(i->translate());
 }
 
-void HackVMTranslator::visit(ArithmeticLogic *i) {
+void HackBuilderVMTranslator::visit(ArithmeticLogic *i) {
   // adding a comment about what generated that code is going to be
   // helpful.
   output->push_back(getComment(i->toString()));

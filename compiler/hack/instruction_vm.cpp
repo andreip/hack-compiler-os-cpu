@@ -59,7 +59,7 @@ bool MemorySegment::isValid() {
 }
 
 void MemorySegment::accept(Builder *builder) {
-  dynamic_cast<HackVMTranslator*>(builder)->visit(this);
+  dynamic_cast<HackBuilderVMTranslator*>(builder)->visit(this);
 }
 
 std::vector<std::string> MemorySegment::parse(const std::string &line) {
@@ -305,7 +305,7 @@ bool ArithmeticLogic::isValid() {
 }
 
 void ArithmeticLogic::accept(Builder *builder) {
-  dynamic_cast<HackVMTranslator*>(builder)->visit(this);
+  dynamic_cast<HackBuilderVMTranslator*>(builder)->visit(this);
 }
 
 std::string ArithmeticLogic::value() {

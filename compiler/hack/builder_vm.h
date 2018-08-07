@@ -7,10 +7,10 @@
 #include "./instruction_vm.h"
 #include "./utils.h"
 
-class HackVMTranslator: public Builder {
+class HackBuilderVMTranslator: public Builder {
 public:
-  HackVMTranslator();
-  HackVMTranslator(const std::string&);
+  HackBuilderVMTranslator();
+  HackBuilderVMTranslator(const std::string&);
 
   virtual Instruction* parseLine(const std::string &line);
   virtual void visit(MemorySegment*);
