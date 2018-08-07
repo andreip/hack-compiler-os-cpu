@@ -7,16 +7,30 @@
 #include "builder.h"
 #include "instruction.h"
 
-Builder::Builder(const std::string &filename) {
+Builder::Builder() {
   output = new std::list<std::string>;
+}
+
+Builder::Builder(const std::string &filename): Builder() {
   _filename = filename;
 }
+
 Builder::~Builder() {
   delete output;
 }
 
-void Builder::init(const std::list<std::string> *lines) {
+void Builder::setLines(const std::list<std::string> *lines) {
   _lines = lines;
+}
+
+void Builder::setInputFile(const std::string &inputFile) {
+  _filename = inputFile;
+}
+
+void Builder::reset() {
+  output->clear();
+  setLines(nullptr);
+  setInputFile("");
 }
 
 std::list<std::string>* Builder::getResult() {

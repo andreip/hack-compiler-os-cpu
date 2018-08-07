@@ -3,23 +3,27 @@
 
 #include <string>
 #include <list>
+#include <vector>
 
 #include "builder.h"
 
 class Translator {
 public:
   Translator(std::string inputFile, std::string outputExt,
-            std::list<Builder*> *builders);
+             std::list<Builder*> *builders);
+  Translator(const std::vector<std::string> &inputFiles,
+             std::string outputExt,
+             std::list<Builder*> *builders);
   virtual ~Translator();
   void translate();
 protected:
-  std::list<std::string> *splitLines(const std::string&);
-  void writeToFile(const std::list<std::string>*);
+  std::list<std::string>* splitLines(const std::string&);
+  void writeToFile(const std::list<std::string>&);
+  virtual std::list<std::string>* translateFile(const std::string&);
 private:
-  std::string _inputFile;
+  std::vector<std::string> _inputFiles;
   std::string _outputFile;
   std::list<Builder*> *_builders;
-  std::list<std::string> *_lines;
 };
 
 #endif

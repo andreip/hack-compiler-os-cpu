@@ -9,6 +9,7 @@
 
 class HackVMTranslator: public Builder {
 public:
+  HackVMTranslator();
   HackVMTranslator(const std::string&);
 
   virtual Instruction* parseLine(const std::string &line);

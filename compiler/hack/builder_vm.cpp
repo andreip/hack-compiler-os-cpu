@@ -7,6 +7,8 @@
 #include "./builder_vm.h"
 #include "./utils.h"
 
+HackVMTranslator::HackVMTranslator(): Builder() {}
+
 HackVMTranslator::HackVMTranslator(const std::string &filename)
   : Builder(filename) {}
 

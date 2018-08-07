@@ -28,9 +28,9 @@ int main(int argc, char **argv) {
     std::exit(1);
   }
 
-  std::string filename(argv[1]);
+  std::string path(argv[1]);
   TranslatorFactory *factory = new HACKTranslatorFactory;
-  Translator *translator = factory->getTranslator(filename);
+  Translator *translator = factory->getTranslator(path);
   try {
     translator->translate();
   } catch (std::runtime_error &e) {

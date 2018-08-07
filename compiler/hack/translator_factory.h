@@ -14,6 +14,7 @@ public:
 protected:
   Translator* getAssembler(const std::string&);
   Translator* getVMTranslator(const std::string&);
+  Translator* getVMTranslatorForDir(const std::string&);
   // Translator* getJackCompiler();
 private:
   std::list<Builder*> *_builders;

@@ -6,6 +6,8 @@
 #include "./builder.h"
 #include "./instruction.h"
 
+HackBuilder::HackBuilder(): Builder() {}
+
 HackBuilder::HackBuilder(const std::string &filename): Builder(filename) {}
 
 Instruction* HackBuilder::parseLine(const std::string &line) {
@@ -26,10 +28,21 @@ void HackBuilder::visit(HackInstruction *i) { }
 
 // HackSymbolTranslator
 
+HackSymbolTranslator::HackSymbolTranslator()
+  : HackBuilder() {
+  init();
+}
+
 HackSymbolTranslator::HackSymbolTranslator(const std::string &filename)
-  : HackBuilder(filename), _firstPass(true), _crtInstructionNo(0) {
+  : HackBuilder(filename) {
+  init();
   initPredefinedSymbols();
   _crtVariableNo = VARIABLE_START;
+}
+
+void HackSymbolTranslator::init() {
+  _firstPass = true;
+  _crtInstructionNo = 0;
 }
 
 std::list<std::string>* HackSymbolTranslator::getResult() {
@@ -99,6 +112,8 @@ void HackSymbolTranslator::initPredefinedSymbols() {
 }
 
 // HackBinaryTranslator
+
+HackBinaryTranslator::HackBinaryTranslator(): HackBuilder() { }
 
 HackBinaryTranslator::HackBinaryTranslator(const std::string &filename)
   : HackBuilder(filename) { }

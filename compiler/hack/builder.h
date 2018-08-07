@@ -19,12 +19,15 @@ public:
 
   virtual void visit(HackInstruction *i);
 protected:
+  HackBuilder();
   HackBuilder(const std::string&);  // abstract
 };
 
 class HackSymbolTranslator: public HackBuilder {
 public:
+  HackSymbolTranslator();
   HackSymbolTranslator(const std::string&);
+  virtual void init();
   virtual std::list<std::string>* getResult() override;
   virtual void visit(Label *i) override;
   virtual void visit(CInstruction *i) override;
@@ -43,6 +46,7 @@ private:
 
 class HackBinaryTranslator: public HackBuilder {
 public:
+  HackBinaryTranslator();
   HackBinaryTranslator(const std::string&);
   virtual void visit(Label *i) override;
   virtual void visit(CInstruction *i) override;

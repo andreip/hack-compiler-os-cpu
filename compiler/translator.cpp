@@ -5,44 +5,71 @@
 // (the target language), without losing the functional or logical structure of
 // the original code (the "essence" of each program).
 
-#include <string>
-#include <list>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <iterator>
+#include <list>
 #include <sstream>
+#include <string>
 
 #include "translator.h"
 #include "utils.h"
 
-Translator::Translator(std::string inputFile, std::string outputExt,
+Translator::Translator(std::string inputFile, std::string outputFile,
                      std::list<Builder*> *builders)
-    : _inputFile(inputFile), _builders(builders) {
+    : _outputFile(outputFile), _builders(builders) {
 
-  // outputs in same directory as the input.
-  _outputFile = replaceExtension(_inputFile, outputExt);
-
-  std::cout << "Translating " << _inputFile << " into "
+  _inputFiles.push_back(inputFile);
+  std::cout << "Translating " << inputFile << " into "
             << _outputFile << "\n";
-  _lines = splitLines(inputFile);
 }
 
-Translator::~Translator() {
-  delete _lines;
+Translator::Translator(const std::vector<std::string> &inputFiles,
+                       std::string outputFile,
+                       std::list<Builder*> *builders)
+    : _outputFile(outputFile), _builders(builders), _inputFiles(inputFiles) {
+  std::string inputFilesStr = join(inputFiles, ", ");
+  std::cout << "Translating input files " << inputFilesStr << " into "
+            << _outputFile << "\n";
 }
+
+Translator::~Translator() { }
 
 void Translator::translate() {
-  const std::list<std::string> *crtLines = _lines;
-  for (Builder *builder: *_builders) {
-    builder->init(crtLines);
-    crtLines = builder->getResult();
+  std::list<std::string> allLines;
+  const std::list<std::string> *crtLines;
+  for (const std::string &inputFile: _inputFiles) {
+    std::cout << "Translating single file " << inputFile << "\n";
+    crtLines = translateFile(inputFile);
+    std::cout << "Got back " << crtLines->size() << " lines\n";
+    std::copy(
+      crtLines->cbegin(), crtLines->cend(),
+      std::back_inserter(allLines)
+    );
+    // insert empty line between them.
+    allLines.push_back("");
   }
-  writeToFile(crtLines);
+  writeToFile(allLines);
 }
 
-void Translator::writeToFile(const std::list<std::string> *lines) {
+std::list<std::string>* Translator::translateFile(const std::string &inputFile) {
+  std::list<std::string> *crtLines, *initLines;
+  initLines = crtLines = splitLines(inputFile);
+  for (Builder *builder: *_builders) {
+    builder->reset();
+    builder->setLines(crtLines);
+    builder->setInputFile(inputFile);
+    crtLines = builder->getResult();
+  }
+  delete initLines;
+  return crtLines;
+}
+
+void Translator::writeToFile(const std::list<std::string> &lines) {
   std::ofstream out(_outputFile);
-  if (lines && !lines->empty())
-    for (const std::string &s: *lines)
+  if (!lines.empty())
+    for (const std::string &s: lines)
       out << s << '\n';
   out.close();
 }
