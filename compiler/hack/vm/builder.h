@@ -15,6 +15,7 @@ public:
   virtual Instruction* parseLine(const std::string &line);
   virtual void visit(MemorySegment*);
   virtual void visit(ArithmeticLogic*);
+  virtual void visit(BranchingInstruction*);
 private:
   static std::vector<std::string> arithmetic_ops;
 };

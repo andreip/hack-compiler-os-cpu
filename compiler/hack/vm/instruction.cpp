@@ -9,13 +9,20 @@
 #include "./builder.h"
 #include "./instruction.h"
 
-VMTranslationInstruction::VMTranslationInstruction(std::string line): Instruction(line) {}
+VMTranslationInstruction::VMTranslationInstruction(std::string line): Instruction(line), _builder(nullptr) {}
 
 std::string VMTranslationInstruction::translate() {
   std::vector<std::string> lines = _translate();
   return join(lines, "\n");
 }
 
+void VMTranslationInstruction::accept(Builder *builder) {
+  if (!builder)
+    throw std::runtime_error("Something went wrong, no builder reference in accept of instruction: " + toString() + "\n");
+  _builder = builder;  // keep a reference of builder.
+}
+
+Builder* VMTranslationInstruction::getBuilder() { return _builder; }
 
 // MemorySegment
 
@@ -60,6 +67,7 @@ bool MemorySegment::isValid() {
 }
 
 void MemorySegment::accept(Builder *builder) {
+  VMTranslationInstruction::accept(builder);
   dynamic_cast<HackBuilderVMTranslator*>(builder)->visit(this);
 }
 
@@ -245,17 +253,9 @@ std::vector<std::string> PointerMemorySegment::_translate() {
 
 // StaticMemorySegment
 
-StaticMemorySegment::StaticMemorySegment(std::string l): MemorySegment(l), _builder(nullptr) {}
-
-void StaticMemorySegment::accept(Builder *builder) {
-  _builder = builder;  // keep a reference of builder.
-  MemorySegment::accept(builder);
-}
+StaticMemorySegment::StaticMemorySegment(std::string l): MemorySegment(l) { }
 
 std::vector<std::string> StaticMemorySegment::_translate() {
-  if (!_builder)
-    throw std::runtime_error("Something went wrong, no builder reference in static memory segment to get filename from.");
-
   std::string filename = getStem(_builder->getFilename());
 
   // "push static 5" gets converted into "Filename.5",
@@ -306,6 +306,7 @@ bool ArithmeticLogic::isValid() {
 }
 
 void ArithmeticLogic::accept(Builder *builder) {
+  VMTranslationInstruction::accept(builder);
   dynamic_cast<HackBuilderVMTranslator*>(builder)->visit(this);
 }
 
@@ -509,3 +510,90 @@ std::vector<std::string> NotArithmeticLogic::_translate() {
           "M=M+1      // SP++",
   };
 }
+
+// BranchingInstruction
+
+BranchingInstruction::BranchingInstruction(std::string str)
+  : VMTranslationInstruction(str) { }
+
+void BranchingInstruction::accept(Builder *builder) {
+  VMTranslationInstruction::accept(builder);
+  dynamic_cast<HackBuilderVMTranslator*>(builder)->visit(this);
+}
+
+std::string BranchingInstruction::label() {
+  std::vector<std::string> parts;
+  split(parts, toString(), " ");
+  return trim_copy(parts[1]);
+}
+
+std::string BranchingInstruction::cmd() {
+  std::vector<std::string> parts;
+  split(parts, toString(), " ");
+  return trim_copy(parts[0]);
+}
+
+// LabelInstruction
+
+LabelInstruction::LabelInstruction(std::string str)
+  : BranchingInstruction(str) {}
+
+LabelInstruction::LabelInstruction(BranchingInstruction &i): BranchingInstruction("label " + i.label()) {
+  _builder = i.getBuilder();
+}
+
+bool LabelInstruction::isValid() {
+  return cmd() == "label" && !label().empty();
+}
+
+std::string LabelInstruction::fullLabel() {
+  std::string filename = getStem(_builder->getFilename());
+  return filename + "." + label();
+}
+
+std::vector<std::string> LabelInstruction::_translate() {
+  return {
+    "(" + fullLabel() + ")",
+  };
+}
+
+// GotoInstruction
+
+GotoInstruction::GotoInstruction(std::string str)
+  : BranchingInstruction(str) {}
+
+bool GotoInstruction::isValid() {
+  return cmd() == "goto" && !label().empty();
+}
+
+std::vector<std::string> GotoInstruction::_translate() {
+  LabelInstruction labelInstr(*this);
+  return {
+    "@" + labelInstr.fullLabel(),
+    "0; JMP"    // jump <label>
+  };
+}
+
+// IfGotoInstruction
+
+IfGotoInstruction::IfGotoInstruction(std::string str)
+  : BranchingInstruction(str) {}
+
+bool IfGotoInstruction::isValid() {
+  return cmd() == "if-goto" && !label().empty();
+}
+
+std::vector<std::string> IfGotoInstruction::_translate() {
+  // jumps if pop() != 0
+  LabelInstruction labelInstr(*this);
+  return {
+    "@SP",
+    "M=M-1      // SP--",
+    "@SP",
+    "A=M",
+    "D=M        // D = *SP",
+    "@" + labelInstr.fullLabel(),
+    "D; JNE     // jumps if D != 0",
+  };
+}
+

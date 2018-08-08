@@ -33,7 +33,7 @@ Instruction* HackBuilderVMTranslator::parseLine(const std::string &line) {
     else if (segment == "static")
       return new StaticMemorySegment(instr);
 
-    throw std::runtime_error("Unknown instruction " + instr);
+    throw std::runtime_error("Unknown instruction " + instr + "\n");
   }
 
   if (ArithmeticLogic::isArithmeticLogicOp(instr)) {
@@ -56,7 +56,16 @@ Instruction* HackBuilderVMTranslator::parseLine(const std::string &line) {
     else if (instr == "not")
       return new NotArithmeticLogic(instr);
     else
-      throw std::runtime_error("Unknown instruction " + instr);
+      throw std::runtime_error("Unknown instruction " + instr + "\n");
+  }
+
+  // branching instructions
+  if (startsWith(instr, "label")) {
+    return new LabelInstruction(instr);
+  } else if (startsWith(instr, "goto")) {
+    return new GotoInstruction(instr);
+  } else if (startsWith(instr, "if-goto")) {
+    return new IfGotoInstruction(instr);
   }
 
   return nullptr;
@@ -70,6 +79,13 @@ void HackBuilderVMTranslator::visit(MemorySegment *i) {
 }
 
 void HackBuilderVMTranslator::visit(ArithmeticLogic *i) {
+  // adding a comment about what generated that code is going to be
+  // helpful.
+  output->push_back(getComment(i->toString()));
+  output->push_back(i->translate());
+}
+
+void HackBuilderVMTranslator::visit(BranchingInstruction *i) {
   // adding a comment about what generated that code is going to be
   // helpful.
   output->push_back(getComment(i->toString()));

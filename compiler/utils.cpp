@@ -238,6 +238,12 @@ std::string strip_copy(std::string s, const std::string &chars) {
   return s;
 }
 
+bool startsWith(const std::string &str, const std::string &prefix) {
+  if (str.size() < prefix.size())
+    return false;
+  return prefix == str.substr(0, prefix.size());
+}
+
 template <class ContainerT>
 std::string join(const ContainerT &parts, const std::string &delim) {
   if (parts.size() == 0)
@@ -260,7 +266,9 @@ void split(ContainerT &parts, const std::string &line, const std::string &delim)
   size_t last = 0;
   size_t next = 0;
   while ((next = line.find(delim, last)) != std::string::npos) {
-    parts.push_back(line.substr(last, next - last));
+    std::string match = line.substr(last, next - last);
+    if (!match.empty())
+      parts.push_back(match);
     last = next + delim.size();
   }
   parts.push_back(line.substr(last, next - last));

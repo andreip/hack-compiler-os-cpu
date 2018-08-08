@@ -49,6 +49,8 @@ std::string rstrip_copy(std::string s, const std::string &chars);
 std::string lstrip_copy(std::string s, const std::string &chars);
 std::string strip_copy(std::string s, const std::string &chars);
 
+bool startsWith(const std::string &str, const std::string &prefix);
+
 template <class ContainerT>
 std::string join(const ContainerT &parts, const std::string &delim);
 template <class ContainerT>

@@ -7,15 +7,21 @@
 
 #include "../../instruction.h"
 
+// base
 
 class VMTranslationInstruction: public Instruction {
 public:
   std::string translate() override;
+  virtual void accept(Builder *builder) override;
+  Builder *getBuilder();
 protected:
   VMTranslationInstruction(std::string);
   virtual std::vector<std::string> _translate() = 0;
+protected:
+  Builder *_builder;
 };
 
+// memory segment instructions
 
 class MemorySegment: public VMTranslationInstruction {
 public:
@@ -79,13 +85,11 @@ private:
 class StaticMemorySegment: public MemorySegment {
 public:
   StaticMemorySegment(std::string);
-  virtual void accept(Builder *builder) override;
 protected:
   std::vector<std::string> _translate() override;
-private:
-  Builder *_builder;
 };
 
+// arithmetic & logic instructions
 
 class ArithmeticLogic: public VMTranslationInstruction {
 public:
@@ -160,6 +164,44 @@ public:
   NotArithmeticLogic(std::string);
 protected:
   std::vector<std::string> _translate() override;
+};
+
+// branching instructions
+
+class BranchingInstruction: public VMTranslationInstruction {
+public:
+  virtual void accept(Builder *builder) override;
+  // label|goto|if-goto <label>
+  virtual std::string cmd();
+  virtual std::string label();
+protected:
+  BranchingInstruction(std::string);
+};
+
+class LabelInstruction: public BranchingInstruction {
+public:
+  LabelInstruction(std::string);
+  LabelInstruction(BranchingInstruction&);  // copy constructor
+  bool isValid() override;
+  std::string fullLabel();
+protected:
+  virtual std::vector<std::string> _translate() override;
+};
+
+class GotoInstruction: public BranchingInstruction {
+public:
+  GotoInstruction(std::string);
+  bool isValid() override;
+protected:
+  virtual std::vector<std::string> _translate() override;
+};
+
+class IfGotoInstruction: public BranchingInstruction {
+public:
+  IfGotoInstruction(std::string);
+  bool isValid() override;
+protected:
+  virtual std::vector<std::string> _translate() override;
 };
 
 #endif
