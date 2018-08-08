@@ -547,8 +547,10 @@ bool LabelInstruction::isValid() {
 }
 
 std::string LabelInstruction::fullLabel() {
+  std::string function = _builder->getCurrentFunction();
   std::string filename = getStem(_builder->getFilename());
-  return filename + "." + label();
+  std::string prefix = function.empty() ? filename : function;
+  return prefix + "$" + label();
 }
 
 std::vector<std::string> LabelInstruction::_translate() {
@@ -652,4 +654,72 @@ int FunctionInstruction::nVars() {
   std::vector<std::string> parts;
   split(parts, toString(), " ");
   return ::getNumber(trim_copy(parts[2]));
+}
+
+// ReturnInstruction
+
+ReturnInstruction::ReturnInstruction(std::string line)
+  : BaseFunctionsInstruction(line) { }
+
+bool ReturnInstruction::isValid() {
+  return true;
+}
+
+void ReturnInstruction::accept(Builder *builder) {
+  VMTranslationInstruction::accept(builder);
+  dynamic_cast<HackBuilderVMTranslator*>(builder)->visit(this);
+}
+
+std::vector<std::string> ReturnInstruction::_translate() {
+  return {
+    "@LCL",
+    "D=M",
+    "@R13",
+    "M=D      // R13 = LCL, saves point where previous frame ends",
+    "@5",
+    "A=D-A    // D still contains LCL value",
+    "D=M      // D = *(LCL-5), to get the return address",
+    "@R14",
+    "M=D      // R14 = return address, saves point of jump to at the end",
+    "@SP",
+    "M=M-1    // SP--",
+    "A=M",
+    "D=M      // D = return value of the function we are exiting",
+    "@ARG",
+    "A=M",
+    "M=D      // *ARG = return value",
+    "@ARG",
+    "D=M+1",
+    "@SP",
+    "M=D      // SP = *ARG + 1, sets SP",
+    "@R13",
+    "D=M",
+    "@4",
+    "A=D-A",
+    "D=M      // D = *(LCL-4), old local to restore",
+    "@LCL",
+    "M=D      // restores LCL",
+    "@R13",
+    "D=M",
+    "@3",
+    "A=D-A",
+    "D=M      // D = *(LCL-3), old arg to restore",
+    "@ARG",
+    "M=D      // restores ARG",
+    "@R13",
+    "D=M",
+    "@2",
+    "A=D-A",
+    "D=M      // D = *(LCL-2), old this to restore",
+    "@THIS",
+    "M=D      // restores THIS",
+    "@R13",
+    "A=M-1",
+    "D=M      // D = *(LCL-1), old that to restore",
+    "@THAT",
+    "M=D      // restores THAT",
+    "@R14",
+    "A=M",
+    "0; JMP   // jumps to old return address",
+  };
 }

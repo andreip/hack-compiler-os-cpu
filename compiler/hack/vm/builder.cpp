@@ -9,10 +9,10 @@
 #include "./builder.h"
 
 HackBuilderVMTranslator::HackBuilderVMTranslator()
-  : Builder(), _function("") { }
+  : Builder() { }
 
 HackBuilderVMTranslator::HackBuilderVMTranslator(const std::string &filename)
-  : Builder(filename), _function("") { }
+  : Builder(filename) { }
 
 Instruction* HackBuilderVMTranslator::parseLine(const std::string &line) {
   std::string instr = trimComment(line);
@@ -72,8 +72,9 @@ Instruction* HackBuilderVMTranslator::parseLine(const std::string &line) {
   // function instructions
   if (startsWith(instr, "function")) {
     return new FunctionInstruction(instr);
+  } else if (instr == "return") {
+    return new ReturnInstruction(instr);
   }
-
 
   return nullptr;
 }
@@ -101,7 +102,13 @@ void HackBuilderVMTranslator::visit(FunctionInstruction *i) {
   HackBuilderVMTranslator::defaultVisit(i);
   std::cout << "in function visit: " << i->name()
             << ", nVars: " << i->nVars() << "\n";
-  _function = i->name();
+  setCurrentFunction(i->name());
+}
+
+void HackBuilderVMTranslator::visit(ReturnInstruction *i) {
+  HackBuilderVMTranslator::defaultVisit(i);
+  std::cout << "in return visit: " << i->toString() << '\n';
+  setCurrentFunction("");
 }
 
 void HackBuilderVMTranslator::defaultVisit(VMTranslationInstruction *i) {

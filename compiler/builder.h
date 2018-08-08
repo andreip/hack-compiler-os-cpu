@@ -10,10 +10,12 @@ class Builder {
 public:
   void setLines(const std::list<std::string> *lines);
   void setInputFile(const std::string &inputFile);
+  void setCurrentFunction(const std::string &function);
   void reset();
   virtual std::list<std::string> *getResult();
   virtual void visit(Instruction*);
   std::string getFilename() const;
+  std::string getCurrentFunction() const;
 
   virtual ~Builder();
 protected:
@@ -26,7 +28,8 @@ protected:
   std::list<std::string> *output;
 private:
   const std::list<std::string> *_lines;
-  std::string _filename;
+  std::string _filename;  // crt file we're into
+  std::string _function;  // crt function we're into
 };
 
 #endif

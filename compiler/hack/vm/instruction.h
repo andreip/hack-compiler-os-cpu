@@ -225,4 +225,13 @@ protected:
   virtual std::vector<std::string> _translate() override;
 };
 
+class ReturnInstruction: public BaseFunctionsInstruction {
+public:
+  ReturnInstruction(std::string);
+  virtual bool isValid() override;
+  virtual void accept(Builder*) override;
+protected:
+  virtual std::vector<std::string> _translate() override;
+};
+
 #endif

@@ -18,12 +18,12 @@ public:
   virtual void visit(BranchingInstruction*);
   virtual void visit(BaseFunctionsInstruction*);
   virtual void visit(FunctionInstruction*);
+  virtual void visit(ReturnInstruction*);
 private:
   void defaultVisit(VMTranslationInstruction*);
 
 private:
   static std::vector<std::string> arithmetic_ops;
-  std::string _function;  // current active function
 };
 
 #endif

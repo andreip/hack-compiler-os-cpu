@@ -7,7 +7,8 @@
 #include "builder.h"
 #include "instruction.h"
 
-Builder::Builder() {
+Builder::Builder()
+  : _filename(""), _function("") {
   output = new std::list<std::string>;
 }
 
@@ -25,6 +26,10 @@ void Builder::setLines(const std::list<std::string> *lines) {
 
 void Builder::setInputFile(const std::string &inputFile) {
   _filename = inputFile;
+}
+
+void Builder::setCurrentFunction(const std::string &function) {
+  _function = function;
 }
 
 void Builder::reset() {
@@ -63,4 +68,8 @@ void Builder::visit(Instruction *i) { }
 
 std::string Builder::getFilename() const {
   return _filename;
+}
+
+std::string Builder::getCurrentFunction() const {
+  return _function;
 }
