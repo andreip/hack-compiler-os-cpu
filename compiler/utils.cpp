@@ -94,7 +94,19 @@ std::string getFilename(const std::string &path) {
 }
 
 std::string getStem(const std::string &path) {
-  return replaceExtension(getFilename(path), "");
+  std::string filename = getFilename(path);
+
+  std::string stem(
+    filename.cbegin(),
+    std::prev(
+      std::find_if(
+        filename.crbegin(), filename.crend(),
+        [](char ch) { return ch == '.'; }
+      ).base()
+    )
+  );
+
+  return stem;
 }
 
 std::string joinPaths(const std::string &path, const std::string &filename) {
