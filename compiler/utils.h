@@ -2,18 +2,10 @@
 #define __UTILS__H__
 
 #include <iostream>
+#include <list>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-template <typename A, typename B>
-std::ostream& operator<<(std::ostream &out, const std::unordered_map<A, B> &map) {
-  out << "{";
-  for (const auto &it : map)
-    out << it.first << ": " << it.second << ", ";
-  out << "}";
-  return out;
-}
 
 bool isNumber(const std::string &s);
 int getNumber(const std::string &s);
@@ -61,5 +53,30 @@ template <class ContainerT>
 std::string join(const ContainerT &parts, const std::string &delim);
 template <class ContainerT>
 void split(ContainerT &parts, const std::string &line, const std::string &delim);
+
+template <typename A, typename B>
+std::ostream& operator<<(std::ostream &out, const std::unordered_map<A, B> &map) {
+  out << "{";
+  for (const auto &it : map)
+    out << it.first << ": " << it.second << ", ";
+  out << "}";
+  return out;
+}
+template <class T>
+std::ostream& operator<<(std::ostream &out, const std::list<T> &c) {
+  out << "[";
+  for (const auto &it : c)
+    out << it << " ";
+  out << "]";
+  return out;
+}
+template <class T>
+std::ostream& operator<<(std::ostream &out, const std::vector<T> &c) {
+  out << "[";
+  for (const auto &it : c)
+    out << it << " ";
+  out << "]";
+  return out;
+}
 
 #endif
