@@ -27,6 +27,11 @@ constexpr char PATHSEP = '\\';
 constexpr char PATHSEP = '/';
 #endif
 
+enum class PathType {
+  DIR_TYPE,
+  REG_FILE_TYPE,
+};
+
 std::string getExtension(const std::string &path);
 std::string replaceExtension(const std::string &path, const std::string &newExt);
 std::string getFilename(const std::string &path);
@@ -34,6 +39,7 @@ std::string getStem(const std::string &path);
 std::string joinPaths(const std::string &path, const std::string &filename);
 template <class ContainerT>
 void getDirFiles(ContainerT &files, const std::string &dirPath);
+PathType getPathType(const std::string &path);
 
 // string manipulations
 

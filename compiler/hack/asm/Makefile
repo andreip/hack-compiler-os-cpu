@@ -1,4 +1,4 @@
-FILES=builder.o instruction.o
+FILES=builder.o instruction.o translator.o
 
 all: $(FILES)
 

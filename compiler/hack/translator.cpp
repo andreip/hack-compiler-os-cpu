@@ -1,25 +1,58 @@
 #include <list>
 #include <string>
-
-#include "./translator.h"
-#include "./utils.h"
+#include <stdexcept>
+#include <vector>
 
 #include "../translator.h"
 #include "../utils.h"
 
-HackTranslator::HackTranslator(std::string inputFile,
-                               std::string outputFile,
-                               std::list<Builder*> *builders)
-  : Translator(inputFile, outputFile, builders) {}
+#include "./translator.h"
+#include "./utils.h"
 
-HackTranslator::HackTranslator(const std::vector<std::string> &inputFiles,
-                               std::string outputFile,
-                               std::list<Builder*> *builders)
-  : Translator(inputFiles, outputFile, builders) {}
+HackTranslator::HackTranslator(const std::string &path)
+  : Translator(path) {}
 
-std::list<std::string>* HackTranslator::translateFile(const std::string &inputFile) {
-  std::list<std::string> *out = Translator::translateFile(inputFile);
-  std::string fileId = "file: " + getFilename(inputFile);
-  out->push_front(getComment(fileId));
+void HackTranslator::translate() {
+  std::list<std::string> allLines;
+  const std::list<std::string> *crtLines;
+  for (const std::string &inputFile: getInputFiles()) {
+    std::cout << "Translating single file " << inputFile << "\n";
+    crtLines = translateFile(inputFile);
+    std::cout << "Got back " << crtLines->size() << " lines\n";
+    std::copy(
+      crtLines->cbegin(), crtLines->cend(),
+      std::back_inserter(allLines)
+    );
+    // insert empty line between them.
+    allLines.push_back("");
+  }
+  writeToFile(allLines);
+}
+
+std::list<std::string>* HackTranslator::translateFile(const std::string &path) {
+  std::list<std::string> *out = Translator::translateFile(path);
+  // add a line at the beginning to know what file generated the output.
+  out->push_front(getComment("file: " + getFilename(path)));
   return out;
+}
+
+std::list<std::string> HackTranslator::getInputFiles() {
+  std::list<std::string> output;
+  PathType pathType = getPathType(_path);
+
+  if (pathType == PathType::REG_FILE_TYPE) {
+    if (getExtension(_path) != extension())
+      throw std::runtime_error("Something went wrong, file given doesn't match translator's extension: " + _path);
+    output.push_back(_path);
+  } else if (pathType == PathType::DIR_TYPE) {
+    std::vector<std::string> files;
+    getDirFiles(files, _path);
+    for (const std::string &f : files)
+      if (getExtension(f) == extension())
+        output.push_back(joinPaths(_path, f));
+  } else {
+    throw std::runtime_error("Not implemented logic for other file types");
+  }
+
+  return output;
 }

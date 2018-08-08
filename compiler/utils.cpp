@@ -3,7 +3,11 @@
 #include <dirent.h>
 #include <string>
 #include <sstream>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdexcept>
 #include <iostream>
+#include <unistd.h>
 #include <unordered_map>
 #include <vector>
 
@@ -118,6 +122,21 @@ void getDirFiles(ContainerT &files, const std::string &dirPath) {
 }
 
 template void getDirFiles<std::vector<std::string>>(std::vector<std::string>&, const std::string&);
+
+// https://stackoverflow.com/questions/146924/how-can-i-tell-if-a-given-path-is-a-directory-or-a-file-c-c
+PathType getPathType(const std::string &path) {
+  struct stat s;
+  if (stat(path.c_str(),&s) == 0) {
+    if (s.st_mode & S_IFDIR)
+      return PathType::DIR_TYPE;
+    else if (s.st_mode & S_IFREG)
+      return PathType::REG_FILE_TYPE;
+    else
+      throw std::runtime_error("Not implemented logic for other file types");
+  } else {
+    throw std::runtime_error("Path type couldn't be determined for " + path);
+  }
+}
 
 // string manipulations
 
