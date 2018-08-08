@@ -597,3 +597,59 @@ std::vector<std::string> IfGotoInstruction::_translate() {
   };
 }
 
+// BaseFunctionsInstruction
+
+BaseFunctionsInstruction::BaseFunctionsInstruction(std::string str)
+  : VMTranslationInstruction(str) { }
+
+void BaseFunctionsInstruction::accept(Builder *builder) {
+  VMTranslationInstruction::accept(builder);
+  dynamic_cast<HackBuilderVMTranslator*>(builder)->visit(this);
+}
+
+// FunctionInstruction
+
+FunctionInstruction::FunctionInstruction(std::string str)
+  : BaseFunctionsInstruction(str) { }
+
+bool FunctionInstruction::isValid() {
+  return !name().empty() && nVars() >= 0;
+}
+
+void FunctionInstruction::accept(Builder *builder) {
+  VMTranslationInstruction::accept(builder);
+  dynamic_cast<HackBuilderVMTranslator*>(builder)->visit(this);
+}
+
+std::vector<std::string> FunctionInstruction::_translate() {
+  std::vector<std::string> output {
+    "(" + name() + ") // repeat nVar times: push 0",
+  };
+
+  int n = nVars();
+  while (n-- > 0)
+    output.insert(
+      output.end(),
+      {
+        "@SP",
+        "A=M",
+        "M=0        // *SP = 0",
+        "@SP",
+        "M=M+1      // SP++",
+      }
+    );
+
+  return output;
+}
+
+std::string FunctionInstruction::name() {
+  std::vector<std::string> parts;
+  split(parts, toString(), " ");
+  return trim_copy(parts[1]);
+}
+
+int FunctionInstruction::nVars() {
+  std::vector<std::string> parts;
+  split(parts, toString(), " ");
+  return ::getNumber(trim_copy(parts[2]));
+}

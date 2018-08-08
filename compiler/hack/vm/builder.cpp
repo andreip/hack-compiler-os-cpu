@@ -8,10 +8,11 @@
 #include "./instruction.h"
 #include "./builder.h"
 
-HackBuilderVMTranslator::HackBuilderVMTranslator(): Builder() {}
+HackBuilderVMTranslator::HackBuilderVMTranslator()
+  : Builder(), _function("") { }
 
 HackBuilderVMTranslator::HackBuilderVMTranslator(const std::string &filename)
-  : Builder(filename) {}
+  : Builder(filename), _function("") { }
 
 Instruction* HackBuilderVMTranslator::parseLine(const std::string &line) {
   std::string instr = trimComment(line);
@@ -68,26 +69,45 @@ Instruction* HackBuilderVMTranslator::parseLine(const std::string &line) {
     return new IfGotoInstruction(instr);
   }
 
+  // function instructions
+  if (startsWith(instr, "function")) {
+    return new FunctionInstruction(instr);
+  }
+
+
   return nullptr;
 }
 
 void HackBuilderVMTranslator::visit(MemorySegment *i) {
-  // adding a comment about what generated that code is going to be
-  // helpful.
-  output->push_back(getComment(i->toString()));
-  output->push_back(i->translate());
+  HackBuilderVMTranslator::defaultVisit(i);
 }
 
 void HackBuilderVMTranslator::visit(ArithmeticLogic *i) {
+  HackBuilderVMTranslator::defaultVisit(i);
+  std::cout << "in arithm instr visit: " << i->toString() << "\n";
+}
+
+void HackBuilderVMTranslator::visit(BranchingInstruction *i) {
+  HackBuilderVMTranslator::defaultVisit(i);
+  std::cout << "in branch instr visit: " << i->toString() << "\n";
+}
+
+void HackBuilderVMTranslator::visit(BaseFunctionsInstruction *i) {
+  HackBuilderVMTranslator::defaultVisit(i);
+  std::cout << "in base functions visit: " << i->toString() << "\n";
+}
+
+void HackBuilderVMTranslator::visit(FunctionInstruction *i) {
+  HackBuilderVMTranslator::defaultVisit(i);
+  std::cout << "in function visit: " << i->name()
+            << ", nVars: " << i->nVars() << "\n";
+  _function = i->name();
+}
+
+void HackBuilderVMTranslator::defaultVisit(VMTranslationInstruction *i) {
   // adding a comment about what generated that code is going to be
   // helpful.
   output->push_back(getComment(i->toString()));
   output->push_back(i->translate());
 }
 
-void HackBuilderVMTranslator::visit(BranchingInstruction *i) {
-  // adding a comment about what generated that code is going to be
-  // helpful.
-  output->push_back(getComment(i->toString()));
-  output->push_back(i->translate());
-}

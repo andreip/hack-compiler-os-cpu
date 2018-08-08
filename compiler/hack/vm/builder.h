@@ -16,8 +16,14 @@ public:
   virtual void visit(MemorySegment*);
   virtual void visit(ArithmeticLogic*);
   virtual void visit(BranchingInstruction*);
+  virtual void visit(BaseFunctionsInstruction*);
+  virtual void visit(FunctionInstruction*);
+private:
+  void defaultVisit(VMTranslationInstruction*);
+
 private:
   static std::vector<std::string> arithmetic_ops;
+  std::string _function;  // current active function
 };
 
 #endif

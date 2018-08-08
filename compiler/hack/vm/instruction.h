@@ -15,7 +15,7 @@ public:
   virtual void accept(Builder *builder) override;
   Builder *getBuilder();
 protected:
-  VMTranslationInstruction(std::string);
+  VMTranslationInstruction(std::string line);
   virtual std::vector<std::string> _translate() = 0;
 protected:
   Builder *_builder;
@@ -26,7 +26,7 @@ protected:
 class MemorySegment: public VMTranslationInstruction {
 public:
   static std::vector<std::string> parse(const std::string&);
-  bool isValid() override;
+  virtual bool isValid() override;
   virtual void accept(Builder *builder) override;
 protected:
   // <op> <segment> <value>
@@ -63,7 +63,7 @@ private:
 class TempMemorySegment : public MemorySegment {
 public:
   TempMemorySegment(std::string);
-  bool isValid() override;
+  virtual bool isValid() override;
 protected:
   std::vector<std::string> _translate() override;
 private:
@@ -74,7 +74,7 @@ private:
 class PointerMemorySegment: public MemorySegment {
 public:
   PointerMemorySegment(std::string);
-  bool isValid() override;
+  virtual bool isValid() override;
 protected:
   std::vector<std::string> _translate() override;
 private:
@@ -94,7 +94,7 @@ protected:
 class ArithmeticLogic: public VMTranslationInstruction {
 public:
   static bool isArithmeticLogicOp(const std::string &);
-  bool isValid() override;
+  virtual bool isValid() override;
   virtual void accept(Builder *builder) override;
 protected:
   ArithmeticLogic(std::string);
@@ -182,7 +182,7 @@ class LabelInstruction: public BranchingInstruction {
 public:
   LabelInstruction(std::string);
   LabelInstruction(BranchingInstruction&);  // copy constructor
-  bool isValid() override;
+  virtual bool isValid() override;
   std::string fullLabel();
 protected:
   virtual std::vector<std::string> _translate() override;
@@ -191,7 +191,7 @@ protected:
 class GotoInstruction: public BranchingInstruction {
 public:
   GotoInstruction(std::string);
-  bool isValid() override;
+  virtual bool isValid() override;
 protected:
   virtual std::vector<std::string> _translate() override;
 };
@@ -199,7 +199,28 @@ protected:
 class IfGotoInstruction: public BranchingInstruction {
 public:
   IfGotoInstruction(std::string);
-  bool isValid() override;
+  virtual bool isValid() override;
+protected:
+  virtual std::vector<std::string> _translate() override;
+};
+
+// function instructions
+
+class BaseFunctionsInstruction: public VMTranslationInstruction {
+public:
+  virtual void accept(Builder *builder) override;
+protected:
+  BaseFunctionsInstruction(std::string);
+};
+
+class FunctionInstruction: public BaseFunctionsInstruction {
+public:
+  FunctionInstruction(std::string);
+  std::string name();   // function name we're defining
+  int nVars();          // number of local variables
+
+  virtual bool isValid() override;
+  virtual void accept(Builder *builder) override;
 protected:
   virtual std::vector<std::string> _translate() override;
 };
