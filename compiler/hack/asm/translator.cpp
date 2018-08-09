@@ -12,7 +12,7 @@ AsmHackTranslator::AsmHackTranslator(const std::string &path)
 }
 
 std::string AsmHackTranslator::getOutputFile() {
-  return replaceExtension(_path, "asm");
+  return replaceExtension(_path, "hack");
 }
 
 std::string AsmHackTranslator::extension() { return "asm"; }

@@ -25,8 +25,9 @@ Translator::~Translator() {
 }
 
 void Translator::translate() {
-  const std::list<std::string> *outputLines;
+  std::list<std::string> *outputLines;
   outputLines = translateFile(_path);
+  beforeWriteToFile(*outputLines);
   writeToFile(*outputLines);
 }
 
@@ -42,6 +43,8 @@ std::list<std::string>* Translator::translateFile(const std::string &path) {
   delete initLines;
   return crtLines;
 }
+
+void Translator::beforeWriteToFile(std::list<std::string> &lines) { }
 
 void Translator::writeToFile(const std::list<std::string> &lines) {
   std::cout << "Translating " << _path << " into "

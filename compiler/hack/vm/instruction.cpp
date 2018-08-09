@@ -12,7 +12,7 @@
 VMTranslationInstruction::VMTranslationInstruction(std::string line): Instruction(line), _builder(nullptr) {}
 
 std::string VMTranslationInstruction::translate() {
-  std::vector<std::string> lines = _translate();
+  std::vector<std::string> lines = doTranslate();
   return join(lines, "\n");
 }
 
@@ -112,7 +112,7 @@ int MemorySegment::value() {
 
 ConstantMemorySegment::ConstantMemorySegment(std::string s): MemorySegment(s) {}
 
-std::vector<std::string> ConstantMemorySegment::_translate() {
+std::vector<std::string> ConstantMemorySegment::doTranslate() {
   std::vector<std::string> v;
   if (op() == "push")
     v = {
@@ -145,7 +145,7 @@ bool SegmentBaseMemorySegment::canHandleSegment(const std::string &seg) {
   return segmentToBase.find(seg) != segmentToBase.end();
 }
 
-std::vector<std::string> SegmentBaseMemorySegment::_translate() {
+std::vector<std::string> SegmentBaseMemorySegment::doTranslate() {
   std::string baseName = segmentToBase.at(segment());
   if (op() == "pop")
     return {
@@ -190,7 +190,7 @@ bool TempMemorySegment::isValid() {
   return val >= 0 && val < SIZE && MemorySegment::isValid();
 }
 
-std::vector<std::string> TempMemorySegment::_translate() {
+std::vector<std::string> TempMemorySegment::doTranslate() {
   int offset = BASE_SEGMENT + value();
   if (op() == "push")
     return {
@@ -225,7 +225,7 @@ bool PointerMemorySegment::isValid() {
   return val >= 0 && val < SIZE && MemorySegment::isValid();
 }
 
-std::vector<std::string> PointerMemorySegment::_translate() {
+std::vector<std::string> PointerMemorySegment::doTranslate() {
   std::string name = value() == 0 ? "THIS" : "THAT";
   if (op() == "push")
     return {
@@ -255,7 +255,7 @@ std::vector<std::string> PointerMemorySegment::_translate() {
 
 StaticMemorySegment::StaticMemorySegment(std::string l): MemorySegment(l) { }
 
-std::vector<std::string> StaticMemorySegment::_translate() {
+std::vector<std::string> StaticMemorySegment::doTranslate() {
   std::string filename = getStem(_builder->getFilename());
 
   // "push static 5" gets converted into "Filename.5",
@@ -318,7 +318,7 @@ std::string ArithmeticLogic::value() {
 
 AddArithmeticLogic::AddArithmeticLogic(std::string l): ArithmeticLogic(l) {}
 
-std::vector<std::string> AddArithmeticLogic::_translate() {
+std::vector<std::string> AddArithmeticLogic::doTranslate() {
   return {
     "@SP",
     "M=M-1    // SP--",
@@ -337,7 +337,7 @@ std::vector<std::string> AddArithmeticLogic::_translate() {
 
 SubArithmeticLogic::SubArithmeticLogic(std::string l): ArithmeticLogic(l) {}
 
-std::vector<std::string> SubArithmeticLogic::_translate() {
+std::vector<std::string> SubArithmeticLogic::doTranslate() {
   return {"@SP",
           "M=M-1    // SP--",
           "A=M",
@@ -356,7 +356,7 @@ std::vector<std::string> SubArithmeticLogic::_translate() {
 
 NegArithmeticLogic::NegArithmeticLogic(std::string l): ArithmeticLogic(l) {}
 
-std::vector<std::string> NegArithmeticLogic::_translate() {
+std::vector<std::string> NegArithmeticLogic::doTranslate() {
   return {"@SP",
           "A=M-1    // address SP[-1]",
           "M=-M     // SP[-1] = -SP[-1]",
@@ -367,7 +367,7 @@ std::vector<std::string> NegArithmeticLogic::_translate() {
 
 EqArithmeticLogic::EqArithmeticLogic(std::string l): ArithmeticLogic(l) {}
 
-std::vector<std::string> EqArithmeticLogic::_translate() {
+std::vector<std::string> EqArithmeticLogic::doTranslate() {
   static int i = 0;
   i++;
   std::string iStr = ::toString(i);
@@ -399,7 +399,7 @@ std::vector<std::string> EqArithmeticLogic::_translate() {
 
 GtArithmeticLogic::GtArithmeticLogic(std::string l): ArithmeticLogic(l) {}
 
-std::vector<std::string> GtArithmeticLogic::_translate() {
+std::vector<std::string> GtArithmeticLogic::doTranslate() {
   static int i = 0;
   i++;
   std::string iStr = ::toString(i);
@@ -432,7 +432,7 @@ std::vector<std::string> GtArithmeticLogic::_translate() {
 
 LtArithmeticLogic::LtArithmeticLogic(std::string l): ArithmeticLogic(l) {}
 
-std::vector<std::string> LtArithmeticLogic::_translate() {
+std::vector<std::string> LtArithmeticLogic::doTranslate() {
   static int i = 0;
   i++;
   std::string iStr = ::toString(i);
@@ -465,7 +465,7 @@ std::vector<std::string> LtArithmeticLogic::_translate() {
 
 AndArithmeticLogic::AndArithmeticLogic(std::string l): ArithmeticLogic(l) {}
 
-std::vector<std::string> AndArithmeticLogic::_translate() {
+std::vector<std::string> AndArithmeticLogic::doTranslate() {
   return {"@SP",
           "M=M-1      // SP--",
           "A=M",
@@ -483,7 +483,7 @@ std::vector<std::string> AndArithmeticLogic::_translate() {
 
 OrArithmeticLogic::OrArithmeticLogic(std::string l): ArithmeticLogic(l) {}
 
-std::vector<std::string> OrArithmeticLogic::_translate() {
+std::vector<std::string> OrArithmeticLogic::doTranslate() {
   return {"@SP",
           "M=M-1      // SP--",
           "A=M",
@@ -501,7 +501,7 @@ std::vector<std::string> OrArithmeticLogic::_translate() {
 
 NotArithmeticLogic::NotArithmeticLogic(std::string l): ArithmeticLogic(l) {}
 
-std::vector<std::string> NotArithmeticLogic::_translate() {
+std::vector<std::string> NotArithmeticLogic::doTranslate() {
   return {"@SP",
           "M=M-1      // SP--",
           "A=M",
@@ -553,7 +553,7 @@ std::string LabelInstruction::fullLabel() {
   return prefix + "$" + label();
 }
 
-std::vector<std::string> LabelInstruction::_translate() {
+std::vector<std::string> LabelInstruction::doTranslate() {
   return {
     "(" + fullLabel() + ")",
   };
@@ -568,7 +568,7 @@ bool GotoInstruction::isValid() {
   return cmd() == "goto" && !label().empty();
 }
 
-std::vector<std::string> GotoInstruction::_translate() {
+std::vector<std::string> GotoInstruction::doTranslate() {
   LabelInstruction labelInstr(*this);
   return {
     "@" + labelInstr.fullLabel(),
@@ -585,7 +585,7 @@ bool IfGotoInstruction::isValid() {
   return cmd() == "if-goto" && !label().empty();
 }
 
-std::vector<std::string> IfGotoInstruction::_translate() {
+std::vector<std::string> IfGotoInstruction::doTranslate() {
   // jumps if pop() != 0
   LabelInstruction labelInstr(*this);
   return {
@@ -604,11 +604,6 @@ std::vector<std::string> IfGotoInstruction::_translate() {
 BaseFunctionsInstruction::BaseFunctionsInstruction(std::string str)
   : VMTranslationInstruction(str) { }
 
-void BaseFunctionsInstruction::accept(Builder *builder) {
-  VMTranslationInstruction::accept(builder);
-  dynamic_cast<HackBuilderVMTranslator*>(builder)->visit(this);
-}
-
 // FunctionInstruction
 
 FunctionInstruction::FunctionInstruction(std::string str)
@@ -623,7 +618,7 @@ void FunctionInstruction::accept(Builder *builder) {
   dynamic_cast<HackBuilderVMTranslator*>(builder)->visit(this);
 }
 
-std::vector<std::string> FunctionInstruction::_translate() {
+std::vector<std::string> FunctionInstruction::doTranslate() {
   std::vector<std::string> output {
     "(" + name() + ") // repeat nVar times: push 0",
   };
@@ -670,7 +665,7 @@ void ReturnInstruction::accept(Builder *builder) {
   dynamic_cast<HackBuilderVMTranslator*>(builder)->visit(this);
 }
 
-std::vector<std::string> ReturnInstruction::_translate() {
+std::vector<std::string> ReturnInstruction::doTranslate() {
   return {
     "@LCL",
     "D=M",
@@ -722,4 +717,97 @@ std::vector<std::string> ReturnInstruction::_translate() {
     "A=M",
     "0; JMP   // jumps to old return address",
   };
+}
+
+// CallInstruction
+
+CallInstruction::CallInstruction(std::string line)
+  : BaseFunctionsInstruction(line) {
+  parse();
+}
+
+CallInstruction::CallInstruction(const std::string &funcName, int nArgs)
+  : BaseFunctionsInstruction(join(std::vector<std::string>{"call", funcName, ::toString(nArgs)}, " ")),
+    _funcName(funcName),
+    _nArgs(nArgs)
+{
+}
+
+bool CallInstruction::isValid() {
+  return nArgs() >= 0 && !funcName().empty();
+}
+
+void CallInstruction::accept(Builder *builder) {
+  VMTranslationInstruction::accept(builder);
+  dynamic_cast<HackBuilderVMTranslator*>(builder)->visit(this);
+}
+
+std::string CallInstruction::funcName() { return _funcName; }
+
+int CallInstruction::nArgs() { return _nArgs; }
+
+std::vector<std::string> CallInstruction::doTranslate() {
+  std::string retAddr = getReturnAddress();
+  return {
+    "@" + retAddr,
+    "D=A",
+    "@SP",
+    "A=M",
+    "M=D      // *SP = retAddr, saves return address on stack",
+    "@SP",
+    "M=M+1    // SP++",
+    "@LCL",
+    "D=M",
+    "@SP",
+    "A=M",
+    "M=D      // *SP = LCL, saves local address on stack",
+    "@SP",
+    "M=M+1    // SP++",
+    "@ARG",
+    "D=M",
+    "@SP",
+    "A=M",
+    "M=D      // *SP = ARG, saves argument address on stack",
+    "@SP",
+    "M=M+1    // SP++",
+    "@THIS",
+    "D=M",
+    "@SP",
+    "A=M",
+    "M=D      // *SP = THIS, saves this address on stack",
+    "@SP",
+    "M=M+1    // SP++",
+    "@THAT",
+    "D=M",
+    "@SP",
+    "A=M",
+    "M=D      // *SP = THAT, saves that address on stack",
+    "@SP",
+    "M=M+1    // SP++",
+    "@SP",
+    "D=M",
+    "@LCL",
+    "M=D      // LCL = SP, sets local of new running function",
+    "@SP",
+    "D=M",
+    "@" + ::toString(5 + _nArgs),
+    "D=D-A",
+    "@ARG",
+    "M=D      // ARG = SP - 5 - nArgs, sets argument",
+    "@" + funcName(),
+    "0; JMP   // jumps to " + funcName(),
+    "(" + retAddr + ")    // tricky, add return address",
+  };
+}
+
+void CallInstruction::parse() {
+  std::vector<std::string> parts;
+  split(parts, toString(), " ");
+  _funcName = trim_copy(parts[1]);
+  _nArgs = ::getNumber(trim_copy(parts[2]));
+}
+
+std::string CallInstruction::getReturnAddress() {
+  static int i = -1;
+  return funcName() + "$ret." + ::toString(++i);
 }

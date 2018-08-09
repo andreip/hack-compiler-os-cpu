@@ -1,5 +1,6 @@
-#include <string>
+#include <fstream>
 #include <sstream>
+#include <string>
 
 #include "../../utils.h"
 #include "../utils.h"
@@ -38,6 +39,7 @@ HackSymbolTranslator::HackSymbolTranslator(const std::string &filename)
   init();
   initPredefinedSymbols();
   _crtVariableNo = VARIABLE_START;
+  _debugFilename = replaceExtension(filename, "asm_debug");
 }
 
 void HackSymbolTranslator::init() {
@@ -48,7 +50,9 @@ void HackSymbolTranslator::init() {
 std::list<std::string>* HackSymbolTranslator::getResult() {
   HackBuilder::getResult();
   _firstPass = false;
-  return HackBuilder::getResult();
+  std::list<std::string> *out = HackBuilder::getResult();
+  writeDebugOutputFile();
+  return out;
 }
 
 void HackSymbolTranslator::visit(Label *i) {
@@ -56,6 +60,7 @@ void HackSymbolTranslator::visit(Label *i) {
     std::ostringstream oss;
     oss << _crtInstructionNo;
     _symbolsTable[i->getName()] = oss.str();
+    writeDebugInstruction(i);
   } else {
     // just ignore label from output, we're going to substitute it based
     // on the table.
@@ -63,16 +68,18 @@ void HackSymbolTranslator::visit(Label *i) {
 }
 
 void HackSymbolTranslator::visit(CInstruction *i) {
-  if (_firstPass)
+  if (_firstPass) {
+    writeDebugInstruction(i);
     _crtInstructionNo++;
-  else
+  } else
     output->push_back(i->toString());
 }
 
 void HackSymbolTranslator::visit(AInstruction *i) {
-  if (_firstPass)
+  if (_firstPass) {
+    writeDebugInstruction(i);
     _crtInstructionNo++;
-  else {
+  } else {
     // if it's not a numeric value, then we look it up in the table.
     // if it's present, we just replace it, otherwise we assume
     // it's a new variable so we just allocate it a memory location.
@@ -111,6 +118,16 @@ void HackSymbolTranslator::initPredefinedSymbols() {
   }
 }
 
+void HackSymbolTranslator::writeDebugOutputFile() {
+  std::ofstream out(_debugFilename);
+  out << _debugStream.str();
+  out.flush();
+}
+
+void HackSymbolTranslator::writeDebugInstruction(Instruction *i) {
+  _debugStream << _crtInstructionNo << " " << i->toString() << '\n';
+}
+
 // HackBinaryTranslator
 
 HackBinaryTranslator::HackBinaryTranslator(): HackBuilder() { }
@@ -127,4 +144,3 @@ void HackBinaryTranslator::visit(CInstruction *i) {
 void HackBinaryTranslator::visit(AInstruction *i) {
   output->push_back(i->translate());
 }
-

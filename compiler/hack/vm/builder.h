@@ -16,9 +16,9 @@ public:
   virtual void visit(MemorySegment*);
   virtual void visit(ArithmeticLogic*);
   virtual void visit(BranchingInstruction*);
-  virtual void visit(BaseFunctionsInstruction*);
   virtual void visit(FunctionInstruction*);
   virtual void visit(ReturnInstruction*);
+  virtual void visit(CallInstruction*);
 private:
   void defaultVisit(VMTranslationInstruction*);
 

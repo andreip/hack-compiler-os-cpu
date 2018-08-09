@@ -3,6 +3,7 @@
 
 #include <list>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 
@@ -34,11 +35,17 @@ public:
   virtual void visit(AInstruction *i) override;
 private:
   void initPredefinedSymbols();
+  void writeDebugOutputFile();
+  void writeDebugInstruction(Instruction *i);
 private:
   bool _firstPass;
   int _crtInstructionNo;
   int _crtVariableNo;
   std::unordered_map<std::string, std::string> _symbolsTable;
+
+  // filename to output mapping of line numbers to symbols
+  std::string _debugFilename;
+  std::ostringstream _debugStream;
 
   // memory address where variables start.
   static constexpr int VARIABLE_START = 16;

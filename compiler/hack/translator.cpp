@@ -26,6 +26,7 @@ void HackTranslator::translate() {
     // insert empty line between them.
     allLines.push_back("");
   }
+  beforeWriteToFile(allLines);
   writeToFile(allLines);
 }
 

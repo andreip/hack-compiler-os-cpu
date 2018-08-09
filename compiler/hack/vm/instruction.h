@@ -14,9 +14,9 @@ public:
   std::string translate() override;
   virtual void accept(Builder *builder) override;
   Builder *getBuilder();
+  virtual std::vector<std::string> doTranslate() = 0;
 protected:
   VMTranslationInstruction(std::string line);
-  virtual std::vector<std::string> _translate() = 0;
 protected:
   Builder *_builder;
 };
@@ -46,16 +46,14 @@ protected:
 class ConstantMemorySegment : public MemorySegment {
 public:
   ConstantMemorySegment(std::string);
-protected:
-  std::vector<std::string> _translate() override;
+  std::vector<std::string> doTranslate() override;
 };
 
 class SegmentBaseMemorySegment : public MemorySegment {
 public:
   SegmentBaseMemorySegment(std::string);
   static bool canHandleSegment(const std::string&);
-protected:
-  std::vector<std::string> _translate() override;
+  std::vector<std::string> doTranslate() override;
 private:
   static std::unordered_map<std::string, std::string> segmentToBase;
 };
@@ -64,8 +62,7 @@ class TempMemorySegment : public MemorySegment {
 public:
   TempMemorySegment(std::string);
   virtual bool isValid() override;
-protected:
-  std::vector<std::string> _translate() override;
+  std::vector<std::string> doTranslate() override;
 private:
   static constexpr int BASE_SEGMENT = 5;  // fixed
   static constexpr int SIZE = 8;
@@ -75,8 +72,7 @@ class PointerMemorySegment: public MemorySegment {
 public:
   PointerMemorySegment(std::string);
   virtual bool isValid() override;
-protected:
-  std::vector<std::string> _translate() override;
+  std::vector<std::string> doTranslate() override;
 private:
   static constexpr int BASE_SEGMENT = 3;  // fixed
   static constexpr int SIZE = 2;
@@ -85,8 +81,7 @@ private:
 class StaticMemorySegment: public MemorySegment {
 public:
   StaticMemorySegment(std::string);
-protected:
-  std::vector<std::string> _translate() override;
+  std::vector<std::string> doTranslate() override;
 };
 
 // arithmetic & logic instructions
@@ -106,64 +101,55 @@ private:
 class AddArithmeticLogic: public ArithmeticLogic {
 public:
   AddArithmeticLogic(std::string);
-protected:
-  std::vector<std::string> _translate() override;
+  std::vector<std::string> doTranslate() override;
 };
 
 class SubArithmeticLogic: public ArithmeticLogic {
 public:
   SubArithmeticLogic(std::string);
-protected:
-  std::vector<std::string> _translate() override;
+  std::vector<std::string> doTranslate() override;
 };
 
 class NegArithmeticLogic: public ArithmeticLogic {
 public:
   NegArithmeticLogic(std::string);
-protected:
-  std::vector<std::string> _translate() override;
+  std::vector<std::string> doTranslate() override;
 };
 
 class EqArithmeticLogic: public ArithmeticLogic {
 public:
   EqArithmeticLogic(std::string);
-protected:
-  std::vector<std::string> _translate() override;
+  std::vector<std::string> doTranslate() override;
 };
 
 class GtArithmeticLogic: public ArithmeticLogic {
 public:
   GtArithmeticLogic(std::string);
-protected:
-  std::vector<std::string> _translate() override;
+  std::vector<std::string> doTranslate() override;
 };
 
 class LtArithmeticLogic: public ArithmeticLogic {
 public:
   LtArithmeticLogic(std::string);
-protected:
-  std::vector<std::string> _translate() override;
+  std::vector<std::string> doTranslate() override;
 };
 
 class AndArithmeticLogic: public ArithmeticLogic {
 public:
   AndArithmeticLogic(std::string);
-protected:
-  std::vector<std::string> _translate() override;
+  std::vector<std::string> doTranslate() override;
 };
 
 class OrArithmeticLogic: public ArithmeticLogic {
 public:
   OrArithmeticLogic(std::string);
-protected:
-  std::vector<std::string> _translate() override;
+  std::vector<std::string> doTranslate() override;
 };
 
 class NotArithmeticLogic: public ArithmeticLogic {
 public:
   NotArithmeticLogic(std::string);
-protected:
-  std::vector<std::string> _translate() override;
+  std::vector<std::string> doTranslate() override;
 };
 
 // branching instructions
@@ -184,31 +170,26 @@ public:
   LabelInstruction(BranchingInstruction&);  // copy constructor
   virtual bool isValid() override;
   std::string fullLabel();
-protected:
-  virtual std::vector<std::string> _translate() override;
+  virtual std::vector<std::string> doTranslate() override;
 };
 
 class GotoInstruction: public BranchingInstruction {
 public:
   GotoInstruction(std::string);
   virtual bool isValid() override;
-protected:
-  virtual std::vector<std::string> _translate() override;
+  virtual std::vector<std::string> doTranslate() override;
 };
 
 class IfGotoInstruction: public BranchingInstruction {
 public:
   IfGotoInstruction(std::string);
   virtual bool isValid() override;
-protected:
-  virtual std::vector<std::string> _translate() override;
+  virtual std::vector<std::string> doTranslate() override;
 };
 
 // function instructions
 
 class BaseFunctionsInstruction: public VMTranslationInstruction {
-public:
-  virtual void accept(Builder *builder) override;
 protected:
   BaseFunctionsInstruction(std::string);
 };
@@ -221,8 +202,7 @@ public:
 
   virtual bool isValid() override;
   virtual void accept(Builder *builder) override;
-protected:
-  virtual std::vector<std::string> _translate() override;
+  virtual std::vector<std::string> doTranslate() override;
 };
 
 class ReturnInstruction: public BaseFunctionsInstruction {
@@ -230,8 +210,24 @@ public:
   ReturnInstruction(std::string);
   virtual bool isValid() override;
   virtual void accept(Builder*) override;
-protected:
-  virtual std::vector<std::string> _translate() override;
+  virtual std::vector<std::string> doTranslate() override;
+};
+
+class CallInstruction: public BaseFunctionsInstruction {
+public:
+  CallInstruction(std::string line);
+  CallInstruction(const std::string &funcName, int nArgs);
+  virtual bool isValid() override;
+  virtual void accept(Builder*) override;
+  std::string funcName();
+  int nArgs();
+  virtual std::vector<std::string> doTranslate() override;
+private:
+  void parse();
+  std::string getReturnAddress();
+private:
+  std::string _funcName;
+  int _nArgs;
 };
 
 #endif

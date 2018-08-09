@@ -74,9 +74,11 @@ Instruction* HackBuilderVMTranslator::parseLine(const std::string &line) {
     return new FunctionInstruction(instr);
   } else if (instr == "return") {
     return new ReturnInstruction(instr);
+  } else if (startsWith(instr, "call")) {
+    return new CallInstruction(instr);
   }
 
-  return nullptr;
+  throw std::runtime_error("Not supported instruction " + instr + "\n");
 }
 
 void HackBuilderVMTranslator::visit(MemorySegment *i) {
@@ -93,11 +95,6 @@ void HackBuilderVMTranslator::visit(BranchingInstruction *i) {
   std::cout << "in branch instr visit: " << i->toString() << "\n";
 }
 
-void HackBuilderVMTranslator::visit(BaseFunctionsInstruction *i) {
-  HackBuilderVMTranslator::defaultVisit(i);
-  std::cout << "in base functions visit: " << i->toString() << "\n";
-}
-
 void HackBuilderVMTranslator::visit(FunctionInstruction *i) {
   HackBuilderVMTranslator::defaultVisit(i);
   std::cout << "in function visit: " << i->name()
@@ -111,10 +108,14 @@ void HackBuilderVMTranslator::visit(ReturnInstruction *i) {
   setCurrentFunction("");
 }
 
+void HackBuilderVMTranslator::visit(CallInstruction *i) {
+  HackBuilderVMTranslator::defaultVisit(i);
+  std::cout << "in call visit: " << i->toString() << '\n';
+}
+
 void HackBuilderVMTranslator::defaultVisit(VMTranslationInstruction *i) {
   // adding a comment about what generated that code is going to be
   // helpful.
   output->push_back(getComment(i->toString()));
   output->push_back(i->translate());
 }
-

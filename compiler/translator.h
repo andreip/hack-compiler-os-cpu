@@ -14,6 +14,7 @@ public:
 protected:
   Translator(const std::string &path);  // abstract
   std::list<std::string>* splitLines(const std::string&);
+  virtual void beforeWriteToFile(std::list<std::string>&);
   void writeToFile(const std::list<std::string>&);
 
   virtual std::list<std::string>* translateFile(const std::string&);
