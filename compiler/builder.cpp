@@ -26,6 +26,7 @@ void Builder::setLines(const std::list<std::string> *lines) {
 
 void Builder::setInputFile(const std::string &inputFile) {
   _filename = inputFile;
+  setCurrentFunction("");
 }
 
 void Builder::setCurrentFunction(const std::string &function) {

@@ -105,7 +105,6 @@ void HackBuilderVMTranslator::visit(FunctionInstruction *i) {
 void HackBuilderVMTranslator::visit(ReturnInstruction *i) {
   HackBuilderVMTranslator::defaultVisit(i);
   std::cout << "in return visit: " << i->toString() << '\n';
-  setCurrentFunction("");
 }
 
 void HackBuilderVMTranslator::visit(CallInstruction *i) {
