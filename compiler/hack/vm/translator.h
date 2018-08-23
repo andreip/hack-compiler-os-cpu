@@ -9,6 +9,8 @@
 class VMHackTranslator : public HackTranslator {
 public:
   VMHackTranslator(const std::string &path);
+  // override to add file's name to the output.
+  std::list<std::string>* translateFile(const std::string &path) override;
 protected:
   virtual std::string getOutputFile() override;
   virtual std::string extension() override;

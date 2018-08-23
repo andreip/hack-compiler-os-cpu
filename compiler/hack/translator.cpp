@@ -32,8 +32,6 @@ void HackTranslator::translate() {
 
 std::list<std::string>* HackTranslator::translateFile(const std::string &path) {
   std::list<std::string> *out = Translator::translateFile(path);
-  // add a line at the beginning to know what file generated the output.
-  out->push_front(getComment("file: " + getFilename(path)));
   return out;
 }
 
