@@ -7,26 +7,15 @@
 #include "compiler/utils.h"
 #include "compiler/translator.h"
 
-const std::string EXEC = "cpl";
-
 extern Translator* getTranslatorFromPath(const std::string &path);
 
-void usage() {
-  std::vector<std::string> ways {
-    "./" + EXEC + " file.asm",
-    "Assemble .asm files and get .hack files out",
-    "./" + EXEC + " file.vm",
-    "Compile .vm files and get .asm files out",
-  };
-
-  std::cout << "Usage:\n";
-  for (auto it = ways.begin(); it != ways.end(); it += 2)
-    std::cout << "\t" << *it << "\t" << *(it+1) << "\n";
+void usage(char *exec) {
+  std::cout << "Usage:\n" << exec << " <path|file>\n";
 }
 
 int main(int argc, char **argv) {
   if (argc != 2) {
-    usage();
+    usage(argv[0]);
     std::exit(1);
   }
 
@@ -36,7 +25,7 @@ int main(int argc, char **argv) {
     translator->translate();
   } catch (std::runtime_error &e) {
     std::cout << e.what();
-    usage();
+    usage(argv[0]);
   }
 
   delete translator;
