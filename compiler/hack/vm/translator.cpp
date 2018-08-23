@@ -9,6 +9,10 @@
 #include "./instruction.h"
 #include "./translator.h"
 
+Translator* getTranslatorFromPath(const std::string &path) {
+  return new VMHackTranslator(path);
+}
+
 VMHackTranslator::VMHackTranslator(const std::string &path)
   : HackTranslator(path) {
   _builders.push_back(new HackBuilderVMTranslator(path));

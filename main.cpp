@@ -4,10 +4,12 @@
 #include <string>
 #include <stdexcept>
 
-#include "compiler/hack/translator_factory.h"
 #include "compiler/utils.h"
+#include "compiler/translator.h"
 
 const std::string EXEC = "cpl";
+
+extern Translator* getTranslatorFromPath(const std::string &path);
 
 void usage() {
   std::vector<std::string> ways {
@@ -29,8 +31,7 @@ int main(int argc, char **argv) {
   }
 
   std::string path(argv[1]);
-  TranslatorFactory *factory = new HACKTranslatorFactory;
-  Translator *translator = factory->getTranslator(path);
+  Translator *translator = getTranslatorFromPath(path);
   try {
     translator->translate();
   } catch (std::runtime_error &e) {
@@ -38,8 +39,6 @@ int main(int argc, char **argv) {
     usage();
   }
 
-  delete factory;
   delete translator;
-
   return 0;
 }

@@ -5,6 +5,10 @@
 #include "./builder.h"
 #include "./translator.h"
 
+Translator* getTranslatorFromPath(const std::string &path) {
+  return new AsmHackTranslator(path);
+}
+
 AsmHackTranslator::AsmHackTranslator(const std::string &path)
   : HackTranslator(path) {
   _builders.push_back(new HackSymbolTranslator(path));

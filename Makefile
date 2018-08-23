@@ -3,26 +3,37 @@ export CPPFLAGS=-std=c++14
 
 #LDFLAGS=-lboost_system -lboost_filesystem
 LDFLAGS=
-OUTPUT=VMTranslator
+
+ASM_OUT=AsmHack
+VM_OUT=VMTranslator
+CPL_OUT=JackAnalyzer
+
 FILES=main.o
-SUBDIRS=compiler compiler/hack compiler/hack/asm compiler/hack/vm
+COMMON_DIRS=compiler compiler/hack
+ASM_DIR=compiler/hack/asm
+VM_DIR=compiler/hack/vm
+CPL_DIR=compiler/hack/jack
+ALL_SUBDIRS := $(COMMON_DIRS) $(ASM_DIR) $(VM_DIR) $(CPL_DIR)
 
-all: $(OUTPUT)
+all: $(ASM_OUT) $(VM_OUT)
 
-$(OUTPUT): $(FILES) $(SUBDIRS)
-	$(CC) $(CPPFLAGS) $(LDFLAGS) -o $@ $< $(wildcard $(addsuffix /*.o,$(SUBDIRS)))
+$(ASM_OUT): $(FILES) $(COMMON_DIRS) $(ASM_DIR)
+	$(CC) $(CPPFLAGS) $(LDFLAGS) -o $@ $< $(wildcard $(addsuffix /*.o,$(COMMON_DIRS) $(ASM_DIR)))
+
+$(VM_OUT): $(FILES) $(COMMON_DIRS) $(VM_DIR)
+	$(CC) $(CPPFLAGS) $(LDFLAGS) -o $@ $< $(wildcard $(addsuffix /*.o,$(COMMON_DIRS) $(VM_DIR)))
 
 %.o: %.cpp
 	$(CC) $(CPPFLAGS) -c $^ -o $@
 
-$(SUBDIRS):
+$(ALL_SUBDIRS):
 	$(MAKE) -C $@
 
 clean:
-	rm -f $(OUTPUT) *.o
+	-rm -f $(ASM_OUT) $(VM_OUT) $(CPL_OUT) *.o
 	$(MAKE) -C compiler/ clean
 	$(MAKE) -C compiler/hack/ clean
 	$(MAKE) -C compiler/hack/asm clean
 	$(MAKE) -C compiler/hack/vm clean
 
-.PHONY: clean $(SUBDIRS)
+.PHONY: clean $(ALL_SUBDIRS)

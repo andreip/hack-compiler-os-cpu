@@ -1,7 +1,8 @@
 *.sw*
 *.o
-cpl
 VMTranslator
+AsmHack
+JackAnalyzer
 lang.txt
 
 *.vm
