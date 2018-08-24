@@ -30,11 +30,6 @@ void HackTranslator::translate() {
   writeToFile(allLines);
 }
 
-std::list<std::string>* HackTranslator::translateFile(const std::string &path) {
-  std::list<std::string> *out = Translator::translateFile(path);
-  return out;
-}
-
 std::list<std::string> HackTranslator::getInputFiles() {
   std::list<std::string> output;
   PathType pathType = getPathType(_path);

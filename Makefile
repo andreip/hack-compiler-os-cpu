@@ -15,13 +15,16 @@ VM_DIR=compiler/hack/vm
 CPL_DIR=compiler/hack/jack
 ALL_SUBDIRS := $(COMMON_DIRS) $(ASM_DIR) $(VM_DIR) $(CPL_DIR)
 
-all: $(ASM_OUT) $(VM_OUT)
+all: $(ASM_OUT) $(VM_OUT) $(CPL_OUT)
 
 $(ASM_OUT): $(FILES) $(COMMON_DIRS) $(ASM_DIR)
 	$(CC) $(CPPFLAGS) $(LDFLAGS) -o $@ $< $(wildcard $(addsuffix /*.o,$(COMMON_DIRS) $(ASM_DIR)))
 
 $(VM_OUT): $(FILES) $(COMMON_DIRS) $(VM_DIR)
 	$(CC) $(CPPFLAGS) $(LDFLAGS) -o $@ $< $(wildcard $(addsuffix /*.o,$(COMMON_DIRS) $(VM_DIR)))
+
+$(CPL_OUT): $(FILES) $(COMMON_DIRS) $(CPL_DIR)
+	$(CC) $(CPPFLAGS) $(LDFLAGS) -o $@ $< $(wildcard $(addsuffix /*.o,$(COMMON_DIRS) $(CPL_DIR)))
 
 %.o: %.cpp
 	$(CC) $(CPPFLAGS) -c $^ -o $@
