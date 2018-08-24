@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cctype>
+#include <deque>
 #include <dirent.h>
 #include <string>
 #include <sstream>
@@ -72,6 +73,13 @@ std::string replaceExtension(const std::string &path, const std::string &newExt)
   std::string pathWithoutExt = std::string(path.cbegin(), it);
 
   std::string newExtWithDot = newExt;
+  // if there's a dot somewhere in the extension, we'll assume
+  // it's already prepared for concatenation and caller knows what it's
+  // doing. The reason to not check for dot at the beginning is that
+  // sometimes you might want to change an extension from a.txt to
+  // something like aXX.gov so new extension would be XX.gov here which
+  // allows for a bit more functionality, changing the extension with a
+  // new suffix. Probably not the cleanest, but actually used scenario.
   if (std::find(newExt.cbegin(), newExt.cend(), '.') == newExt.cend())
     newExtWithDot = "." + newExt;
 
@@ -197,8 +205,8 @@ void lstrip(std::string &s, const std::string &chars) {
   while (stripped) {
     stripped = false;
     for (const int &c : chars) {
-      if (s.front() == c) {
-        s.erase(s.front());
+      if (!s.empty() && s.front() == c) {
+        s.erase(0, 1);
         stripped = true;
       }
     }
@@ -262,16 +270,38 @@ std::string join(const ContainerT &parts, const std::string &delim) {
 template std::string join<std::vector<std::string>>(const std::vector<std::string>&, const std::string&);
 
 template <class ContainerT>
-void split(ContainerT &parts, const std::string &line, const std::string &delim) {
+void split(ContainerT &parts, const std::string &line, const std::string &substr) {
   size_t last = 0;
   size_t next = 0;
-  while ((next = line.find(delim, last)) != std::string::npos) {
+  while ((next = line.find(substr, last)) != std::string::npos) {
     std::string match = line.substr(last, next - last);
     if (!match.empty())
       parts.push_back(match);
-    last = next + delim.size();
+    last = next + substr.size();
   }
   parts.push_back(line.substr(last, next - last));
 }
 
 template void split<std::vector<std::string>>(std::vector<std::string>&, const std::string&, const std::string&);
+
+template <class ContainerT>
+void split_by_any_char(ContainerT &parts,
+                       const std::string &line,
+                       const std::string &delims,
+                       bool keepSplitElements) {
+  size_t last = 0;
+  size_t next = 0;
+  while ((next = line.find_first_of(delims, last)) != std::string::npos) {
+    std::string match = line.substr(last, next - last);
+    if (!match.empty())
+      parts.push_back(match);
+    if (keepSplitElements)
+      parts.push_back(line.substr(next, 1));
+    // we search for any character from delims, so we need to
+    // skip by a single character.
+    last = next + 1;
+  }
+  parts.push_back(line.substr(last, next - last));
+}
+
+template void split_by_any_char<std::deque<std::string>>(std::deque<std::string>&, const std::string&, const std::string&, bool);

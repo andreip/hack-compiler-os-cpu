@@ -54,7 +54,14 @@ bool startsWith(const std::string &str, const std::string &prefix);
 template <class ContainerT>
 std::string join(const ContainerT &parts, const std::string &delim);
 template <class ContainerT>
-void split(ContainerT &parts, const std::string &line, const std::string &delim);
+void split(ContainerT &parts, const std::string &line, const std::string &substr);
+
+template <class ContainerT>
+void split_by_any_char(ContainerT &parts,
+                       const std::string &line,
+                       const std::string &delims,
+                       // if to keep the elements we split by in output
+                       bool keepSplitElements = false);
 
 template <typename A, typename B>
 std::ostream& operator<<(std::ostream &out, const std::unordered_map<A, B> &map) {
