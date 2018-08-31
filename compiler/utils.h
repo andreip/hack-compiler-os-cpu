@@ -1,6 +1,8 @@
 #ifndef __UTILS__H__
 #define __UTILS__H__
 
+#define UTILS_DEBUG
+
 #include <iostream>
 #include <list>
 #include <string>
@@ -62,6 +64,20 @@ void split_by_any_char(ContainerT &parts,
                        const std::string &delims,
                        // if to keep the elements we split by in output
                        bool keepSplitElements = false);
+
+// prints before throwing
+#ifdef UTILS_DEBUG
+#define throw_and_debug(msg) \
+  do {\
+    std::cerr << "Exception: " << msg << '\n'; \
+    throw std::runtime_error(msg); \
+  } while(0)
+#else
+#define throw_and_debug(msg) \
+  do {\
+    throw std::runtime_error(msg); \
+  } while(0)
+#endif
 
 template <typename A, typename B>
 std::ostream& operator<<(std::ostream &out, const std::unordered_map<A, B> &map) {

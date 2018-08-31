@@ -15,7 +15,7 @@ struct fixture {
   void tokenize(istringstream &stream) {
     JackTokenizer tok(stream);
     while (tok.hasMore()) {
-      actual.push_back(tok.getCurrentToken());
+      actual.push_back(tok.getCurrentToken().getRawValue());
       tok.advance();
     }
   }
@@ -49,8 +49,8 @@ BOOST_FIXTURE_TEST_CASE(test_delimited_by_space_line, fixture) {
 }
 
 BOOST_FIXTURE_TEST_CASE(test_two_lines_by_space, fixture) {
-  istringstream stream("a spaced  line\n 2nd line ");
-  expected = {"a", "spaced", "line", "2nd", "line"};
+  istringstream stream("a spaced  line\n second line ");
+  expected = {"a", "spaced", "line", "second", "line"};
 
   tokenize(stream);
 }
