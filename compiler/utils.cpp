@@ -218,8 +218,8 @@ void rstrip(std::string &s, const std::string &chars) {
   while (stripped) {
     stripped = false;
     for (const int &c : chars) {
-      if (s.back() == c) {
-        s.erase(std::prev(s.end()));
+      if (!s.empty() && s.back() == c) {
+        s.erase(s.size() - 1);
         stripped = true;
       }
     }

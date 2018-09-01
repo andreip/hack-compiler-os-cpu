@@ -2,6 +2,7 @@
 #define __JACK__TOKENIZER__H__
 
 #include <deque>
+#include <iostream>
 #include <istream>
 #include <string>
 #include <unordered_set>
@@ -20,10 +21,11 @@ class Token {
 public:
   static Token fromString(const std::string&);
   Token(TokenType type, const std::string &rawValue);
-  std::string toXML();
-  std::string getTypeStr();
-  std::string value();
-  std::string getRawValue();
+  std::string toXML() const;
+  std::string getTypeStr() const;
+  std::string value() const;
+  std::string getRawValue() const;
+  friend std::ostream& operator<<(std::ostream&, const Token&);
 private:
   TokenType type;
   std::string rawValue;

@@ -20,12 +20,16 @@ void JackTranslator::translate() {
     std::string outputFile = replaceExtension(inputFile, "T.xml");
     std::cout << "Extracting tokens from " << inputFile << " into " << outputFile << '\n';
     std::ifstream in(inputFile);
-    JackTokenizer tok(in);
+    JackTokenizer tokenizer(in);
     std::ofstream out(outputFile);
-    while (tok.hasMore()) {
-      out << tok.getCurrentToken() << "\n";
-      tok.advance();
+    out << "<tokens>\n";
+    while (tokenizer.hasMore()) {
+      const Token token = tokenizer.getCurrentToken();
+      out << token.toXML() << "\n";
+      std::cout << "Got xml token '" << token.toXML() << "'\n";
+      tokenizer.advance();
     }
+    out << "</tokens>\n";
   }
 }
 

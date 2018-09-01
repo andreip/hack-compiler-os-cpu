@@ -99,6 +99,13 @@ BOOST_FIXTURE_TEST_CASE(test_multiline_comment, fixture) {
   tokenize(stream);
 }
 
+BOOST_FIXTURE_TEST_CASE(test_multiline_comment2, fixture) {
+  istringstream stream("/* some /* multiline */");
+  expected = {};
+
+  tokenize(stream);
+}
+
 BOOST_FIXTURE_TEST_CASE(test_multiline_comment_on_2_lines, fixture) {
   istringstream stream("/** some multiline \n bla xx*@! comment */");
   expected = {};
@@ -118,6 +125,18 @@ BOOST_FIXTURE_TEST_CASE(test_two_multiline_comments, fixture) {
   istringstream stream(
     "before /* comment1*/ in_between \n/*comment2*/ after");
   expected = {"before", "in_between", "after"};
+
+  tokenize(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_class_with_comments, fixture) {
+  istringstream stream(
+    "// filename: ...\n"
+    "/** some comment */\n"
+    "class Main {\n"
+    "}"
+  );
+  expected = {"class", "Main", "{", "}"};
 
   tokenize(stream);
 }

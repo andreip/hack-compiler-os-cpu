@@ -18,7 +18,7 @@ std::unordered_set<std::string> JackTokenizer::KEYWORDS = {
   "null", "this", "let", "do", "if", "else", "while", "return",
 };
 
-std::string JackTokenizer::IGNORE_CHARS = " \t\n";
+std::string JackTokenizer::IGNORE_CHARS = " \t\n\r";
 std::string JackTokenizer::SINGLE_LINE_COMMENT = "//";
 std::string JackTokenizer::MULTILINE_COMMENT_BEGIN = "/*";
 std::string JackTokenizer::MULTILINE_COMMENT_END = "*/";
@@ -100,8 +100,8 @@ void JackTokenizer::tokenizeLine(std::string line, ContainerT &out) {
 template <typename ContainerT>
 void JackTokenizer::tokenizeString(std::string line, ContainerT &out) {
 
-    std::cout << "read line : '" << line << "'\n";
     strip(line, JackTokenizer::IGNORE_CHARS);
+    //std::cout << "tokenizing string " << line << '\n';
     if (!line.empty()) {
       // split line into individual tokens and strip each one
       std::deque<std::string> temp;
@@ -132,12 +132,13 @@ void JackTokenizer::stripComments(std::string &line) {
       line.begin(), line.end(),
       MULTILINE_COMMENT_END.begin(), MULTILINE_COMMENT_END.end()
     );
-    end = std::min(end + MULTILINE_COMMENT_END.size(), line.end());
-    line.erase(line.begin(), end);
 
     // we exited a multi-line comment just now.
     if (end != line.end())
       _inMultiLineComment = false;
+
+    end = std::min(end + MULTILINE_COMMENT_END.size(), line.end());
+    line.erase(line.begin(), end);
   }
 
   if (line.empty())
@@ -152,7 +153,6 @@ void JackTokenizer::stripComments(std::string &line) {
     line.begin(), line.end(),
     MULTILINE_COMMENT_END.begin(), MULTILINE_COMMENT_END.end()
   );
-  end = std::min(end + MULTILINE_COMMENT_END.size(), line.end());
 
   if (end != line.end() && begin == line.end())
     throw_and_debug("Can't have end of multiline comment w/o corresponding start.");
@@ -161,6 +161,8 @@ void JackTokenizer::stripComments(std::string &line) {
     _inMultiLineComment = true;
   if (end != line.end())
     _inMultiLineComment = false;
+
+  end = std::min(end + MULTILINE_COMMENT_END.size(), line.end());
   line.erase(begin, end);
 
   // look for single-line comment if we're not currently in a multi-line one.
@@ -211,14 +213,14 @@ Token Token::fromString(const std::string &value) {
 Token::Token(TokenType type, const std::string &rawValue)
   : type(type), rawValue(rawValue) { }
 
-std::string Token::toXML() {
+std::string Token::toXML() const {
   char xml[100];
   snprintf(xml, sizeof(xml), "<%s> %s </%s>",
            getTypeStr().c_str(), value().c_str(), getTypeStr().c_str());
   return xml;
 }
 
-std::string Token::getTypeStr() {
+std::string Token::getTypeStr() const {
   if (type == TokenType::KEYWORD) return "keyword";
   if (type == TokenType::SYMBOL) return "symbol";
   if (type == TokenType::INT_CONSTANT) return "integerConstant";
@@ -227,12 +229,27 @@ std::string Token::getTypeStr() {
   throw_and_debug("Unknown token type");
 }
 
-std::string Token::value() {
+std::string Token::value() const {
   if (type == TokenType::STR_CONSTANT)
     return strip_copy(rawValue, "\"");
+
+  // some escaped characters
+  std::string val = getRawValue();
+  if (val == "<")
+    return "&lt;";
+  else if (val == ">")
+    return "&gt;";
+  else if (val == "&")
+    return "&amp;";
+
   return rawValue;
 }
 
-std::string Token::getRawValue() {
+std::string Token::getRawValue() const {
   return rawValue;
+}
+
+std::ostream& operator<<(std::ostream &out, const Token &t) {
+  out << t.getRawValue();
+  return out;
 }
