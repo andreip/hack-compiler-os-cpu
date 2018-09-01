@@ -4,6 +4,7 @@ VMTranslator
 AsmHack
 JackAnalyzer
 lang.txt
+test_tokenizer
 
 *.vm
 *.asm

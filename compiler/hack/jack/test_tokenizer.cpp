@@ -77,3 +77,47 @@ BOOST_FIXTURE_TEST_CASE(test_let_array_string, fixture) {
 
   tokenize(stream);
 }
+
+BOOST_FIXTURE_TEST_CASE(test_line_comment, fixture) {
+  istringstream stream("// some comments");
+  expected = {};
+
+  tokenize(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_line_comment_not_at_beginning, fixture) {
+  istringstream stream("let x = 2; // some comments");
+  expected = {"let", "x", "=", "2", ";"};
+
+  tokenize(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_multiline_comment, fixture) {
+  istringstream stream("/* some multiline */");
+  expected = {};
+
+  tokenize(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_multiline_comment_on_2_lines, fixture) {
+  istringstream stream("/** some multiline \n bla xx*@! comment */");
+  expected = {};
+
+  tokenize(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_multiline_comment_before_and_after, fixture) {
+  istringstream stream(
+    "before /** some multiline \n bla xx*@! comment */ after");
+  expected = {"before", "after"};
+
+  tokenize(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_two_multiline_comments, fixture) {
+  istringstream stream(
+    "before /* comment1*/ in_between \n/*comment2*/ after");
+  expected = {"before", "in_between", "after"};
+
+  tokenize(stream);
+}

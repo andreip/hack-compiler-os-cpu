@@ -23,7 +23,7 @@ std::string JackTokenizer::SINGLE_LINE_COMMENT = "//";
 std::string JackTokenizer::MULTILINE_COMMENT_BEGIN = "/*";
 std::string JackTokenizer::MULTILINE_COMMENT_END = "*/";
 
-JackTokenizer::JackTokenizer(std::istream &in): _istream(in), _hasMore(true) {
+JackTokenizer::JackTokenizer(std::istream &in): _istream(in), _hasMore(true), _inMultiLineComment(false) {
   if (!_istream) {
     std::cerr << "Input stream in tokenizer failed.\n";
   }
@@ -41,7 +41,7 @@ bool JackTokenizer::hasMore() {
     std::getline(_istream, line);
 
     if (!line.empty())
-      JackTokenizer::tokenizeLine(line, _crt_buffer);
+      tokenizeLine(line, _crt_buffer);
 
     if (!_istream || _istream.eof()) {
       _hasMore = false;
@@ -63,6 +63,7 @@ Token JackTokenizer::getCurrentToken() {
 template <typename ContainerT>
 void JackTokenizer::tokenizeLine(std::string line, ContainerT &out) {
   strip(line, JackTokenizer::IGNORE_CHARS);
+  stripComments(line);
   if (line.empty())
     return;
 
@@ -74,25 +75,23 @@ void JackTokenizer::tokenizeLine(std::string line, ContainerT &out) {
   // also preserve double-quotes in split array, to be able to
   // tell when we're inside a double-quoted string constant or outside.
   split_by_any_char(temp, line, "\"", true);
-  std::for_each(
-    temp.begin(), temp.end(),
-    [&out, in_quote=false](std::string &s) mutable {
-      // if we found a quote, toggle if we're in quote or not currently.
-      if (s == "\"") {
-        in_quote = !in_quote;
-      } else {
-        // if inside a quote, add the raw string including quotes
-        // as a token string constant.
-        if (in_quote)
-          out.push_back(Token::fromString("\"" + s + "\""));
-        // otherwise this string is string-constants free, so
-        // we can pass it to be parsed by the other symbols of
-        // the language and populate the out container.
-        else
-          tokenizeString(s, out);
-      }
+  bool in_quote = false;
+  for (std::string &s : temp) {
+    // if we found a quote, toggle if we're in quote or not currently.
+    if (s == "\"") {
+      in_quote = !in_quote;
+    } else {
+      // if inside a quote, add the raw string including quotes
+      // as a token string constant.
+      if (in_quote)
+        out.push_back(Token::fromString("\"" + s + "\""));
+      // otherwise this string is string-constants free, so
+      // we can pass it to be parsed by the other symbols of
+      // the language and populate the out container.
+      else
+        tokenizeString(s, out);
     }
-  );
+  }
 }
 
 /*
@@ -124,6 +123,54 @@ void JackTokenizer::tokenizeString(std::string line, ContainerT &out) {
       );
     }
     std::cout << "out size " << out.size() << '\n';
+}
+
+void JackTokenizer::stripComments(std::string &line) {
+  /* if in multi-line comment already, look for an ending */
+  if (_inMultiLineComment) {
+    auto end = std::search(
+      line.begin(), line.end(),
+      MULTILINE_COMMENT_END.begin(), MULTILINE_COMMENT_END.end()
+    );
+    end = std::min(end + MULTILINE_COMMENT_END.size(), line.end());
+    line.erase(line.begin(), end);
+
+    // we exited a multi-line comment just now.
+    if (end != line.end())
+      _inMultiLineComment = false;
+  }
+
+  if (line.empty())
+    return;
+
+  /* we're not in multiline, but might just enter in one. */
+  auto begin = std::search(
+    line.begin(), line.end(),
+    MULTILINE_COMMENT_BEGIN.begin(), MULTILINE_COMMENT_BEGIN.end()
+  );
+  auto end = std::search(
+    line.begin(), line.end(),
+    MULTILINE_COMMENT_END.begin(), MULTILINE_COMMENT_END.end()
+  );
+  end = std::min(end + MULTILINE_COMMENT_END.size(), line.end());
+
+  if (end != line.end() && begin == line.end())
+    throw_and_debug("Can't have end of multiline comment w/o corresponding start.");
+
+  if (begin != line.end())
+    _inMultiLineComment = true;
+  if (end != line.end())
+    _inMultiLineComment = false;
+  line.erase(begin, end);
+
+  // look for single-line comment if we're not currently in a multi-line one.
+  if (!_inMultiLineComment) {
+    auto begin = std::search(
+      line.begin(), line.end(),
+      SINGLE_LINE_COMMENT.begin(), SINGLE_LINE_COMMENT.end()
+    );
+    line.erase(begin, line.end());
+  }
 }
 
 // Token class related

@@ -44,13 +44,15 @@ public:
 private:
   // fills buffer
   template <typename ContainerT>
-  static void tokenizeLine(std::string line, ContainerT &out);
+  void tokenizeLine(std::string line, ContainerT &out);
   template <typename ContainerT>
-  static void tokenizeString(std::string str, ContainerT &out);
+  void tokenizeString(std::string str, ContainerT &out);
+  void stripComments(std::string& line);
 private:
   std::istream& _istream;
   std::deque<Token> _crt_buffer;
   bool _hasMore;
+  bool _inMultiLineComment;
 
   static std::string IGNORE_CHARS;
   static std::string SINGLE_LINE_COMMENT;
