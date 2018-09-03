@@ -32,11 +32,15 @@ $(CPL_OUT): $(FILES) $(COMMON_DIRS) $(CPL_DIR)
 $(ALL_SUBDIRS):
 	$(MAKE) -C $@
 
+test:
+	$(MAKE) -C compiler/hack/jack test
+
 clean:
 	-rm -f $(ASM_OUT) $(VM_OUT) $(CPL_OUT) *.o
 	$(MAKE) -C compiler/ clean
 	$(MAKE) -C compiler/hack/ clean
 	$(MAKE) -C compiler/hack/asm clean
 	$(MAKE) -C compiler/hack/vm clean
+	$(MAKE) -C compiler/hack/jack clean
 
-.PHONY: clean $(ALL_SUBDIRS)
+.PHONY: test clean $(ALL_SUBDIRS)

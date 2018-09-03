@@ -14,6 +14,6 @@ test_tokenizer: tokenizer.cpp test_tokenizer.cpp tokenizer.h ../../utils.cpp
 	./$@
 
 clean:
-	rm -f *.o
+	rm -f *.o test_tokenizer
 
 .PHONY: clean

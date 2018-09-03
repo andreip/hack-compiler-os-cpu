@@ -101,7 +101,6 @@ template <typename ContainerT>
 void JackTokenizer::tokenizeString(std::string line, ContainerT &out) {
 
     strip(line, JackTokenizer::IGNORE_CHARS);
-    //std::cout << "tokenizing string " << line << '\n';
     if (!line.empty()) {
       // split line into individual tokens and strip each one
       std::deque<std::string> temp;
@@ -110,7 +109,6 @@ void JackTokenizer::tokenizeString(std::string line, ContainerT &out) {
         JackTokenizer::IGNORE_CHARS + JackTokenizer::SYMBOLS,
         true  // preserves the chracters we split by
       );
-      std::cout << "crt line buffer size " << temp.size() << '\n';
 
       // copy each stripped-non-empty token from temp to output buffer.
       std::for_each(
@@ -122,7 +120,6 @@ void JackTokenizer::tokenizeString(std::string line, ContainerT &out) {
         }
       );
     }
-    std::cout << "out size " << out.size() << '\n';
 }
 
 void JackTokenizer::stripComments(std::string &line) {
