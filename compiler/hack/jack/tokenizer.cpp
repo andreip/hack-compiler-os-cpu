@@ -60,6 +60,10 @@ Token JackTokenizer::getCurrentToken() {
   return _crt_buffer.front();
 }
 
+void JackTokenizer::rewind() {
+  _istream.seekg(0);
+}
+
 template <typename ContainerT>
 void JackTokenizer::tokenizeLine(std::string line, ContainerT &out) {
   strip(line, JackTokenizer::IGNORE_CHARS);

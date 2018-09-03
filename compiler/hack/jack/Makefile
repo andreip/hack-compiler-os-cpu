@@ -1,6 +1,6 @@
 CC=g++
 CPPFLAGS=-std=c++14
-FILES=translator.o tokenizer.o
+FILES=translator.o tokenizer.o builder.o
 
 all: $(FILES)
 

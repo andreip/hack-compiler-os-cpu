@@ -40,6 +40,7 @@ public:
   virtual bool hasMore();
   virtual void advance();
   virtual Token getCurrentToken();
+  virtual void rewind();
 
   static std::string SYMBOLS;
   static std::unordered_set<std::string> KEYWORDS;
