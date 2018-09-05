@@ -214,10 +214,12 @@ Token Token::fromString(const std::string &value) {
 Token::Token(TokenType type, const std::string &rawValue)
   : type(type), rawValue(rawValue) { }
 
+TokenType Token::getType() const { return type; }
+
 std::string Token::toXML() const {
   char xml[100];
   snprintf(xml, sizeof(xml), "<%s> %s </%s>",
-           getTypeStr().c_str(), value().c_str(), getTypeStr().c_str());
+           getTypeStr().c_str(), escapedValue().c_str(), getTypeStr().c_str());
   return xml;
 }
 
@@ -230,12 +232,14 @@ std::string Token::getTypeStr() const {
   throw_and_debug("Unknown token type");
 }
 
-std::string Token::value() const {
+std::string Token::value() const { return rawValue; }
+
+std::string Token::escapedValue() const {
   if (type == TokenType::STR_CONSTANT)
     return strip_copy(rawValue, "\"");
 
   // some escaped characters
-  std::string val = getRawValue();
+  std::string val = value();
   if (val == "<")
     return "&lt;";
   else if (val == ">")
@@ -246,11 +250,7 @@ std::string Token::value() const {
   return rawValue;
 }
 
-std::string Token::getRawValue() const {
-  return rawValue;
-}
-
 std::ostream& operator<<(std::ostream &out, const Token &t) {
-  out << t.getRawValue();
+  out << t.value();
   return out;
 }

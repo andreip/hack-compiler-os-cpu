@@ -16,15 +16,30 @@ enum class TokenType {
   IDENTIFIER,
 };
 
+enum class KeywordTokenType {
+  CLASS, METHOD, FUNCTION, CONSTRUCTOR, INT,
+  BOOLEAN, CHAR, VOID, VAR, STATIC, FIELD, LET,
+  DO, IF, ELSE, WHILE, RETURN, TRUE, FALSE, _NULL, THIS
+};
+
 // holds a token that the tokenizer outputs.
 class Token {
 public:
   static Token fromString(const std::string&);
   Token(TokenType type, const std::string &rawValue);
   std::string toXML() const;
+  TokenType getType() const;
   std::string getTypeStr() const;
   std::string value() const;
-  std::string getRawValue() const;
+  std::string escapedValue() const;
+
+  // TODO: implement these
+  //KeywordTokenType getKeywordType() const;
+  //char getSymbol() const;
+  //std::string getIdentifier() const;
+  //int getIntConstant() const;
+  //std::string getStrConstant() const;  // returns w/o double quotes
+
   friend std::ostream& operator<<(std::ostream&, const Token&);
 private:
   TokenType type;

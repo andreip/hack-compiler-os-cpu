@@ -15,7 +15,7 @@ struct fixture {
   void tokenize(istringstream &stream) {
     JackTokenizer tok(stream);
     while (tok.hasMore()) {
-      actual.push_back(tok.getCurrentToken().getRawValue());
+      actual.push_back(tok.getCurrentToken().value());
       tok.advance();
     }
   }

@@ -5,6 +5,7 @@ AsmHack
 JackAnalyzer
 lang.txt
 test_tokenizer
+test_builder
 
 *.vm
 *.asm
