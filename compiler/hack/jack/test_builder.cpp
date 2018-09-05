@@ -81,7 +81,7 @@ BOOST_FIXTURE_TEST_CASE(test_empty_class_parser, fixture) {
 }
 
 BOOST_FIXTURE_TEST_CASE(test_class_var_dec_parser, fixture) {
-  istringstream stream("static int x, y;");
+  istringstream stream("static int x, y;\nfield boolean z;");
   expected = {
     "<classVarDec>",
       "<keyword> static </keyword>",
@@ -89,6 +89,12 @@ BOOST_FIXTURE_TEST_CASE(test_class_var_dec_parser, fixture) {
       "<identifier> x </identifier>",
       "<symbol> , </symbol>",
       "<identifier> y </identifier>",
+      "<symbol> ; </symbol>",
+    "</classVarDec>",
+    "<classVarDec>",
+      "<keyword> field </keyword>",
+      "<keyword> boolean </keyword>",
+      "<identifier> z </identifier>",
       "<symbol> ; </symbol>",
     "</classVarDec>",
   };

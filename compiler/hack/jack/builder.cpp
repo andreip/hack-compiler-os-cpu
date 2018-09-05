@@ -69,10 +69,7 @@ void JackCompilationEngineBuilder::buildClass(JackTokenizer &t, std::ostream &ou
 
 /* (static|field) <type> <varName> (, <varName>)* ; */
 void JackCompilationEngineBuilder::buildClassVarDec(JackTokenizer &t, std::ostream &out) {
-  if (!t.hasMore())
-    return;
-
-  while (in_array(t.getCurrentToken().value(), {"static", "field"})) {
+  while (t.hasMore() && in_array(t.getCurrentToken().value(), {"static", "field"})) {
     out << "<classVarDec>" << '\n';
     // static|field
     eat(t, out, [](Token tok) { return in_array(tok.value(), {"static", "field"}); });
@@ -86,7 +83,7 @@ void JackCompilationEngineBuilder::buildClassVarDec(JackTokenizer &t, std::ostre
 
     // <varName> (, <varName>)*
     eat(t, out, TokenType::IDENTIFIER);  // varName
-    while (t.getCurrentToken().value() == ",") {
+    while (t.hasMore() && t.getCurrentToken().value() == ",") {
       eat(t, out, ",");
       eat(t, out, TokenType::IDENTIFIER);  // varName
     }
