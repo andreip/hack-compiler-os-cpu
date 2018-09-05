@@ -1,10 +1,12 @@
+#include <iterator>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/included/unit_test.hpp>
 
 #include "tokenizer.h"
-
-#include <sstream>
-#include <vector>
 
 using namespace std;
 

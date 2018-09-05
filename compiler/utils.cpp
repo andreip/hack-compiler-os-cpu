@@ -305,3 +305,7 @@ void split_by_any_char(ContainerT &parts,
 }
 
 template void split_by_any_char<std::deque<std::string>>(std::deque<std::string>&, const std::string&, const std::string&, bool);
+
+bool in_array(const std::string &val, const std::vector<std::string> &array) {
+  return std::find(array.begin(), array.end(), val) != array.end();
+}

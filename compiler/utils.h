@@ -65,6 +65,8 @@ void split_by_any_char(ContainerT &parts,
                        // if to keep the elements we split by in output
                        bool keepSplitElements = false);
 
+bool in_array(const std::string&, const std::vector<std::string>&);
+
 // prints before throwing
 #ifdef UTILS_DEBUG
 #define throw_and_debug(msg) \
