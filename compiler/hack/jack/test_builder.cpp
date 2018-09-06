@@ -140,6 +140,8 @@ BOOST_FIXTURE_TEST_CASE(test_class_subroutine_dec_empty_params, fixture) {
       "<symbol>)</symbol>",
       "<subroutineBody>",
         "<symbol>{</symbol>",
+        "<statements>",
+        "</statements>",
         "<symbol>}</symbol>",
       "</subroutineBody>",
     "</subroutineDec>",
@@ -166,6 +168,8 @@ BOOST_FIXTURE_TEST_CASE(test_class_subroutine_dec, fixture) {
       "<symbol>)</symbol>",
       "<subroutineBody>",
         "<symbol>{</symbol>",
+          "<statements>",
+          "</statements>",
         "<symbol>}</symbol>",
       "</subroutineBody>",
     "</subroutineDec>",
@@ -195,6 +199,32 @@ BOOST_FIXTURE_TEST_CASE(test_subroutine_body_var_decls, fixture) {
         "<identifier>b</identifier>",
         "<symbol>;</symbol>",
       "</varDec>",
+      "<statements>",
+      "</statements>",
+      "<symbol>}</symbol>",
+    "</subroutineBody>",
+  };
+  buildSubroutineBody(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_subroutine_body_let_statement, fixture) {
+  istringstream stream("{ let x = 2; }");
+  expected = {
+    "<subroutineBody>",
+      "<symbol>{</symbol>",
+      "<statements>",
+        "<letStatement>",
+          "<keyword>let</keyword>",
+          "<identifier>x</identifier>",
+          "<symbol>=</symbol>",
+          "<expression>",
+            "<term>",
+              "<integerConstant>2</identifier>",
+            "</term>",
+          "</expression>",
+          "<symbol>;</symbol>",
+        "</letStatement>",
+      "</statements>",
       "<symbol>}</symbol>",
     "</subroutineBody>",
   };

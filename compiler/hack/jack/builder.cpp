@@ -149,23 +149,15 @@ ParameterList JackCompilationEngineBuilder::buildParameterList(JackTokenizer &t)
 
 /* '{' <varDec>* <statement>*) '}' */
 SubroutineBody JackCompilationEngineBuilder::buildSubroutineBody(JackTokenizer &t) {
-  std::vector<VarDec> varDecs;
-  std::vector<Statement> statements;
-
   eat(t, "{");
 
+  std::vector<VarDec> varDecs;
   while (t.hasMore() && t.getCurrentToken().value() == "var") {
     varDecs.push_back(buildVarDec(t));
   }
-
-  // TODO
-  //while (t.hasMore() &&
-  //       in_array(t.getCurrentToken().value(), {"let", "if", "while", "do", "return"})) {
-  //  
-  //}
+  std::vector<Statement> statements = buildStatements(t);
 
   eat(t, "}");
-
   return SubroutineBody(varDecs, statements);
 }
 
@@ -184,6 +176,53 @@ VarDec JackCompilationEngineBuilder::buildVarDec(JackTokenizer &t) {
   eat(t, ";");
 
   return VarDec(type, varNames);
+}
+
+/* statement* */
+/* statement = letStatement | ifStatement | whileStatement |
+ *             doStatement | returnStatement
+ *
+ * letStatement = let <varName>([<expression>])? = expression ;
+ */
+std::vector<Statement> JackCompilationEngineBuilder::buildStatements(JackTokenizer &t) {
+  std::vector<Statement> statements;
+
+  while (t.hasMore() &&
+         in_array(t.getCurrentToken().value(), {"let", "if", "while", "do", "return"})) {
+
+    std::vector<Expression> expressions;
+    std::vector<Statement> statements1;
+    std::vector<Statement> statements2;
+    Token type = eat(t, TokenType::KEYWORD);  // let/if/while/do/return
+
+    if (type.value() == "let") {
+      Token varName = eat(t, TokenType::IDENTIFIER);  // varName
+      if (t.hasMore() && t.getCurrentToken().value() == "[") {
+        eat(t, "[");
+        expressions.push_back(buildExpression(t));
+        eat(t, "]");
+      }
+      eat(t, "=");
+      expressions.push_back(buildExpression(t));
+
+      statements.push_back(
+        Statement(type.value(), varName.value(), expressions)
+      );
+    } else if (type.value() == "if") {
+    } else if (type.value() == "while") {
+    } else if (type.value() == "do") {
+    } else if (type.value() == "return") {
+    } else {
+      throw_and_debug("Unknown statement beginning with " + type.value());
+    }
+  }
+
+  return statements;
+}
+
+Expression JackCompilationEngineBuilder::buildExpression(JackTokenizer &t) {
+  Expression e;
+  return e;
 }
 
 Token JackCompilationEngineBuilder::eat(JackTokenizer &t, std::function<bool(Token)> isValidFunc) {

@@ -30,8 +30,28 @@ private:
   std::vector<Token> _varNames;
 };
 
-// TODO
-struct Statement {};
+struct Expression { };
+struct SubroutineCall { };
+
+/* statement = letStatement | ifStatement | whileStatement |
+ *             doStatement | returnStatement
+ *
+ * letStatement = let <varName>([<expression>])? = expression ;
+ */
+class Statement : public GrammarElement {
+public:
+  Statement(std::string type, std::string varName, std::vector<Expression>);  // let
+  Statement(std::string type, std::vector<Expression>, std::vector<Statement>, std::vector<Statement>);  // if/while/return
+  Statement(std::string type, SubroutineCall);  // do
+  virtual std::string toXML() const override;
+private:
+  std::string _type;  // let/if/while/do/return
+  std::string _varName;  // for let
+  std::vector<Expression> _expressions;
+  std::vector<Statement> _statements1;
+  std::vector<Statement> _statements2;
+  SubroutineCall _subroutineCall;  // for do
+};
 
 /* 'var' <type> <varName> (, <varName>)* ; */
 class VarDec : public GrammarElement {
