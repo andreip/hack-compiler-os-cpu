@@ -41,6 +41,12 @@ struct fixture {
     _buildFromVector<ClassVarDec>(stream, fp);
   }
 
+  void buildSubroutineDecs(istringstream &stream) {
+    auto fp = std::bind(&Builder::buildSubroutineDecs, builder,
+                        std::placeholders::_1);
+    _buildFromVector<SubroutineDec>(stream, fp);
+  }
+
   template <typename GrammarElement>
   void _build(istringstream &stream,
              std::function<GrammarElement(JackTokenizer&)> buildMethod) {
@@ -113,4 +119,23 @@ BOOST_FIXTURE_TEST_CASE(test_class_var_dec_parser, fixture) {
   };
 
   buildClassVarDecs(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_class_subroutine_dec_empty_params, fixture) {
+  istringstream stream("constructor Square new() { }");
+  expected = {
+    "<subroutineDec>",
+      "<keyword>constructor</keyword>",
+      "<identifier>Square</identifier>",
+      "<identifier>new</identifier>",
+      "<symbol>(</symbol>",
+      "<symbol>)</symbol>",
+      "<subroutineBody>",
+        "<symbol>{</symbol>",
+        "<symbol>}</symbol>",
+      "</subroutineBody>",
+    "</subroutineDec>",
+  };
+
+  buildSubroutineDecs(stream);
 }

@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "tokenizer.h"
+
 // base class for all grammar elements from jack
 class GrammarElement {
 public:
@@ -19,18 +21,43 @@ private:
 /* (static|field) <type> <varName> (, <varName>)* ; */
 class ClassVarDec: public GrammarElement {
 public:
-  ClassVarDec(std::string kind, std::string type, std::vector<std::string> varNames);
+  ClassVarDec(Token kind, Token type, std::vector<Token> varNames);
   virtual std::string toXML() const override;
 private:
-  std::string _kind;  // static|field
-  std::string _type;
-  std::vector<std::string> _varNames;
+  Token _kind;  // static|field
+  Token _type;
+  std::vector<Token> _varNames;
 };
 
+// TODO
+struct VarDec {};
+struct Statement {};
+struct Parameter {};
+
+/* '{' <varDec>* <statement>*) '}' */
+class SubroutineBody : public GrammarElement {
+public:
+  SubroutineBody(std::vector<VarDec> varDecs,
+                 std::vector<Statement> statements);
+  virtual std::string toXML() const override;
+private:
+  std::vector<VarDec> _varDecs;
+  std::vector<Statement> _statements;
+};
+
+/* (constructor|function|method) (void|<type>) <subroutineName> (<parameterList>) <subroutineBody> */
 class SubroutineDec: public GrammarElement {
 public:
-  SubroutineDec();
+  SubroutineDec(Token kind, Token _return, Token name,
+                std::vector<Parameter> parameters,
+                SubroutineBody body);
   virtual std::string toXML() const override;
+private:
+  Token _kind;
+  Token _return;
+  Token _subroutineName;
+  std::vector<Parameter> _parameters;
+  SubroutineBody _body;
 };
 
 /* class <className> { <classVarDec*> <subroutineDec*> } */

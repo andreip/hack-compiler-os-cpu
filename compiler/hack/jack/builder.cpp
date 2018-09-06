@@ -78,17 +78,17 @@ std::vector<ClassVarDec> JackCompilationEngineBuilder::buildClassVarDecs(JackTok
     Token type = eat(t, [](Token tok) { return tok.isAType(); });
 
     // <varName> (, <varName>)*
-    std::vector<std::string> varNames;
+    std::vector<Token> varNames;
     Token var = eat(t, TokenType::IDENTIFIER);  // varName
-    varNames.push_back(var.value());
+    varNames.push_back(var);
     while (t.hasMore() && t.getCurrentToken().value() == ",") {
       eat(t, ",");
       var = eat(t, TokenType::IDENTIFIER);  // varName
-      varNames.push_back(var.value());
+      varNames.push_back(var);
     }
 
     eat(t, ";");
-    classVarDecs.push_back(ClassVarDec(kind.value(), type.value(), varNames));
+    classVarDecs.push_back(ClassVarDec(kind, type, varNames));
   }
 
   return classVarDecs;
@@ -96,34 +96,43 @@ std::vector<ClassVarDec> JackCompilationEngineBuilder::buildClassVarDecs(JackTok
 
 /* (constructor|function|method) (void|<type>) <subroutineName> (<parameterList>) <subroutineBody> */
 std::vector<SubroutineDec> JackCompilationEngineBuilder::buildSubroutineDecs(JackTokenizer &t) {
-  std::vector<SubroutineDec> out;
-  return out;
+  std::vector<SubroutineDec> subroutineDecs;
 
-  //while (t.hasMore() &&
-  //       in_array(t.getCurrentToken().value(), {"constructor", "function", "method"})) {
-  //  out << "<subroutineDec>" << '\n';
-  //  // constructor|function|method
-  //  eat(t, out, [](Token tok) {
-  //    return in_array(tok.value(), {"constructor", "function", "method"});
-  //  });
-  //  // void|<type>
-  //  eat(t, out, [](Token tok) {
-  //    return (tok.value() == "void" || tok.isAType());
-  //  });
-  //  // <subroutineName>
-  //  eat(t, out, [](Token tok) { return tok.isIdentifier(); });
-  //  eat(t, out, "(");
-  //  buildParameterList(t, out);
-  //  eat(t, out, ")");
-  //  buildSubroutineBody(t, out);
-  //  out << "</subroutineDec>" << '\n';
-  //}
+  while (t.hasMore() &&
+         in_array(t.getCurrentToken().value(), {"constructor", "function", "method"})) {
+    // constructor|function|method
+    Token kind = eat(t, [](Token tok) {
+      return in_array(tok.value(), {"constructor", "function", "method"});
+    });
+    // void|<type>
+    Token _return = eat(t, [](Token tok) {
+      return (tok.value() == "void" || tok.isAType());
+    });
+
+    // <subroutineName>
+    Token name = eat(t, [](Token tok) { return tok.isIdentifier(); });
+    eat(t, "(");
+    std::vector<Parameter> parameters = buildParameterList(t);
+    eat(t, ")");
+    SubroutineBody body = buildSubroutineBody(t);
+
+    subroutineDecs.push_back(
+      SubroutineDec(kind, _return, name, parameters, body)
+    );
+  }
+
+  return subroutineDecs;
 }
-//
-//void JackCompilationEngineBuilder::buildParameterList(JackTokenizer &t, std::ostream &out) {
-//}
-//void JackCompilationEngineBuilder::buildSubroutineBody(JackTokenizer &t, std::ostream &out) {
-//}
+
+std::vector<Parameter> JackCompilationEngineBuilder::buildParameterList(JackTokenizer &t) {
+  std::vector<Parameter> out;
+  return out;
+}
+
+SubroutineBody JackCompilationEngineBuilder::buildSubroutineBody(JackTokenizer &t) {
+  SubroutineBody body({}, {});
+  return body;
+}
 
 Token JackCompilationEngineBuilder::eat(JackTokenizer &t, std::function<bool(Token)> isValidFunc) {
   _assert(t.hasMore(), "Tokenizer hasn't got any more tokens to give");

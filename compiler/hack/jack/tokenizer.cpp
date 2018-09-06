@@ -218,7 +218,7 @@ TokenType Token::getType() const { return type; }
 
 std::string Token::toXML() const {
   char xml[100];
-  snprintf(xml, sizeof(xml), "<%s> %s </%s>",
+  snprintf(xml, sizeof(xml), "<%s>%s</%s>",
            getTypeStr().c_str(), escapedValue().c_str(), getTypeStr().c_str());
   return xml;
 }
