@@ -31,8 +31,17 @@ private:
 };
 
 // TODO
-struct VarDec {};
 struct Statement {};
+
+/* 'var' <type> <varName> (, <varName>)* ; */
+class VarDec : public GrammarElement {
+public:
+  VarDec(Token type, std::vector<Token> varNames);
+  virtual std::string toXML() const override;
+private:
+  Token _type;
+  std::vector<Token> _varNames;
+};
 
 /* '{' <varDec>* <statement>*) '}' */
 class SubroutineBody : public GrammarElement {

@@ -45,6 +45,24 @@ std::string ClassVarDec::toXML() const {
   return wrapXMLWithType(out.str());
 }
 
+// VarDec
+
+VarDec::VarDec(Token type, std::vector<Token> varNames)
+  : GrammarElement("varDec"), _type(type), _varNames(varNames) { }
+
+std::string VarDec::toXML() const {
+  std::ostringstream out;
+  out << "<keyword>var</keyword>\n";
+  out << _type.toXML() << '\n';
+  out << _varNames[0].toXML() << '\n';
+  for (int i = 1; i < _varNames.size(); ++i) {
+    out << "<symbol>,</symbol>\n";
+    out << _varNames[i].toXML() << '\n';
+  }
+  out << "<symbol>;</symbol>\n";
+  return wrapXMLWithType(out.str());
+}
+
 // SubroutineBody
 
 SubroutineBody::SubroutineBody(std::vector<VarDec> varDecs,
@@ -55,6 +73,8 @@ SubroutineBody::SubroutineBody(std::vector<VarDec> varDecs,
 std::string SubroutineBody::toXML() const {
   std::ostringstream out;
   out << "<symbol>{</symbol>\n";
+  for (const VarDec &var : _varDecs)
+    out << var.toXML();
   out << "<symbol>}</symbol>\n";
   return wrapXMLWithType(out.str());
 }

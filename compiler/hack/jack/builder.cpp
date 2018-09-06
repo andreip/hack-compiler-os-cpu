@@ -147,9 +147,43 @@ ParameterList JackCompilationEngineBuilder::buildParameterList(JackTokenizer &t)
   return ParameterList(parameters);
 }
 
+/* '{' <varDec>* <statement>*) '}' */
 SubroutineBody JackCompilationEngineBuilder::buildSubroutineBody(JackTokenizer &t) {
-  SubroutineBody body({}, {});
-  return body;
+  std::vector<VarDec> varDecs;
+  std::vector<Statement> statements;
+
+  eat(t, "{");
+
+  while (t.hasMore() && t.getCurrentToken().value() == "var") {
+    varDecs.push_back(buildVarDec(t));
+  }
+
+  // TODO
+  //while (t.hasMore() &&
+  //       in_array(t.getCurrentToken().value(), {"let", "if", "while", "do", "return"})) {
+  //  
+  //}
+
+  eat(t, "}");
+
+  return SubroutineBody(varDecs, statements);
+}
+
+/* 'var' <type> <varName> (, <varName>)* ; */
+VarDec JackCompilationEngineBuilder::buildVarDec(JackTokenizer &t) {
+  eat(t, "var");
+  Token type = eat(t, [](Token tok) { return tok.isAType(); });
+  std::vector<Token> varNames;
+  varNames.push_back(eat(t, [](Token tok) { return tok.isIdentifier(); }));
+  while (t.hasMore() && t.getCurrentToken().value() == ",") {
+    eat(t, ",");
+    varNames.push_back(
+      eat(t, [](Token tok) { return tok.isIdentifier(); })
+    );
+  }
+  eat(t, ";");
+
+  return VarDec(type, varNames);
 }
 
 Token JackCompilationEngineBuilder::eat(JackTokenizer &t, std::function<bool(Token)> isValidFunc) {

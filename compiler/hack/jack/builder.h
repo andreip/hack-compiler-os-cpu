@@ -15,6 +15,7 @@ class ClassVarDec;
 class SubroutineDec;
 class ParameterList;
 class SubroutineBody;
+class VarDec;
 
 class JackBuilder {
 public:
@@ -34,6 +35,7 @@ public:
   std::vector<SubroutineDec> buildSubroutineDecs(JackTokenizer&);
   ParameterList buildParameterList(JackTokenizer &t);
   SubroutineBody buildSubroutineBody(JackTokenizer &t);
+  VarDec buildVarDec(JackTokenizer &t);
 private:
   Token eat(JackTokenizer&, std::function<bool(Token)>);
   Token eat(JackTokenizer&, const std::string&);

@@ -47,6 +47,12 @@ struct fixture {
     _buildFromVector<SubroutineDec>(stream, fp);
   }
 
+  void buildSubroutineBody(istringstream &stream) {
+    auto fp = std::bind(&Builder::buildSubroutineBody, builder,
+                        std::placeholders::_1);
+    _build<SubroutineBody>(stream, fp);
+  }
+
   template <typename GrammarElement>
   void _build(istringstream &stream,
              std::function<GrammarElement(JackTokenizer&)> buildMethod) {
@@ -167,3 +173,31 @@ BOOST_FIXTURE_TEST_CASE(test_class_subroutine_dec, fixture) {
 
   buildSubroutineDecs(stream);
 }
+
+BOOST_FIXTURE_TEST_CASE(test_subroutine_body_var_decls, fixture) {
+  istringstream stream("{ var int x, y;\n var Test a, b; }");
+  expected = {
+    "<subroutineBody>",
+      "<symbol>{</symbol>",
+      "<varDec>",
+        "<keyword>var</keyword>",
+        "<keyword>int</keyword>",
+        "<identifier>x</identifier>",
+        "<symbol>,</symbol>",
+        "<identifier>y</identifier>",
+        "<symbol>;</symbol>",
+      "</varDec>",
+      "<varDec>",
+        "<keyword>var</keyword>",
+        "<identifier>Test</identifier>",
+        "<identifier>a</identifier>",
+        "<symbol>,</symbol>",
+        "<identifier>b</identifier>",
+        "<symbol>;</symbol>",
+      "</varDec>",
+      "<symbol>}</symbol>",
+    "</subroutineBody>",
+  };
+  buildSubroutineBody(stream);
+}
+
