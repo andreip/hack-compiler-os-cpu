@@ -65,26 +65,33 @@ ClassElement JackCompilationEngineBuilder::buildClass(JackTokenizer &t) {
 
 /* (static|field) <type> <varName> (, <varName>)* ; */
 std::vector<ClassVarDec> JackCompilationEngineBuilder::buildClassVarDecs(JackTokenizer &t) {
-  std::vector<ClassVarDec> out;
-  return out;
+  std::vector<ClassVarDec> classVarDecs;
 
-  //while (t.hasMore() && in_array(t.getCurrentToken().value(), {"static", "field"})) {
-  //  out << "<classVarDec>" << '\n';
-  //  // static|field
-  //  eat(t, out, [](Token tok) { return in_array(tok.value(), {"static", "field"}); });
-  //  // type = int|char|boolean|className
-  //  eat(t, out, [](Token tok) { return tok.isAType(); });
+  while (t.hasMore() && in_array(t.getCurrentToken().value(), {"static", "field"})) {
+    // static|field
+    Token kind = eat(
+      t,
+      [](Token tok) { return in_array(tok.value(), {"static", "field"}); }
+    );
 
-  //  // <varName> (, <varName>)*
-  //  eat(t, out, TokenType::IDENTIFIER);  // varName
-  //  while (t.hasMore() && t.getCurrentToken().value() == ",") {
-  //    eat(t, out, ",");
-  //    eat(t, out, TokenType::IDENTIFIER);  // varName
-  //  }
+    // type = int|char|boolean|className
+    Token type = eat(t, [](Token tok) { return tok.isAType(); });
 
-  //  eat(t, out, ";");
-  //  out << "</classVarDec>" << '\n';
-  //}
+    // <varName> (, <varName>)*
+    std::vector<std::string> varNames;
+    Token var = eat(t, TokenType::IDENTIFIER);  // varName
+    varNames.push_back(var.value());
+    while (t.hasMore() && t.getCurrentToken().value() == ",") {
+      eat(t, ",");
+      var = eat(t, TokenType::IDENTIFIER);  // varName
+      varNames.push_back(var.value());
+    }
+
+    eat(t, ";");
+    classVarDecs.push_back(ClassVarDec(kind.value(), type.value(), varNames));
+  }
+
+  return classVarDecs;
 }
 
 /* (constructor|function|method) (void|<type>) <subroutineName> (<parameterList>) <subroutineBody> */

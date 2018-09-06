@@ -16,11 +16,17 @@ private:
   std::string _type;
 };
 
+/* (static|field) <type> <varName> (, <varName>)* ; */
 class ClassVarDec: public GrammarElement {
 public:
-  ClassVarDec();
+  ClassVarDec(std::string kind, std::string type, std::vector<std::string> varNames);
   virtual std::string toXML() const override;
+private:
+  std::string _kind;  // static|field
+  std::string _type;
+  std::vector<std::string> _varNames;
 };
+
 class SubroutineDec: public GrammarElement {
 public:
   SubroutineDec();

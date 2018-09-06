@@ -35,11 +35,31 @@ struct fixture {
     _build<ClassElement>(stream, fp);
   }
 
+  void buildClassVarDecs(istringstream &stream) {
+    auto fp = std::bind(&Builder::buildClassVarDecs, builder,
+                        std::placeholders::_1);
+    _buildFromVector<ClassVarDec>(stream, fp);
+  }
+
   template <typename GrammarElement>
   void _build(istringstream &stream,
              std::function<GrammarElement(JackTokenizer&)> buildMethod) {
     JackTokenizer tokenizer(stream);
-    std::string xml = buildMethod(tokenizer).toXML();
+    populateActualfromXML(buildMethod(tokenizer).toXML());
+  }
+
+  template <typename GrammarElement>
+  void _buildFromVector(
+    istringstream &stream,
+    std::function<vector<GrammarElement>(JackTokenizer&)> buildMethod) {
+    JackTokenizer tokenizer(stream);
+    std::ostringstream out;
+    for (const GrammarElement &el : buildMethod(tokenizer))
+      out << el.toXML();
+    populateActualfromXML(out.str());
+  }
+
+  void populateActualfromXML(std::string xml) {
     // split lines, trim them and filter out empty ones.
     split(actual, xml, is_any_of("\n"));
     actual.erase(
@@ -73,24 +93,24 @@ BOOST_FIXTURE_TEST_CASE(test_empty_class_parser, fixture) {
   buildClass(stream);
 }
 
-//BOOST_FIXTURE_TEST_CASE(test_class_var_dec_parser, fixture) {
-//  istringstream stream("static int x, y;\nfield boolean z;");
-//  expected = {
-//    "<classVarDec>",
-//      "<keyword> static </keyword>",
-//      "<keyword> int </keyword>",
-//      "<identifier> x </identifier>",
-//      "<symbol> , </symbol>",
-//      "<identifier> y </identifier>",
-//      "<symbol> ; </symbol>",
-//    "</classVarDec>",
-//    "<classVarDec>",
-//      "<keyword> field </keyword>",
-//      "<keyword> boolean </keyword>",
-//      "<identifier> z </identifier>",
-//      "<symbol> ; </symbol>",
-//    "</classVarDec>",
-//  };
-//
-//  buildClassVarDec(stream);
-//}
+BOOST_FIXTURE_TEST_CASE(test_class_var_dec_parser, fixture) {
+  istringstream stream("static int x, y;\nfield boolean z;");
+  expected = {
+    "<classVarDec>",
+      "<keyword>static</keyword>",
+      "<keyword>int</keyword>",
+      "<identifier>x</identifier>",
+      "<symbol>,</symbol>",
+      "<identifier>y</identifier>",
+      "<symbol>;</symbol>",
+    "</classVarDec>",
+    "<classVarDec>",
+      "<keyword>field</keyword>",
+      "<keyword>boolean</keyword>",
+      "<identifier>z</identifier>",
+      "<symbol>;</symbol>",
+    "</classVarDec>",
+  };
+
+  buildClassVarDecs(stream);
+}
