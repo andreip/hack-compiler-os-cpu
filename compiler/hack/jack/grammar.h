@@ -2,10 +2,25 @@
 #define __JACK__GRAMMAR__H__
 
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "tokenizer.h"
+
+enum class Op {
+  ADD, SUB, MUL, DIV, AND, OR, LT, GT, EQ,
+  NONE
+};
+enum class UnaryOp {
+  NEG, // -
+  NOT, // ~
+  NONE,
+};
+extern std::unordered_map<Op, std::string> opStr;
+extern std::unordered_map<std::string, Op> strOp;
+extern std::unordered_map<UnaryOp, std::string> unaryOpStr;
+extern std::unordered_map<std::string, UnaryOp> strUnaryOp;
 
 // base class for all grammar elements from jack
 class GrammarElement {
@@ -30,8 +45,54 @@ private:
   std::vector<Token> _varNames;
 };
 
-struct Expression { };
+// TODO
 struct SubroutineCall { };
+
+// Expression must come before Term, since Term uses an expression
+// directly inside it, while Expression uses pointers of Terms in
+// a vector, so that's ok, Expression works only w/ a forward
+// declaration of Term.
+class Term;
+/* term (op term)* */
+class Expression : public GrammarElement {
+public:
+  Expression();
+  Expression(std::vector<Term> terms, std::vector<Op> ops);
+  virtual std::string toXML() const override;
+  std::string opToXML(Op op) const;
+  bool operator!() const;
+  operator bool() const;
+private:
+  std::vector<Term> _terms;
+  std::vector<Op> _ops;
+};
+
+
+/* Term = intConstant | stringConstant | keywordConstant |
+ *        varName | varName[expression] | subroutineCall |
+ *        (expression) | unaryOp Term
+ */
+class Term : public GrammarElement {
+public:
+  // int/str/keyword constant or varname and unary operation
+  Term(Token type, UnaryOp op=UnaryOp::NONE);
+  // subroutine call and unary op
+  Term(SubroutineCall, UnaryOp op=UnaryOp::NONE);
+  // varname[expr] and unary op
+  Term(Token type, Expression, UnaryOp op=UnaryOp::NONE);
+  // (expr) and unary operation
+  Term(Expression expression, UnaryOp op=UnaryOp::NONE);
+  virtual std::string toXML() const override;
+  std::string unaryOpToXML(UnaryOp op) const;
+private:
+  // if integer/string constant, or
+  // keyword constant (this,true,false,null) or
+  // varName if identifier type
+  Token _type;
+  UnaryOp _unaryOp;  // if NONE, it's not set
+  Expression _expression;
+  SubroutineCall _subroutineCall;
+};
 
 /* statement = letStatement | ifStatement | whileStatement |
  *             doStatement | returnStatement
@@ -40,13 +101,13 @@ struct SubroutineCall { };
  */
 class Statement : public GrammarElement {
 public:
-  Statement(std::string type, std::string varName, std::vector<Expression>);  // let
-  Statement(std::string type, std::vector<Expression>, std::vector<Statement>, std::vector<Statement>);  // if/while/return
-  Statement(std::string type, SubroutineCall);  // do
+  Statement(Token type, Token varName, std::vector<Expression>);  // let
+  Statement(Token type, std::vector<Expression>, std::vector<Statement>, std::vector<Statement>);  // if/while/return
+  Statement(Token type, SubroutineCall);  // do
   virtual std::string toXML() const override;
 private:
-  std::string _type;  // let/if/while/do/return
-  std::string _varName;  // for let
+  Token _type;  // let/if/while/do/return
+  Token _varName;  // for let
   std::vector<Expression> _expressions;
   std::vector<Statement> _statements1;
   std::vector<Statement> _statements2;

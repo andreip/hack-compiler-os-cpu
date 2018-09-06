@@ -214,6 +214,9 @@ Token Token::fromString(const std::string &value) {
 Token::Token(TokenType type, const std::string &rawValue)
   : type(type), rawValue(rawValue) { }
 
+bool Token::operator!() const { return type == TokenType::NONE; }
+Token::operator bool() const { return type != TokenType::NONE; }
+
 TokenType Token::getType() const { return type; }
 
 std::string Token::toXML() const {

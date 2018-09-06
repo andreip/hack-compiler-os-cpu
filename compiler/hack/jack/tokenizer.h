@@ -14,6 +14,7 @@ enum class TokenType {
   INT_CONSTANT,
   STR_CONSTANT,
   IDENTIFIER,
+  NONE,
 };
 
 enum class KeywordTokenType {
@@ -26,7 +27,9 @@ enum class KeywordTokenType {
 class Token {
 public:
   static Token fromString(const std::string&);
-  Token(TokenType type, const std::string &rawValue);
+  Token(TokenType type=TokenType::NONE, const std::string &rawValue="");
+  bool operator!() const;
+  operator bool() const;
   std::string toXML() const;
   TokenType getType() const;
   std::string getTypeStr() const;

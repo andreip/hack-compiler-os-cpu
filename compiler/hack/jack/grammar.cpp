@@ -8,6 +8,23 @@
 
 #include "grammar.h"
 
+std::unordered_map<Op, std::string> opStr {
+  {Op::ADD, "+"}, {Op::SUB, "-"}, {Op::MUL, "*"}, {Op::DIV, "/"},
+  {Op::AND, "&"}, {Op::OR, "|"}, {Op::LT, "<"}, {Op::GT, ">"}, {Op::EQ, "="},
+};
+std::unordered_map<std::string, Op> strOp {
+  {"+", Op::ADD}, {"-", Op::SUB}, {"*", Op::MUL}, {"/", Op::DIV},
+  {"&", Op::AND}, {"|", Op::OR}, {"<", Op::LT}, {">", Op::GT}, {"=", Op::EQ},
+};
+std::unordered_map<UnaryOp, std::string> unaryOpStr {
+  {UnaryOp::NEG, "-"},
+  {UnaryOp::NOT, "~"},
+};
+std::unordered_map<std::string, UnaryOp> strUnaryOp {
+  {"-", UnaryOp::NEG},
+  {"~", UnaryOp::NOT},
+};
+
 // GrammarElement
 
 GrammarElement::GrammarElement(std::string type): _type(type) { }
@@ -45,28 +62,154 @@ std::string ClassVarDec::toXML() const {
   return wrapXMLWithType(out.str());
 }
 
+// Term
+
+// int/str/keyword constant or varname and unary operation
+Term::Term(Token type, UnaryOp op)
+  : GrammarElement("term"), _type(type), _unaryOp(op) { }
+
+// subroutine call and unary op
+Term::Term(SubroutineCall subroutineCall, UnaryOp op)
+  : GrammarElement("term"), _subroutineCall(subroutineCall), _unaryOp(op) { }
+
+// varname[expr] and unary op
+Term::Term(Token type, Expression expression, UnaryOp op)
+  : GrammarElement("term"),
+    _type(type), _expression(expression), _unaryOp(op) { }
+
+// (expr) and unary operation
+Term::Term(Expression expression, UnaryOp op)
+  : GrammarElement("term"),
+    _expression(expression), _unaryOp(op) { }
+
+std::string Term::toXML() const {
+  std::ostringstream out;
+
+  std::cout << "outputting xml for term of type " << _type.value() << '\n';
+
+  if (_unaryOp != UnaryOp::NONE)
+    out << unaryOpToXML(_unaryOp) << '\n';
+
+  if (_type) {
+    // intConstant | stringConstant | keywordConstant | varName
+    out << _type.toXML() << '\n';
+
+    // varName[expression]
+    if (_type.isIdentifier() && _expression) {
+      out << "<symbol>[</symbol>\n";
+      out << _expression.toXML() << '\n';
+      out << "<symbol>]</symbol>\n";
+    } else if (_expression) {
+      throw_and_debug("Cannot have an expression w/o a varname[].");
+    }
+  // ( expression )
+  } else if (_expression) {
+    out << "<symbol>(</symbol>\n";
+    out << _expression.toXML();
+    out << "<symbol>)</symbol>\n";
+  // might be subroutine call
+  } else {
+    // TODO:
+  }
+  return wrapXMLWithType(out.str());
+}
+
+std::string Term::unaryOpToXML(UnaryOp op) const {
+  return "<symbol>" + unaryOpStr[op] + "</symbol>";
+}
+
+// Expression
+
+Expression::Expression()
+  : GrammarElement("expression"), _terms({}), _ops({}) { }
+
+Expression::Expression(std::vector<Term> terms, std::vector<Op> ops)
+  : GrammarElement("expression"), _terms(terms), _ops(ops) { }
+
+bool Expression::operator!() const { return _terms.empty(); }
+Expression::operator bool() const { return !(!*this); }
+
+std::string Expression::toXML() const {
+  std::ostringstream out;
+  out << _terms[0].toXML();
+  for (int i = 0; i < _ops.size(); ++i) {
+    out << opToXML(_ops[i]) << '\n';
+    out << _terms[i+1].toXML();
+  }
+  return wrapXMLWithType(out.str());
+}
+
+std::string Expression::opToXML(Op op) const {
+    return "<symbol>" + opStr[op] + "</symbol>";
+}
+
 // Statement
 
 // let
-Statement::Statement(std::string type, std::string varName, std::vector<Expression> expressions)
-  : GrammarElement(type + "Statement"), _type(type),
+Statement::Statement(Token type, Token varName, std::vector<Expression> expressions)
+  : GrammarElement(type.value() + "Statement"), _type(type),
     _varName(varName), _expressions(expressions) { }
 
 // if/while/return
-Statement::Statement(std::string type, std::vector<Expression> expressions,
+Statement::Statement(Token type, std::vector<Expression> expressions,
                      std::vector<Statement> statements1,
                      std::vector<Statement> statements2)
-  : GrammarElement(type + "Statement"), _type(type),
+  : GrammarElement(type.value() + "Statement"), _type(type),
     _expressions(expressions), _statements1(statements1),
     _statements2(statements2) { }
 
 // do
-Statement::Statement(std::string type, SubroutineCall subroutineCall)
-  : GrammarElement(type + "Statement"), _type(type),
+Statement::Statement(Token type, SubroutineCall subroutineCall)
+  : GrammarElement(type.value() + "Statement"), _type(type),
     _subroutineCall(subroutineCall) { }
 
 std::string Statement::toXML() const {
   std::ostringstream out;
+  out << _type.toXML() << '\n';
+
+  // let case 
+  if (_type.value() == "let") {
+    out << _varName.toXML() << '\n';
+    int i = 0;
+    if (_expressions.size() == 2) {
+      out << "<symbol>[</symbol>\n";
+      out << _expressions[i++].toXML();
+      out << "<symbol>]</symbol>\n";
+    }
+    out << "<symbol>=</symbol>\n";
+    out << _expressions[i].toXML();
+    out << "<symbol>;</symbol>\n";
+  } else if (_type.value() == "if" || _type.value() == "while") {
+    out << "<symbol>(</symbol>\n";
+    out << _expressions[0].toXML();
+    out << "<symbol>)</symbol>\n";
+    out << "<symbol>{</symbol>\n";
+    out << "<statements>\n";
+    for (const Statement &s : _statements1)
+      out << s.toXML();
+    out << "</statements>\n";
+    out << "<symbol>}</symbol>\n";
+    // else case
+    if (_type.value() == "if" && !_statements2.empty()) {
+      out << "<keyword>else</keyword>\n";
+      out << "<statements>\n";
+      for (const Statement &s : _statements2)
+        out << s.toXML();
+      out << "</statements>\n";
+      out << "<symbol>}</symbol>\n";
+    }
+  } else if (_type.value() == "do") {
+    // TODO enable this
+    //out << _subroutineCall.toXML();
+    out << "<symbol>;</symbol>\n";
+  } else if (_type.value() == "return") {
+    if (!_expressions.empty())
+      out << _expressions[0];
+    out << "<symbol>;</symbol>\n";
+  } else {
+    throw_and_debug("Unknown statement type " + _type.value());
+  }
+
   return wrapXMLWithType(out.str());
 }
 

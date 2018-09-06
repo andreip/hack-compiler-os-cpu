@@ -204,9 +204,10 @@ std::vector<Statement> JackCompilationEngineBuilder::buildStatements(JackTokeniz
       }
       eat(t, "=");
       expressions.push_back(buildExpression(t));
+      eat(t, ";");
 
       statements.push_back(
-        Statement(type.value(), varName.value(), expressions)
+        Statement(type, varName, expressions)
       );
     } else if (type.value() == "if") {
     } else if (type.value() == "while") {
@@ -221,22 +222,60 @@ std::vector<Statement> JackCompilationEngineBuilder::buildStatements(JackTokeniz
 }
 
 Expression JackCompilationEngineBuilder::buildExpression(JackTokenizer &t) {
-  Expression e;
-  return e;
+  std::vector<Term> terms;
+  std::vector<Op> ops;
+  terms.push_back(buildTerm(t));
+
+  // as long as we find an operator, keep extracting terms.
+  if (t.hasMore()) {
+    auto found = strOp.find(t.getCurrentToken().value());
+    while (t.hasMore() && found != strOp.end()) {
+      ops.push_back(found->second);
+      terms.push_back(buildTerm(t));
+    }
+  }
+
+  return Expression(terms, ops);
+}
+
+Term JackCompilationEngineBuilder::buildTerm(JackTokenizer &t) {
+  UnaryOp unaryOp = UnaryOp::NONE;
+  Token tok = eat(t);
+
+  auto found = strUnaryOp.find(tok.value());
+  if (found != strUnaryOp.end()) {
+    unaryOp = found->second;
+    tok = eat(t);
+  }
+
+  // intConstant | strConstant | keywordConstant | varName
+  // TODO: look for varName[..] and others too
+  if (in_array(tok.getType(), {TokenType::INT_CONSTANT, TokenType::STR_CONSTANT, TokenType::IDENTIFIER, TokenType::KEYWORD})) {
+    return Term(tok, unaryOp);
+  }
+
+  // TODO
+  return Term(tok, unaryOp);
+}
+
+Token JackCompilationEngineBuilder::eat(JackTokenizer &t) {
+  _assert(t.hasMore(), "Tokenizer hasn't got any more tokens to give");
+
+  Token tok = t.getCurrentToken();
+  std::cout << "eating token " << tok.value() << "\n";
+  t.advance();
+  return tok;
 }
 
 Token JackCompilationEngineBuilder::eat(JackTokenizer &t, std::function<bool(Token)> isValidFunc) {
   _assert(t.hasMore(), "Tokenizer hasn't got any more tokens to give");
 
   Token tok = t.getCurrentToken();
-  std::cout << "eating token " << tok.value() << "\n";
-  if (isValidFunc(tok)) {
-    t.advance();
-  } else {
+  if (!isValidFunc(tok)) {
     std::string msg = "Token " + tok.value() + " isn't valid.";
     throw_and_debug(msg);
   }
-  return tok;
+  return eat(t);
 }
 
 Token JackCompilationEngineBuilder::eat(JackTokenizer &t, const std::string &tokenStr) {

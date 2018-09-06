@@ -13,6 +13,8 @@
 #define BOOST_TEST_MAIN
 #include <boost/test/included/unit_test.hpp>
 
+#include "../../utils.h"
+
 #include "builder.h"
 #include "grammar.h"
 #include "tokenizer.h"
@@ -84,6 +86,8 @@ struct fixture {
   }
 
   virtual ~fixture() {
+    std::cout << "Expected: " << expected << '\n';
+    std::cout << "Actual: " << actual << '\n';
     BOOST_REQUIRE_EQUAL_COLLECTIONS(
       std::begin(expected), std::end(expected),
       std::begin(actual), std::end(actual)
@@ -219,7 +223,7 @@ BOOST_FIXTURE_TEST_CASE(test_subroutine_body_let_statement, fixture) {
           "<symbol>=</symbol>",
           "<expression>",
             "<term>",
-              "<integerConstant>2</identifier>",
+              "<integerConstant>2</integerConstant>",
             "</term>",
           "</expression>",
           "<symbol>;</symbol>",

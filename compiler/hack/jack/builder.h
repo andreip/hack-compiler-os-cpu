@@ -18,6 +18,7 @@ class SubroutineBody;
 class VarDec;
 class Statement;
 class Expression;
+class Term;
 
 class JackBuilder {
 public:
@@ -40,7 +41,9 @@ public:
   VarDec buildVarDec(JackTokenizer &t);
   std::vector<Statement> buildStatements(JackTokenizer &t);
   Expression buildExpression(JackTokenizer &t);
+  Term buildTerm(JackTokenizer &t);
 private:
+  Token eat(JackTokenizer&);
   Token eat(JackTokenizer&, std::function<bool(Token)>);
   Token eat(JackTokenizer&, const std::string&);
   Token eat(JackTokenizer&, TokenType);

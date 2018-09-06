@@ -65,7 +65,10 @@ void split_by_any_char(ContainerT &parts,
                        // if to keep the elements we split by in output
                        bool keepSplitElements = false);
 
-bool in_array(const std::string&, const std::vector<std::string>&);
+template <typename T>
+bool in_array(const T val, const std::vector<T> &array) {
+  return std::find(array.begin(), array.end(), val) != array.end();
+}
 
 // prints before throwing
 #ifdef UTILS_DEBUG
