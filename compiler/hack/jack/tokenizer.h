@@ -33,6 +33,9 @@ public:
   std::string value() const;
   std::string escapedValue() const;
 
+  bool isAType() const;
+  bool isIdentifier() const;
+
   // TODO: implement these
   //KeywordTokenType getKeywordType() const;
   //char getSymbol() const;

@@ -25,6 +25,8 @@ public:
   void buildClass(JackTokenizer &t, std::ostream &out);
   void buildClassVarDec(JackTokenizer &t, std::ostream &out);
   void buildSubroutineDec(JackTokenizer &t, std::ostream &out);
+  void buildParameterList(JackTokenizer &t, std::ostream &out);
+  void buildSubroutineBody(JackTokenizer &t, std::ostream &out);
 private:
   Token eat(JackTokenizer&, std::ostream&, std::function<bool(Token)>);
   Token eat(JackTokenizer&, std::ostream&, const std::string&);

@@ -250,6 +250,17 @@ std::string Token::escapedValue() const {
   return rawValue;
 }
 
+bool Token::isAType() const {
+  return (
+    in_array(value(), {"int", "char", "boolean"}) ||
+    getType() == TokenType::IDENTIFIER
+  );
+}
+
+bool Token::isIdentifier() const {
+  return getType() == TokenType::IDENTIFIER;
+}
+
 std::ostream& operator<<(std::ostream &out, const Token &t) {
   out << t.value();
   return out;

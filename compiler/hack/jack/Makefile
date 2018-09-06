@@ -18,6 +18,6 @@ test_builder: test_builder.cpp builder.cpp builder.h tokenizer.cpp tokenizer.h .
 	./$@
 
 clean:
-	rm -f *.o test_tokenizer
+	rm -f *.o test_tokenizer test_builder
 
 .PHONY: clean

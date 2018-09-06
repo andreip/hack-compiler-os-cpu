@@ -74,12 +74,7 @@ void JackCompilationEngineBuilder::buildClassVarDec(JackTokenizer &t, std::ostre
     // static|field
     eat(t, out, [](Token tok) { return in_array(tok.value(), {"static", "field"}); });
     // type = int|char|boolean|className
-    eat(t, out, [](Token tok) {
-      return (
-        in_array(tok.value(), {"int", "char", "boolean"}) ||
-        tok.getType() == TokenType::IDENTIFIER  // className type
-      );
-    });
+    eat(t, out, [](Token tok) { return tok.isAType(); });
 
     // <varName> (, <varName>)*
     eat(t, out, TokenType::IDENTIFIER);  // varName
@@ -93,9 +88,32 @@ void JackCompilationEngineBuilder::buildClassVarDec(JackTokenizer &t, std::ostre
   }
 }
 
+/* (constructor|function|method) (void|<type>) <subroutineName> (<parameterList>) <subroutineBody> */
 void JackCompilationEngineBuilder::buildSubroutineDec(JackTokenizer &t, std::ostream &out) {
-  if (!t.hasMore())
-    return;
+  while (t.hasMore() &&
+         in_array(t.getCurrentToken().value(), {"constructor", "function", "method"})) {
+    out << "<subroutineDec>" << '\n';
+    // constructor|function|method
+    eat(t, out, [](Token tok) {
+      return in_array(tok.value(), {"constructor", "function", "method"});
+    });
+    // void|<type>
+    eat(t, out, [](Token tok) {
+      return (tok.value() == "void" || tok.isAType());
+    });
+    // <subroutineName>
+    eat(t, out, [](Token tok) { return tok.isIdentifier(); });
+    eat(t, out, "(");
+    buildParameterList(t, out);
+    eat(t, out, ")");
+    buildSubroutineBody(t, out);
+    out << "</subroutineDec>" << '\n';
+  }
+}
+
+void JackCompilationEngineBuilder::buildParameterList(JackTokenizer &t, std::ostream &out) {
+}
+void JackCompilationEngineBuilder::buildSubroutineBody(JackTokenizer &t, std::ostream &out) {
 }
 
 Token JackCompilationEngineBuilder::eat(JackTokenizer &t, std::ostream &out, std::function<bool(Token)> isValidFunc) {
