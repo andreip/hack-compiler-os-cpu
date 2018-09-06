@@ -14,6 +14,7 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include "builder.h"
+#include "grammar.h"
 #include "tokenizer.h"
 
 using namespace std;
@@ -30,25 +31,17 @@ struct fixture {
 
   void buildClass(istringstream &stream) {
     auto fp = std::bind(&Builder::buildClass, builder,
-                        std::placeholders::_1, std::placeholders::_2);
-    _build(stream, fp);
+                        std::placeholders::_1);
+    _build<ClassElement>(stream, fp);
   }
 
-  void buildClassVarDec(istringstream &stream) {
-    auto fp = std::bind(&Builder::buildClassVarDec, builder,
-                        std::placeholders::_1, std::placeholders::_2);
-    _build(stream, fp);
-  }
-
+  template <typename GrammarElement>
   void _build(istringstream &stream,
-             std::function<void(JackTokenizer&, std::ostream&)> buildMethod) {
+             std::function<GrammarElement(JackTokenizer&)> buildMethod) {
     JackTokenizer tokenizer(stream);
-    ostringstream out;
-    buildMethod(tokenizer, out);
-
+    std::string xml = buildMethod(tokenizer).toXML();
     // split lines, trim them and filter out empty ones.
-    std::string s = out.str();
-    split(actual, s, is_any_of("\n"));
+    split(actual, xml, is_any_of("\n"));
     actual.erase(
       remove_if(
         actual.begin(), actual.end(),
@@ -70,34 +63,34 @@ BOOST_FIXTURE_TEST_CASE(test_empty_class_parser, fixture) {
   istringstream stream("class Test   {  }");
   expected = {
     "<class>",
-      "<keyword> class </keyword>",
-      "<identifier> Test </identifier>",
-      "<symbol> { </symbol>",
-      "<symbol> } </symbol>",
+      "<keyword>class</keyword>",
+      "<identifier>Test</identifier>",
+      "<symbol>{</symbol>",
+      "<symbol>}</symbol>",
     "</class>",
   };
 
   buildClass(stream);
 }
 
-BOOST_FIXTURE_TEST_CASE(test_class_var_dec_parser, fixture) {
-  istringstream stream("static int x, y;\nfield boolean z;");
-  expected = {
-    "<classVarDec>",
-      "<keyword> static </keyword>",
-      "<keyword> int </keyword>",
-      "<identifier> x </identifier>",
-      "<symbol> , </symbol>",
-      "<identifier> y </identifier>",
-      "<symbol> ; </symbol>",
-    "</classVarDec>",
-    "<classVarDec>",
-      "<keyword> field </keyword>",
-      "<keyword> boolean </keyword>",
-      "<identifier> z </identifier>",
-      "<symbol> ; </symbol>",
-    "</classVarDec>",
-  };
-
-  buildClassVarDec(stream);
-}
+//BOOST_FIXTURE_TEST_CASE(test_class_var_dec_parser, fixture) {
+//  istringstream stream("static int x, y;\nfield boolean z;");
+//  expected = {
+//    "<classVarDec>",
+//      "<keyword> static </keyword>",
+//      "<keyword> int </keyword>",
+//      "<identifier> x </identifier>",
+//      "<symbol> , </symbol>",
+//      "<identifier> y </identifier>",
+//      "<symbol> ; </symbol>",
+//    "</classVarDec>",
+//    "<classVarDec>",
+//      "<keyword> field </keyword>",
+//      "<keyword> boolean </keyword>",
+//      "<identifier> z </identifier>",
+//      "<symbol> ; </symbol>",
+//    "</classVarDec>",
+//  };
+//
+//  buildClassVarDec(stream);
+//}

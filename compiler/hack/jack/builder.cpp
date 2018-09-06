@@ -6,6 +6,7 @@
 #include "../../utils.h"
 
 #include "builder.h"
+#include "grammar.h"
 #include "tokenizer.h"
 
 // JackBuilder
@@ -40,90 +41,90 @@ void JackTokenizerBuilder::build(const std::string &inputFile) {
 JackCompilationEngineBuilder::JackCompilationEngineBuilder(): JackBuilder() { }
 
 void JackCompilationEngineBuilder::build(const std::string &inputFile) {
+  std::ifstream in(inputFile);
+  JackTokenizer tokenizer(in);
+  ClassElement classElement = buildClass(tokenizer);
+
+  // output parsed tree to xml format.
   std::string outputFile = replaceExtension(inputFile, "xml");
   std::cout << "Extracting parsed grammar from " << inputFile << " into " << outputFile << '\n';
-
-  std::ifstream in(inputFile);
-
-  JackTokenizer tokenizer(in);
   std::ofstream out(outputFile);
-  build(tokenizer, out);
-}
-
-void JackCompilationEngineBuilder::build(JackTokenizer &t, std::ostream &out) {
-  buildClass(t, out);
-  out.flush();
+  out << classElement.toXML();
 }
 
 /* class <className> { <classVarDec*> <subroutineDec*> } */
-void JackCompilationEngineBuilder::buildClass(JackTokenizer &t, std::ostream &out) {
-  out << "<class>" << '\n';
-  eat(t, out, "class");
-  eat(t, out, TokenType::IDENTIFIER);  // className
-  eat(t, out, "{");
-  buildClassVarDec(t, out);
-  buildSubroutineDec(t, out);
-  eat(t, out, "}");
-  out << "</class>" << '\n';
+ClassElement JackCompilationEngineBuilder::buildClass(JackTokenizer &t) {
+  eat(t, "class");
+  Token className = eat(t, TokenType::IDENTIFIER);
+  eat(t, "{");
+  std::vector<ClassVarDec> classVarDecs = buildClassVarDecs(t);
+  std::vector<SubroutineDec> subroutineDecs = buildSubroutineDecs(t);
+  eat(t, "}");
+  return ClassElement(className.value(), classVarDecs, subroutineDecs);
 }
 
 /* (static|field) <type> <varName> (, <varName>)* ; */
-void JackCompilationEngineBuilder::buildClassVarDec(JackTokenizer &t, std::ostream &out) {
-  while (t.hasMore() && in_array(t.getCurrentToken().value(), {"static", "field"})) {
-    out << "<classVarDec>" << '\n';
-    // static|field
-    eat(t, out, [](Token tok) { return in_array(tok.value(), {"static", "field"}); });
-    // type = int|char|boolean|className
-    eat(t, out, [](Token tok) { return tok.isAType(); });
+std::vector<ClassVarDec> JackCompilationEngineBuilder::buildClassVarDecs(JackTokenizer &t) {
+  std::vector<ClassVarDec> out;
+  return out;
 
-    // <varName> (, <varName>)*
-    eat(t, out, TokenType::IDENTIFIER);  // varName
-    while (t.hasMore() && t.getCurrentToken().value() == ",") {
-      eat(t, out, ",");
-      eat(t, out, TokenType::IDENTIFIER);  // varName
-    }
+  //while (t.hasMore() && in_array(t.getCurrentToken().value(), {"static", "field"})) {
+  //  out << "<classVarDec>" << '\n';
+  //  // static|field
+  //  eat(t, out, [](Token tok) { return in_array(tok.value(), {"static", "field"}); });
+  //  // type = int|char|boolean|className
+  //  eat(t, out, [](Token tok) { return tok.isAType(); });
 
-    eat(t, out, ";");
-    out << "</classVarDec>" << '\n';
-  }
+  //  // <varName> (, <varName>)*
+  //  eat(t, out, TokenType::IDENTIFIER);  // varName
+  //  while (t.hasMore() && t.getCurrentToken().value() == ",") {
+  //    eat(t, out, ",");
+  //    eat(t, out, TokenType::IDENTIFIER);  // varName
+  //  }
+
+  //  eat(t, out, ";");
+  //  out << "</classVarDec>" << '\n';
+  //}
 }
 
 /* (constructor|function|method) (void|<type>) <subroutineName> (<parameterList>) <subroutineBody> */
-void JackCompilationEngineBuilder::buildSubroutineDec(JackTokenizer &t, std::ostream &out) {
-  while (t.hasMore() &&
-         in_array(t.getCurrentToken().value(), {"constructor", "function", "method"})) {
-    out << "<subroutineDec>" << '\n';
-    // constructor|function|method
-    eat(t, out, [](Token tok) {
-      return in_array(tok.value(), {"constructor", "function", "method"});
-    });
-    // void|<type>
-    eat(t, out, [](Token tok) {
-      return (tok.value() == "void" || tok.isAType());
-    });
-    // <subroutineName>
-    eat(t, out, [](Token tok) { return tok.isIdentifier(); });
-    eat(t, out, "(");
-    buildParameterList(t, out);
-    eat(t, out, ")");
-    buildSubroutineBody(t, out);
-    out << "</subroutineDec>" << '\n';
-  }
-}
+std::vector<SubroutineDec> JackCompilationEngineBuilder::buildSubroutineDecs(JackTokenizer &t) {
+  std::vector<SubroutineDec> out;
+  return out;
 
-void JackCompilationEngineBuilder::buildParameterList(JackTokenizer &t, std::ostream &out) {
+  //while (t.hasMore() &&
+  //       in_array(t.getCurrentToken().value(), {"constructor", "function", "method"})) {
+  //  out << "<subroutineDec>" << '\n';
+  //  // constructor|function|method
+  //  eat(t, out, [](Token tok) {
+  //    return in_array(tok.value(), {"constructor", "function", "method"});
+  //  });
+  //  // void|<type>
+  //  eat(t, out, [](Token tok) {
+  //    return (tok.value() == "void" || tok.isAType());
+  //  });
+  //  // <subroutineName>
+  //  eat(t, out, [](Token tok) { return tok.isIdentifier(); });
+  //  eat(t, out, "(");
+  //  buildParameterList(t, out);
+  //  eat(t, out, ")");
+  //  buildSubroutineBody(t, out);
+  //  out << "</subroutineDec>" << '\n';
+  //}
 }
-void JackCompilationEngineBuilder::buildSubroutineBody(JackTokenizer &t, std::ostream &out) {
-}
+//
+//void JackCompilationEngineBuilder::buildParameterList(JackTokenizer &t, std::ostream &out) {
+//}
+//void JackCompilationEngineBuilder::buildSubroutineBody(JackTokenizer &t, std::ostream &out) {
+//}
 
-Token JackCompilationEngineBuilder::eat(JackTokenizer &t, std::ostream &out, std::function<bool(Token)> isValidFunc) {
+Token JackCompilationEngineBuilder::eat(JackTokenizer &t, std::function<bool(Token)> isValidFunc) {
   _assert(t.hasMore(), "Tokenizer hasn't got any more tokens to give");
 
   Token tok = t.getCurrentToken();
   std::cout << "eating token " << tok.value() << "\n";
   if (isValidFunc(tok)) {
     t.advance();
-    out << tok.toXML() << '\n';
   } else {
     std::string msg = "Token " + tok.value() + " isn't valid.";
     throw_and_debug(msg);
@@ -131,16 +132,16 @@ Token JackCompilationEngineBuilder::eat(JackTokenizer &t, std::ostream &out, std
   return tok;
 }
 
-Token JackCompilationEngineBuilder::eat(JackTokenizer &t, std::ostream &out, const std::string &tokenStr) {
+Token JackCompilationEngineBuilder::eat(JackTokenizer &t, const std::string &tokenStr) {
   return eat(
-    t, out,
+    t,
     [&tokenStr](Token tok) { return tok.value() == tokenStr; }
   );
 }
 
-Token JackCompilationEngineBuilder::eat(JackTokenizer &t, std::ostream &out, TokenType tokenType) {
+Token JackCompilationEngineBuilder::eat(JackTokenizer &t, TokenType tokenType) {
   return eat(
-    t, out,
+    t,
     [&tokenType](Token tok) { return tok.getType() == tokenType; }
   );
 }
