@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <string>
 #include <sstream>
+#include <utility>
 #include <vector>
 
 #include "../../utils.h"
@@ -58,11 +59,32 @@ std::string SubroutineBody::toXML() const {
   return wrapXMLWithType(out.str());
 }
 
+// ParameterList
+
+ParameterList::ParameterList(std::vector<std::pair<Token, Token>> parameters)
+  : GrammarElement("parameterList"), _parameters(parameters) { }
+
+std::string ParameterList::toXML() const {
+  std::ostringstream out;
+  if (!_parameters.empty()) {
+    auto p = _parameters[0];
+    out << p.first.toXML() << '\n';
+    out << p.second.toXML() << '\n';
+  }
+  for (int i = 1; i < _parameters.size(); ++i) {
+    auto p = _parameters[i];
+    out << "<symbol>,</symbol>\n";
+    out << p.first.toXML() << '\n';
+    out << p.second.toXML() << '\n';
+  }
+  return wrapXMLWithType(out.str());
+}
+
 // SubroutineDec
 
 SubroutineDec::SubroutineDec(
     Token kind, Token _return, Token name,
-    std::vector<Parameter> parameters,
+    ParameterList parameters,
     SubroutineBody body)
   : GrammarElement("subroutineDec"),
     _kind(kind), _return(_return), _subroutineName(name),
@@ -74,8 +96,7 @@ std::string SubroutineDec::toXML() const {
   out << _return.toXML() << '\n';
   out << _subroutineName.toXML() << '\n';
   out << "<symbol>(</symbol>\n";
-  //for (const Parameter &p : _parameters)
-  //  out << p.toXML();
+  out << _parameters.toXML();
   out << "<symbol>)</symbol>\n";
   out << _body.toXML();
   return wrapXMLWithType(out.str());

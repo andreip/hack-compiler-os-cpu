@@ -2,6 +2,7 @@
 #include <functional>
 #include <iostream>
 #include <string>
+#include <utility>
 
 #include "../../utils.h"
 
@@ -112,7 +113,7 @@ std::vector<SubroutineDec> JackCompilationEngineBuilder::buildSubroutineDecs(Jac
     // <subroutineName>
     Token name = eat(t, [](Token tok) { return tok.isIdentifier(); });
     eat(t, "(");
-    std::vector<Parameter> parameters = buildParameterList(t);
+    ParameterList parameters = buildParameterList(t);
     eat(t, ")");
     SubroutineBody body = buildSubroutineBody(t);
 
@@ -124,9 +125,26 @@ std::vector<SubroutineDec> JackCompilationEngineBuilder::buildSubroutineDecs(Jac
   return subroutineDecs;
 }
 
-std::vector<Parameter> JackCompilationEngineBuilder::buildParameterList(JackTokenizer &t) {
-  std::vector<Parameter> out;
-  return out;
+/* ( (<type> <varName>) (, <type> <varName>)* )? */
+ParameterList JackCompilationEngineBuilder::buildParameterList(JackTokenizer &t) {
+  std::vector<std::pair<Token, Token>> parameters;
+
+  t.hasMore();
+  if (t.hasMore() && t.getCurrentToken().isAType()) {
+    Token type = eat(t, [](Token tok) { return tok.isAType(); });
+    Token varName = eat(t, TokenType::IDENTIFIER);
+
+    parameters.push_back(std::make_pair(type, varName));
+
+    while (t.hasMore() && t.getCurrentToken().value() == ",") {
+      eat(t, ",");
+      type = eat(t, [](Token tok) { return tok.isAType(); });
+      varName = eat(t, TokenType::IDENTIFIER);
+      parameters.push_back(std::make_pair(type, varName));
+    }
+  }
+
+  return ParameterList(parameters);
 }
 
 SubroutineBody JackCompilationEngineBuilder::buildSubroutineBody(JackTokenizer &t) {

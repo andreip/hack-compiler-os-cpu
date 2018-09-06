@@ -2,6 +2,7 @@
 #define __JACK__GRAMMAR__H__
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "tokenizer.h"
@@ -32,7 +33,6 @@ private:
 // TODO
 struct VarDec {};
 struct Statement {};
-struct Parameter {};
 
 /* '{' <varDec>* <statement>*) '}' */
 class SubroutineBody : public GrammarElement {
@@ -45,18 +45,28 @@ private:
   std::vector<Statement> _statements;
 };
 
+/* ( (<type> <varName>) (, <type> <varName>)* )? */
+class ParameterList : public GrammarElement {
+public:
+  ParameterList(std::vector<std::pair<Token, Token>>);
+  virtual std::string toXML() const override;
+private:
+  // pairs of (type, varName)
+  std::vector<std::pair<Token, Token>> _parameters;
+};
+
 /* (constructor|function|method) (void|<type>) <subroutineName> (<parameterList>) <subroutineBody> */
 class SubroutineDec: public GrammarElement {
 public:
   SubroutineDec(Token kind, Token _return, Token name,
-                std::vector<Parameter> parameters,
+                ParameterList parameters,
                 SubroutineBody body);
   virtual std::string toXML() const override;
 private:
   Token _kind;
   Token _return;
   Token _subroutineName;
-  std::vector<Parameter> _parameters;
+  ParameterList _parameters;
   SubroutineBody _body;
 };
 

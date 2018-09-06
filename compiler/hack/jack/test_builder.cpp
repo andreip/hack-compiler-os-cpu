@@ -129,6 +129,34 @@ BOOST_FIXTURE_TEST_CASE(test_class_subroutine_dec_empty_params, fixture) {
       "<identifier>Square</identifier>",
       "<identifier>new</identifier>",
       "<symbol>(</symbol>",
+      "<parameterList>",
+      "</parameterList>",
+      "<symbol>)</symbol>",
+      "<subroutineBody>",
+        "<symbol>{</symbol>",
+        "<symbol>}</symbol>",
+      "</subroutineBody>",
+    "</subroutineDec>",
+  };
+
+  buildSubroutineDecs(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_class_subroutine_dec, fixture) {
+  istringstream stream("method void test(int x, char y) { }");
+  expected = {
+    "<subroutineDec>",
+      "<keyword>method</keyword>",
+      "<keyword>void</keyword>",
+      "<identifier>test</identifier>",
+      "<symbol>(</symbol>",
+      "<parameterList>",
+        "<keyword>int</keyword>",
+        "<identifier>x</identifier>",
+        "<symbol>,</symbol>",
+        "<keyword>char</keyword>",
+        "<identifier>y</identifier>",
+      "</parameterList>",
       "<symbol>)</symbol>",
       "<subroutineBody>",
         "<symbol>{</symbol>",

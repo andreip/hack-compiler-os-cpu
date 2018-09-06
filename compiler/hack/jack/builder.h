@@ -13,7 +13,7 @@ enum class TokenType;
 class ClassElement;
 class ClassVarDec;
 class SubroutineDec;
-class Parameter;
+class ParameterList;
 class SubroutineBody;
 
 class JackBuilder {
@@ -32,7 +32,7 @@ public:
   ClassElement buildClass(JackTokenizer&);
   std::vector<ClassVarDec> buildClassVarDecs(JackTokenizer&);
   std::vector<SubroutineDec> buildSubroutineDecs(JackTokenizer&);
-  std::vector<Parameter> buildParameterList(JackTokenizer &t);
+  ParameterList buildParameterList(JackTokenizer &t);
   SubroutineBody buildSubroutineBody(JackTokenizer &t);
 private:
   Token eat(JackTokenizer&, std::function<bool(Token)>);
