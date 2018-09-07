@@ -45,8 +45,29 @@ private:
   std::vector<Token> _varNames;
 };
 
-// TODO
-struct SubroutineCall { };
+// forward declaration for expression list.
+class Expression;
+class ExpressionList : public GrammarElement {
+public:
+  ExpressionList();
+  ExpressionList(std::vector<Expression> expressions);
+  virtual std::string toXML() const override;
+  operator bool() const;
+private:
+  std::vector<Expression> _expressions;
+};
+
+class SubroutineCall: public GrammarElement {
+public:
+  SubroutineCall();
+  SubroutineCall(Token subroutineName, Token classOrVarName, ExpressionList);
+  virtual std::string toXML() const override;
+  operator bool() const;
+private:
+  Token _subroutineName;
+  Token _classOrVarName;  // <classOrVarName>.<subroutineName>
+  ExpressionList _expressionList;
+};
 
 // Expression must come before Term, since Term uses an expression
 // directly inside it, while Expression uses pointers of Terms in
@@ -66,7 +87,6 @@ private:
   std::vector<Term> _terms;
   std::vector<Op> _ops;
 };
-
 
 /* Term = intConstant | stringConstant | keywordConstant |
  *        varName | varName[expression] | subroutineCall |

@@ -433,3 +433,36 @@ BOOST_FIXTURE_TEST_CASE(test_subroutine_body_while_statement, fixture) {
   buildSubroutineBody(stream);
 }
 
+BOOST_FIXTURE_TEST_CASE(test_subroutine_body_subroutine_call1, fixture) {
+  istringstream stream("{ do call(x, y); }");
+  expected = {
+    "<subroutineBody>",
+      "<symbol>{</symbol>",
+      "<statements>",
+        "<doStatement>",
+          "<keyword>do</keyword>",
+          "<identifier>call</identifier>",
+          "<symbol>(</symbol>",
+          "<expressionList>",
+            "<expression>",
+              "<term>",
+                "<identifier>x</identifier>",
+              "</term>",
+            "</expression>",
+            "<symbol>,</symbol>",
+            "<expression>",
+              "<term>",
+                "<identifier>y</identifier>",
+              "</term>",
+            "</expression>",
+          "</expressionList>",
+          "<symbol>)</symbol>",
+          "<symbol>;</symbol>",
+        "</doStatement>",
+      "</statements>",
+      "<symbol>}</symbol>",
+    "</subroutineBody>",
+  };
+  buildSubroutineBody(stream);
+}
+

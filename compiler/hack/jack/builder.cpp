@@ -238,6 +238,10 @@ std::vector<Statement> JackCompilationEngineBuilder::buildStatements(JackTokeniz
         Statement(type, expressions, statements1, statements2)
       );
     } else if (type.value() == "do") {
+      statements.push_back(
+        Statement(type, buildSubroutineCall(t))
+      );
+      eat(t, ";");
     } else if (type.value() == "return") {
     } else {
       throw_and_debug("Unknown statement beginning with " + type.value());
@@ -282,6 +286,36 @@ Term JackCompilationEngineBuilder::buildTerm(JackTokenizer &t) {
 
   // TODO
   return Term(tok, unaryOp);
+}
+
+SubroutineCall JackCompilationEngineBuilder::buildSubroutineCall(JackTokenizer &t) {
+  Token subroutineName, classOrVarName;
+
+  subroutineName = eat(t, TokenType::IDENTIFIER);
+  if (t.hasMore() && t.getCurrentToken().value() == ".") {
+    classOrVarName = subroutineName;
+    eat(t, ".");
+    subroutineName = eat(t, TokenType::IDENTIFIER);
+  }
+
+  eat(t, "(");
+  ExpressionList expressionList = buildExpressionList(t);
+  eat(t, ")");
+
+  return SubroutineCall(subroutineName, classOrVarName, expressionList);
+}
+
+ExpressionList JackCompilationEngineBuilder::buildExpressionList(JackTokenizer &t) {
+  std::vector<Expression> expressions;
+  if (t.hasMore() &&
+      t.getCurrentToken().value() != ")") {
+    expressions.push_back(buildExpression(t));
+    while (t.hasMore() && t.getCurrentToken().value() == ",") {
+      eat(t, ",");
+      expressions.push_back(buildExpression(t));
+    }
+  }
+  return ExpressionList(expressions);
 }
 
 Token JackCompilationEngineBuilder::eat(JackTokenizer &t) {

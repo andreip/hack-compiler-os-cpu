@@ -62,6 +62,52 @@ std::string ClassVarDec::toXML() const {
   return wrapXMLWithType(out.str());
 }
 
+// ExpressionList
+
+ExpressionList::ExpressionList() : GrammarElement("expressionList") { }
+
+ExpressionList::ExpressionList(std::vector<Expression> expressions)
+  : GrammarElement("expressionList"), _expressions(expressions) { }
+
+std::string ExpressionList::toXML() const {
+  std::ostringstream out;
+  if (!_expressions.empty()) {
+    out << _expressions[0].toXML();
+    for (int i = 1; i < _expressions.size(); ++i) {
+      out << "<symbol>,</symbol>\n";
+      out << _expressions[i].toXML();
+    }
+  }
+  return wrapXMLWithType(out.str());
+}
+
+ExpressionList::operator bool() const { return !_expressions.empty(); }
+
+// SubroutineCall
+
+SubroutineCall::SubroutineCall(): GrammarElement("subroutineCall") { }
+
+SubroutineCall::SubroutineCall(Token subroutineName, Token classOrVarName, ExpressionList expressionList)
+  : GrammarElement("subroutineCall"),
+    _subroutineName(subroutineName), _classOrVarName(classOrVarName),
+    _expressionList(expressionList) { }
+
+std::string SubroutineCall::toXML() const {
+  std::ostringstream out;
+  if (_classOrVarName) {
+    out << _classOrVarName.toXML() << '\n';
+    out << "<symbol>.</symbol>\n";
+  }
+  out << _subroutineName.toXML() << '\n';
+  out << "<symbol>(</symbol>\n";
+  out << _expressionList.toXML();
+  out << "<symbol>)</symbol>\n";
+  // no wrap, don't want <subroutineCall> element.
+  return out.str();
+}
+
+SubroutineCall::operator bool() const { return _subroutineName; }
+
 // Term
 
 // int/str/keyword constant or varname and unary operation
@@ -200,8 +246,7 @@ std::string Statement::toXML() const {
       out << "<symbol>}</symbol>\n";
     }
   } else if (_type.value() == "do") {
-    // TODO enable this
-    //out << _subroutineCall.toXML();
+    out << _subroutineCall.toXML();
     out << "<symbol>;</symbol>\n";
   } else if (_type.value() == "return") {
     if (!_expressions.empty())
