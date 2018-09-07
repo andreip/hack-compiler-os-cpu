@@ -192,6 +192,7 @@ std::string Statement::toXML() const {
     // else case
     if (_type.value() == "if" && !_statements2.empty()) {
       out << "<keyword>else</keyword>\n";
+      out << "<symbol>{</symbol>\n";
       out << "<statements>\n";
       for (const Statement &s : _statements2)
         out << s.toXML();
