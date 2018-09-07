@@ -17,9 +17,16 @@ enum class UnaryOp {
   NOT, // ~
   NONE,
 };
-extern std::unordered_map<Op, std::string> opStr;
+// https://stackoverflow.com/questions/18837857/cant-use-enum-class-as-unordered-map-key
+struct EnumClassHash {
+  template <typename T>
+  std::size_t operator()(T t) const {
+    return static_cast<std::size_t>(t);
+  }
+};
+extern std::unordered_map<Op, std::string, EnumClassHash> opStr;
 extern std::unordered_map<std::string, Op> strOp;
-extern std::unordered_map<UnaryOp, std::string> unaryOpStr;
+extern std::unordered_map<UnaryOp, std::string, EnumClassHash> unaryOpStr;
 extern std::unordered_map<std::string, UnaryOp> strUnaryOp;
 
 // base class for all grammar elements from jack

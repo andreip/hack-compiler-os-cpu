@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <string>
 #include <sstream>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -8,7 +9,7 @@
 
 #include "grammar.h"
 
-std::unordered_map<Op, std::string> opStr {
+std::unordered_map<Op, std::string, EnumClassHash> opStr {
   {Op::ADD, "+"}, {Op::SUB, "-"}, {Op::MUL, "*"}, {Op::DIV, "/"},
   {Op::AND, "&"}, {Op::OR, "|"}, {Op::LT, "<"}, {Op::GT, ">"}, {Op::EQ, "="},
 };
@@ -16,7 +17,7 @@ std::unordered_map<std::string, Op> strOp {
   {"+", Op::ADD}, {"-", Op::SUB}, {"*", Op::MUL}, {"/", Op::DIV},
   {"&", Op::AND}, {"|", Op::OR}, {"<", Op::LT}, {">", Op::GT}, {"=", Op::EQ},
 };
-std::unordered_map<UnaryOp, std::string> unaryOpStr {
+std::unordered_map<UnaryOp, std::string, EnumClassHash> unaryOpStr {
   {UnaryOp::NEG, "-"},
   {UnaryOp::NOT, "~"},
 };
