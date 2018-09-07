@@ -287,7 +287,7 @@ std::string Statement::toXML() const {
     out << "<symbol>;</symbol>\n";
   } else if (_type.value() == "return") {
     if (!_expressions.empty())
-      out << _expressions[0];
+      out << _expressions[0].toXML();
     out << "<symbol>;</symbol>\n";
   } else {
     throw_and_debug("Unknown statement type " + _type.value());

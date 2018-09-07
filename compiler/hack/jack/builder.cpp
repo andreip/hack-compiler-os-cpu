@@ -244,6 +244,12 @@ std::vector<Statement> JackCompilationEngineBuilder::buildStatements(JackTokeniz
       );
       eat(t, ";");
     } else if (type.value() == "return") {
+      if (t.hasMore() && t.getCurrentToken().value() != ";")
+        expressions.push_back(buildExpression(t));
+      eat(t, ";");
+      statements.push_back(
+        Statement(type, expressions, {}, {})
+      );
     } else {
       throw_and_debug("Unknown statement beginning with " + type.value());
     }

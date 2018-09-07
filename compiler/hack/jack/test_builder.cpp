@@ -512,3 +512,25 @@ BOOST_FIXTURE_TEST_CASE(test_subroutine_body_subroutine_call_nested, fixture) {
   buildSubroutineBody(stream);
 }
 
+BOOST_FIXTURE_TEST_CASE(test_subroutine_body_subroutine_return_statement, fixture) {
+  istringstream stream("{ return x; }");
+  expected = {
+    "<subroutineBody>",
+      "<symbol>{</symbol>",
+      "<statements>",
+        "<returnStatement>",
+          "<keyword>return</keyword>",
+          "<expression>",
+            "<term>",
+              "<identifier>x</identifier>",
+            "</term>",
+          "</expression>",
+          "<symbol>;</symbol>",
+        "</returnStatement>",
+      "</statements>",
+      "<symbol>}</symbol>",
+    "</subroutineBody>",
+  };
+  buildSubroutineBody(stream);
+}
+
