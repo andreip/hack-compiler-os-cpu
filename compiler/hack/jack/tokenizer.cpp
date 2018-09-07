@@ -23,7 +23,7 @@ std::string JackTokenizer::SINGLE_LINE_COMMENT = "//";
 std::string JackTokenizer::MULTILINE_COMMENT_BEGIN = "/*";
 std::string JackTokenizer::MULTILINE_COMMENT_END = "*/";
 
-JackTokenizer::JackTokenizer(std::istream &in): _istream(in), _hasMore(true), _inMultiLineComment(false) {
+JackTokenizer::JackTokenizer(std::istream &in): _istream(in), _hasMore(true), _inMultiLineComment(false), _lineNo(0) {
   if (!_istream) {
     std::cerr << "Input stream in tokenizer failed.\n";
   }
@@ -39,6 +39,7 @@ bool JackTokenizer::hasMore() {
   while (_crt_buffer.empty() && _hasMore) {
     std::string line;
     std::getline(_istream, line);
+    ++_lineNo;
 
     if (!line.empty())
       tokenizeLine(line, _crt_buffer);
@@ -62,6 +63,7 @@ Token JackTokenizer::getCurrentToken() {
 
 void JackTokenizer::rewind() {
   _istream.seekg(0);
+  _lineNo = 0;
 }
 
 template <typename ContainerT>
@@ -88,7 +90,7 @@ void JackTokenizer::tokenizeLine(std::string line, ContainerT &out) {
       // if inside a quote, add the raw string including quotes
       // as a token string constant.
       if (in_quote)
-        out.push_back(Token::fromString("\"" + s + "\""));
+        out.push_back(Token::fromString("\"" + s + "\"", _lineNo));
       // otherwise this string is string-constants free, so
       // we can pass it to be parsed by the other symbols of
       // the language and populate the out container.
@@ -117,10 +119,10 @@ void JackTokenizer::tokenizeString(std::string line, ContainerT &out) {
       // copy each stripped-non-empty token from temp to output buffer.
       std::for_each(
         temp.begin(), temp.end(),
-        [&out](std::string s) {
+        [&out, lineNo=this->_lineNo](std::string s) {
           strip(s, JackTokenizer::IGNORE_CHARS);
           if (!s.empty())
-            out.push_back(Token::fromString(s));
+            out.push_back(Token::fromString(s, lineNo));
         }
       );
     }
@@ -178,18 +180,18 @@ void JackTokenizer::stripComments(std::string &line) {
 
 // Token class related
 
-Token Token::fromString(const std::string &value) {
+Token Token::fromString(const std::string &value, int lineNo) {
   if (JackTokenizer::KEYWORDS.find(value) != JackTokenizer::KEYWORDS.end())
-    return Token(TokenType::KEYWORD, value);
+    return Token(TokenType::KEYWORD, value, lineNo);
 
   if (value.length() == 1 &&
       JackTokenizer::SYMBOLS.find(value) != std::string::npos)
-        return Token(TokenType::SYMBOL, value);
+        return Token(TokenType::SYMBOL, value, lineNo);
 
   if (isNumber(value)) {
     int n = getNumber(value);
     if (n >= 0 && n <= 32767)
-      return Token(TokenType::INT_CONSTANT, value);
+      return Token(TokenType::INT_CONSTANT, value, lineNo);
     throw_and_debug("Number out of 16-bit range: " + value);
   }
 
@@ -199,20 +201,20 @@ Token Token::fromString(const std::string &value) {
     if (value.find("\"", 1, value.size() - 2) != std::string::npos)
       throw_and_debug("String constant contains too many double quotes: " + value);
 
-    return Token(TokenType::STR_CONSTANT, value);
+    return Token(TokenType::STR_CONSTANT, value, lineNo);
   }
 
   if (value.front() == '_' || std::isalpha(value.front()))
     if (std::all_of(
           value.begin(), value.end(),
           [](char c) { return c == '_' || std::isalnum(c); }))
-      return Token(TokenType::IDENTIFIER, value);
+      return Token(TokenType::IDENTIFIER, value, lineNo);
 
   throw_and_debug("Unkown token type for value '" + value + "'");
 }
 
-Token::Token(TokenType type, const std::string &rawValue)
-  : type(type), rawValue(rawValue) { }
+Token::Token(TokenType type, const std::string &rawValue, int lineNo)
+  : type(type), rawValue(rawValue), lineNo(lineNo) { }
 
 bool Token::operator!() const { return type == TokenType::NONE; }
 Token::operator bool() const { return type != TokenType::NONE; }
@@ -252,6 +254,8 @@ std::string Token::escapedValue() const {
 
   return rawValue;
 }
+
+int Token::getLineNo() const { return lineNo; }
 
 bool Token::isAType() const {
   return (

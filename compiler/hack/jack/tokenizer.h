@@ -26,8 +26,8 @@ enum class KeywordTokenType {
 // holds a token that the tokenizer outputs.
 class Token {
 public:
-  static Token fromString(const std::string&);
-  Token(TokenType type=TokenType::NONE, const std::string &rawValue="");
+  static Token fromString(const std::string&, int lineNo);
+  Token(TokenType type=TokenType::NONE, const std::string &rawValue="", int lineNo=-1);
   bool operator!() const;
   operator bool() const;
   std::string toXML() const;
@@ -35,6 +35,7 @@ public:
   std::string getTypeStr() const;
   std::string value() const;
   std::string escapedValue() const;
+  int getLineNo() const;
 
   bool isAType() const;
   bool isIdentifier() const;
@@ -50,6 +51,7 @@ public:
 private:
   TokenType type;
   std::string rawValue;
+  int lineNo;
 };
 
 // like an iterator, but outputs tokens from the
@@ -77,6 +79,7 @@ private:
   std::deque<Token> _crt_buffer;
   bool _hasMore;
   bool _inMultiLineComment;
+  int _lineNo;
 
   static std::string IGNORE_CHARS;
   static std::string SINGLE_LINE_COMMENT;
