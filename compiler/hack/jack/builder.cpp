@@ -270,29 +270,63 @@ Expression JackCompilationEngineBuilder::buildExpression(JackTokenizer &t) {
 }
 
 Term JackCompilationEngineBuilder::buildTerm(JackTokenizer &t) {
-  UnaryOp unaryOp = UnaryOp::NONE;
   Token tok = eat(t);
 
+  // unaryOp <term>
   auto found = strUnaryOp.find(tok.value());
   if (found != strUnaryOp.end()) {
-    unaryOp = found->second;
-    tok = eat(t);
+    UnaryOp unaryOp = found->second;
+    return Term(buildTerm(t), unaryOp);
   }
 
+  // if token is an identifier, it could be:
+  // - an array access like varName[expression] or
+  // - a subroutineCall
+  if (tok.isIdentifier()) {
+    if (t.hasMore() && t.getCurrentToken().value() == "[") {
+      eat(t, "[");
+      Expression expression = buildExpression(t);
+      eat(t, "]");
+      return Term(tok, expression);
+    }
+
+    // a subroutineCall is like
+    // <obj>.<method>() | <method>() so lookahead for a "." or a "("
+    if (t.hasMore() &&
+        in_array(t.getCurrentToken().value(), {".", "("})) {
+      return Term(buildSubroutineCall(t, tok));
+    }
+  }
+
+  // since it's not a varname[] nor a subroutine call, it could be
   // intConstant | strConstant | keywordConstant | varName
-  // TODO: look for varName[..] and others too
   if (in_array(tok.getType(), {TokenType::INT_CONSTANT, TokenType::STR_CONSTANT, TokenType::IDENTIFIER, TokenType::KEYWORD})) {
-    return Term(tok, unaryOp);
+    return Term(tok);
   }
 
-  // TODO
-  return Term(tok, unaryOp);
+  // ( <expr> )
+  if (t.hasMore() && t.getCurrentToken().value() == "(") {
+    eat(t, "(");
+    Expression expression = buildExpression(t);
+    eat(t, ")");
+    return Term(expression);
+  }
+
+  std::string msg = (
+    "Unknown category for term; next tokens: " + tok.value() + " " +
+    (t.hasMore() ? t.getCurrentToken().value() : "")  // next token
+  );
+  throw_and_debug(msg);
 }
 
 SubroutineCall JackCompilationEngineBuilder::buildSubroutineCall(JackTokenizer &t) {
-  Token subroutineName, classOrVarName;
+  return buildSubroutineCall(t, eat(t, TokenType::IDENTIFIER));
+}
 
-  subroutineName = eat(t, TokenType::IDENTIFIER);
+SubroutineCall JackCompilationEngineBuilder::buildSubroutineCall(JackTokenizer &t, Token tok) {
+  Token subroutineName = tok, classOrVarName;
+  _assert(tok.isIdentifier(), "First token of a subroutine call must be an identifier");
+
   if (t.hasMore() && t.getCurrentToken().value() == ".") {
     classOrVarName = subroutineName;
     eat(t, ".");
@@ -308,6 +342,9 @@ SubroutineCall JackCompilationEngineBuilder::buildSubroutineCall(JackTokenizer &
 
 ExpressionList JackCompilationEngineBuilder::buildExpressionList(JackTokenizer &t) {
   std::vector<Expression> expressions;
+  // expression list only appears inside a function call, so we
+  // know that if there is an expression list, then the next token
+  // isn't a closing bracket ')'.
   if (t.hasMore() &&
       t.getCurrentToken().value() != ")") {
     expressions.push_back(buildExpression(t));

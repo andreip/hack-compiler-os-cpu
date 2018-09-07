@@ -94,14 +94,20 @@ private:
  */
 class Term : public GrammarElement {
 public:
-  // int/str/keyword constant or varname and unary operation
-  Term(Token type, UnaryOp op=UnaryOp::NONE);
-  // subroutine call and unary op
-  Term(SubroutineCall, UnaryOp op=UnaryOp::NONE);
-  // varname[expr] and unary op
-  Term(Token type, Expression, UnaryOp op=UnaryOp::NONE);
-  // (expr) and unary operation
-  Term(Expression expression, UnaryOp op=UnaryOp::NONE);
+  // empty term, usually not called directly.
+  Term();
+  // int/str/keyword constant or varname
+  Term(Token type);
+  // varname[expr]
+  Term(Token type, Expression);
+  // subroutine call
+  Term(SubroutineCall);
+  // (expr)
+  Term(Expression);
+  // unaryOp <term>
+  Term(const Term&, UnaryOp);
+  virtual ~Term();
+  operator bool() const;
   virtual std::string toXML() const override;
   std::string unaryOpToXML(UnaryOp op) const;
 private:
@@ -112,6 +118,10 @@ private:
   UnaryOp _unaryOp;  // if NONE, it's not set
   Expression _expression;
   SubroutineCall _subroutineCall;
+  // need to use a pointer since otherwise compiler doesn't know
+  // the size of Term which is just being defined to have it used
+  // recursively here.
+  Term *_term;   // for <unaryOp> term
 };
 
 /* statement = letStatement | ifStatement | whileStatement |

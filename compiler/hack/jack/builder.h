@@ -45,6 +45,7 @@ public:
   Expression buildExpression(JackTokenizer &t);
   Term buildTerm(JackTokenizer &t);
   SubroutineCall buildSubroutineCall(JackTokenizer &t);
+  SubroutineCall buildSubroutineCall(JackTokenizer &t, Token tok);
   ExpressionList buildExpressionList(JackTokenizer &t);
 private:
   Token eat(JackTokenizer&);

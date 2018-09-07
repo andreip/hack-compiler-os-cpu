@@ -110,33 +110,69 @@ SubroutineCall::operator bool() const { return _subroutineName; }
 
 // Term
 
-// int/str/keyword constant or varname and unary operation
-Term::Term(Token type, UnaryOp op)
-  : GrammarElement("term"), _type(type), _unaryOp(op) { }
-
-// subroutine call and unary op
-Term::Term(SubroutineCall subroutineCall, UnaryOp op)
-  : GrammarElement("term"), _subroutineCall(subroutineCall), _unaryOp(op) { }
-
-// varname[expr] and unary op
-Term::Term(Token type, Expression expression, UnaryOp op)
+// empty term, usually not called directly.
+Term::Term()
   : GrammarElement("term"),
-    _type(type), _expression(expression), _unaryOp(op) { }
+    _unaryOp(UnaryOp::NONE), _term(nullptr) { }
 
-// (expr) and unary operation
-Term::Term(Expression expression, UnaryOp op)
+// int/str/keyword constant or varname
+Term::Term(Token type)
   : GrammarElement("term"),
-    _expression(expression), _unaryOp(op) { }
+    _type(type), _unaryOp(UnaryOp::NONE), _term(nullptr) { }
+
+// varname[expr]
+Term::Term(Token type, Expression expression)
+  : GrammarElement("term"),
+    _type(type), _expression(expression), _unaryOp(UnaryOp::NONE),
+    _term(nullptr) { }
+
+// subroutine call
+Term::Term(SubroutineCall subroutineCall)
+  : GrammarElement("term"), _subroutineCall(subroutineCall), _unaryOp(UnaryOp::NONE), _term(nullptr) { }
+
+// (expr)
+Term::Term(Expression expression)
+  : GrammarElement("term"),
+    _expression(expression), _unaryOp(UnaryOp::NONE), _term(nullptr) { }
+
+// unaryOp <term>
+Term::Term(const Term &term, UnaryOp op)
+  : GrammarElement("term"), _unaryOp(op) {
+  _term = new Term(term);
+}
+
+Term::~Term() {
+  // TODO: can't do this :( because we pass around a term as
+  // values on stack and the destructor gets called over and
+  // over again, and the _term pointer gets copied over to
+  // other temporary values on stack, so the destructor would
+  // get called several times. To do this properly we'd need
+  // to use move semantics and move the _term over to the new
+  // Term instead.. So this is a small mem leak as is.
+  // delete _term;
+}
+
+Term::operator bool() const {
+  return (
+    _unaryOp != UnaryOp::NONE ||
+    _type ||
+    _expression ||
+    _subroutineCall ||
+    _term
+  );
+}
 
 std::string Term::toXML() const {
   std::ostringstream out;
 
   std::cout << "outputting xml for term of type " << _type.value() << '\n';
 
-  if (_unaryOp != UnaryOp::NONE)
+  // <unaryOp> <term>
+  if (_unaryOp != UnaryOp::NONE && _term) {
     out << unaryOpToXML(_unaryOp) << '\n';
-
-  if (_type) {
+    out << _term->toXML();
+  // constants | varName | varName[expression]
+  } else if (_type) {
     // intConstant | stringConstant | keywordConstant | varName
     out << _type.toXML() << '\n';
 
@@ -153,10 +189,11 @@ std::string Term::toXML() const {
     out << "<symbol>(</symbol>\n";
     out << _expression.toXML();
     out << "<symbol>)</symbol>\n";
-  // might be subroutine call
+  // <subroutineCall> is the only remaining one
   } else {
-    // TODO:
+    out << _subroutineCall.toXML();
   }
+
   return wrapXMLWithType(out.str());
 }
 
