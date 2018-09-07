@@ -227,6 +227,16 @@ std::vector<Statement> JackCompilationEngineBuilder::buildStatements(JackTokeniz
         Statement(type, expressions, statements1, statements2)
       );
     } else if (type.value() == "while") {
+      eat(t, "(");
+      expressions.push_back(buildExpression(t));
+      eat(t, ")");
+      eat(t, "{");
+      statements1 = buildStatements(t);
+      eat(t, "}");
+
+      statements.push_back(
+        Statement(type, expressions, statements1, statements2)
+      );
     } else if (type.value() == "do") {
     } else if (type.value() == "return") {
     } else {

@@ -394,3 +394,42 @@ BOOST_FIXTURE_TEST_CASE(test_subroutine_body_nested_if_else_statement, fixture) 
   buildSubroutineBody(stream);
 }
 
+
+BOOST_FIXTURE_TEST_CASE(test_subroutine_body_while_statement, fixture) {
+  istringstream stream("{ while (i) { let j = \"string ct\"; } }");
+  expected = {
+    "<subroutineBody>",
+      "<symbol>{</symbol>",
+      "<statements>",
+        "<whileStatement>",
+          "<keyword>while</keyword>",
+          "<symbol>(</symbol>",
+          "<expression>",
+            "<term>",
+              "<identifier>i</identifier>",
+            "</term>",
+          "</expression>",
+          "<symbol>)</symbol>",
+          "<symbol>{</symbol>",
+          "<statements>",
+            "<letStatement>",
+              "<keyword>let</keyword>",
+              "<identifier>j</identifier>",
+              "<symbol>=</symbol>",
+              "<expression>",
+                "<term>",
+                  "<stringConstant>string ct</stringConstant>",
+                "</term>",
+              "</expression>",
+              "<symbol>;</symbol>",
+            "</letStatement>",
+          "</statements>",
+          "<symbol>}</symbol>",
+        "</whileStatement>",
+      "</statements>",
+      "<symbol>}</symbol>",
+    "</subroutineBody>",
+  };
+  buildSubroutineBody(stream);
+}
+
