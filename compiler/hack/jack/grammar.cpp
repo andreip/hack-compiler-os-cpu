@@ -165,8 +165,6 @@ Term::operator bool() const {
 std::string Term::toXML() const {
   std::ostringstream out;
 
-  std::cout << "outputting xml for term of type " << _type.value() << '\n';
-
   // <unaryOp> <term>
   if (_unaryOp != UnaryOp::NONE && _term) {
     out << unaryOpToXML(_unaryOp) << '\n';

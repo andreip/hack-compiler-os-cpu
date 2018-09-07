@@ -366,7 +366,7 @@ Token JackCompilationEngineBuilder::eat(JackTokenizer &t) {
   _assert(t.hasMore(), "Tokenizer hasn't got any more tokens to give");
 
   Token tok = t.getCurrentToken();
-  std::cout << "eating token " << tok.value() << "\n";
+  //std::cout << "eating token " << tok.value() << "\n";
   t.advance();
   return tok;
 }

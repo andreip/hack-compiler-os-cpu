@@ -92,8 +92,8 @@ struct fixture {
   }
 
   virtual ~fixture() {
-    std::cout << "Expected: " << expected << '\n';
-    std::cout << "Actual: " << actual << '\n';
+    //std::cout << "Expected: " << expected << '\n';
+    //std::cout << "Actual: " << actual << '\n';
     BOOST_REQUIRE_EQUAL_COLLECTIONS(
       std::begin(expected), std::end(expected),
       std::begin(actual), std::end(actual)
