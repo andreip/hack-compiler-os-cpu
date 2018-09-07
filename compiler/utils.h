@@ -3,6 +3,7 @@
 
 #define UTILS_DEBUG
 
+#include <algorithm>
 #include <iostream>
 #include <list>
 #include <string>

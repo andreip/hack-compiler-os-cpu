@@ -26,7 +26,7 @@ enum class KeywordTokenType {
 // holds a token that the tokenizer outputs.
 class Token {
 public:
-  static Token fromString(const std::string&, int lineNo);
+  static Token fromString(const std::string&, int lineNo=-1);
   Token(TokenType type=TokenType::NONE, const std::string &rawValue="", int lineNo=-1);
   bool operator!() const;
   operator bool() const;

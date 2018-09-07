@@ -55,6 +55,12 @@ struct fixture {
     _build<SubroutineBody>(stream, fp);
   }
 
+  void buildExpression(istringstream &stream) {
+    auto fp = std::bind(&Builder::buildExpression, builder,
+                        std::placeholders::_1);
+    _build<Expression>(stream, fp);
+  }
+
   template <typename GrammarElement>
   void _build(istringstream &stream,
              std::function<GrammarElement(JackTokenizer&)> buildMethod) {
@@ -255,6 +261,41 @@ BOOST_FIXTURE_TEST_CASE(test_subroutine_body_let_statement2, fixture) {
           "<expression>",
             "<term>",
               "<identifier>j</identifier>",
+            "</term>",
+          "</expression>",
+          "<symbol>;</symbol>",
+        "</letStatement>",
+      "</statements>",
+      "<symbol>}</symbol>",
+    "</subroutineBody>",
+  };
+  buildSubroutineBody(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_subroutine_body_let_statement3, fixture) {
+  istringstream stream("{ let sum = sum + a[i]; }");
+  expected = {
+    "<subroutineBody>",
+      "<symbol>{</symbol>",
+      "<statements>",
+        "<letStatement>",
+          "<keyword>let</keyword>",
+          "<identifier>sum</identifier>",
+          "<symbol>=</symbol>",
+          "<expression>",
+            "<term>",
+              "<identifier>sum</identifier>",
+            "</term>",
+            "<symbol>+</symbol>",
+            "<term>",
+              "<identifier>a</identifier>",
+              "<symbol>[</symbol>",
+              "<expression>",
+                "<term>",
+                  "<identifier>i</identifier>",
+                "</term>",
+              "</expression>",
+              "<symbol>]</symbol>",
             "</term>",
           "</expression>",
           "<symbol>;</symbol>",
@@ -534,3 +575,111 @@ BOOST_FIXTURE_TEST_CASE(test_subroutine_body_subroutine_return_statement, fixtur
   buildSubroutineBody(stream);
 }
 
+BOOST_FIXTURE_TEST_CASE(test_expression_add, fixture) {
+  istringstream stream("x + 1");
+  expected = {
+    "<expression>",
+      "<term>",
+        "<identifier>x</identifier>",
+      "</term>",
+      "<symbol>+</symbol>",
+      "<term>",
+        "<integerConstant>1</integerConstant>",
+      "</term>",
+    "</expression>",
+  };
+  buildExpression(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_expression_escape, fixture) {
+  istringstream stream("x < 2");
+  expected = {
+    "<expression>",
+      "<term>",
+        "<identifier>x</identifier>",
+      "</term>",
+      "<symbol>&lt;</symbol>",
+      "<term>",
+        "<integerConstant>2</integerConstant>",
+      "</term>",
+    "</expression>",
+  };
+  buildExpression(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_expression_nested_parenthesis, fixture) {
+  istringstream stream("( ( x + 2 ) )");
+  expected = {
+    "<expression>",
+      "<term>",
+        "<symbol>(</symbol>",
+        "<expression>",
+          "<term>",
+            "<symbol>(</symbol>",
+            "<expression>",
+              "<term>",
+                "<identifier>x</identifier>",
+              "</term>",
+              "<symbol>+</symbol>",
+              "<term>",
+                "<integerConstant>2</integerConstant>",
+              "</term>",
+            "</expression>",
+            "<symbol>)</symbol>",
+          "</term>",
+        "</expression>",
+        "<symbol>)</symbol>",
+      "</term>",
+    "</expression>",
+  };
+  buildExpression(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_expression_complicated, fixture) {
+  istringstream stream("x & ( (y * 2) | ~(z - 4) )");
+  expected = {
+    "<expression>",
+      "<term>",
+        "<identifier>x</identifier>",
+      "</term>",
+      "<symbol>&amp;</symbol>",
+      "<term>",
+        "<symbol>(</symbol>",
+        "<expression>",
+          "<term>",
+            "<symbol>(</symbol>",
+            "<expression>",
+              "<term>",
+                "<identifier>y</identifier>",
+              "</term>",
+              "<symbol>*</symbol>",
+              "<term>",
+                "<integerConstant>2</integerConstant>",
+              "</term>",
+            "</expression>",
+            "<symbol>)</symbol>",
+          "</term>",
+          "<symbol>|</symbol>",
+          "<term>",
+            "<symbol>~</symbol>",
+            "<term>",
+              "<symbol>(</symbol>",
+              "<expression>",
+                "<term>",
+                  "<identifier>z</identifier>",
+                "</term>",
+                "<symbol>-</symbol>",
+                "<term>",
+                  "<integerConstant>4</integerConstant>",
+                "</term>",
+              "</expression>",
+              "<symbol>)</symbol>",
+            "</term>",
+          "</term>",
+        "</expression>",
+        "<symbol>)</symbol>",
+      "</term>",
+    "</expression>",
+  };
+  buildExpression(stream);
+}

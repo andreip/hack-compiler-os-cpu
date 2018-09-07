@@ -267,8 +267,10 @@ Expression JackCompilationEngineBuilder::buildExpression(JackTokenizer &t) {
   if (t.hasMore()) {
     auto found = strOp.find(t.getCurrentToken().value());
     while (t.hasMore() && found != strOp.end()) {
+      eat(t, TokenType::SYMBOL); // eat an operator
       ops.push_back(found->second);
       terms.push_back(buildTerm(t));
+      found = t.hasMore() ? strOp.find(t.getCurrentToken().value()) : strOp.end();
     }
   }
 
@@ -306,13 +308,11 @@ Term JackCompilationEngineBuilder::buildTerm(JackTokenizer &t) {
 
   // since it's not a varname[] nor a subroutine call, it could be
   // intConstant | strConstant | keywordConstant | varName
-  if (in_array(tok.getType(), {TokenType::INT_CONSTANT, TokenType::STR_CONSTANT, TokenType::IDENTIFIER, TokenType::KEYWORD})) {
+  if (in_array(tok.getType(), {TokenType::INT_CONSTANT, TokenType::STR_CONSTANT, TokenType::IDENTIFIER, TokenType::KEYWORD}))
     return Term(tok);
-  }
 
   // ( <expr> )
-  if (t.hasMore() && t.getCurrentToken().value() == "(") {
-    eat(t, "(");
+  if (tok.value() == "(") {
     Expression expression = buildExpression(t);
     eat(t, ")");
     return Term(expression);

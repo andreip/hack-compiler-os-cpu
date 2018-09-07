@@ -179,7 +179,7 @@ std::string Term::toXML() const {
     // varName[expression]
     if (_type.isIdentifier() && _expression) {
       out << "<symbol>[</symbol>\n";
-      out << _expression.toXML() << '\n';
+      out << _expression.toXML();
       out << "<symbol>]</symbol>\n";
     } else if (_expression) {
       throw_and_debug("Cannot have an expression w/o a varname[].");
@@ -198,7 +198,8 @@ std::string Term::toXML() const {
 }
 
 std::string Term::unaryOpToXML(UnaryOp op) const {
-  return "<symbol>" + unaryOpStr[op] + "</symbol>";
+  // this also escapes the value.
+  return Token::fromString(unaryOpStr[op]).toXML();
 }
 
 // Expression
@@ -223,7 +224,8 @@ std::string Expression::toXML() const {
 }
 
 std::string Expression::opToXML(Op op) const {
-    return "<symbol>" + opStr[op] + "</symbol>";
+    // this also escapes the value.
+    return Token::fromString(opStr[op]).toXML();
 }
 
 // Statement
