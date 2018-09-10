@@ -3,6 +3,7 @@
 VMTranslator
 AsmHack
 JackAnalyzer
+JackCompiler
 lang.txt
 test_tokenizer
 test_builder

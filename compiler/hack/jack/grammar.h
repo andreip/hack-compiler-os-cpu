@@ -189,6 +189,7 @@ public:
                 ParameterList parameters,
                 SubroutineBody body);
   virtual std::string toXML() const override;
+  std::string getName() const;
 private:
   Token _kind;
   Token _return;
@@ -202,6 +203,7 @@ class ClassElement: public GrammarElement {
 public:
   ClassElement(std::string, std::vector<ClassVarDec>, std::vector<SubroutineDec>);
   virtual std::string toXML() const override;
+  std::vector<SubroutineDec> getSubroutineDecs();
 private:
   std::string className;
   std::vector<ClassVarDec> classVarDecs;

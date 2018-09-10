@@ -366,6 +366,8 @@ SubroutineDec::SubroutineDec(
     _kind(kind), _return(_return), _subroutineName(name),
     _parameters(parameters), _body(body) { }
 
+std::string SubroutineDec::getName() const { return _subroutineName.value(); }
+
 std::string SubroutineDec::toXML() const {
   std::ostringstream out;
   out << _kind.toXML() << '\n';
@@ -387,6 +389,8 @@ ClassElement::ClassElement(std::string className,
     classVarDecs(classVarDecs), subroutineDecs(subroutineDecs)
 {
 }
+
+std::vector<SubroutineDec> ClassElement::getSubroutineDecs() { return subroutineDecs; }
 
 std::string ClassElement::toXML() const {
   std::ostringstream out;
