@@ -64,11 +64,14 @@ void SymbolTable::populateFromClass(const ClassElement &classElement) {
 
 void SymbolTable::populateFromSubroutine(const SubroutineDec &sub) {
   clearSubroutineSymbols();  // can't have two subroutine's symbols at same time
+
   // populate args
-  // TODO: if method/constructor, first put "this"
-  // (type, name)
+  if (in_array(sub.getKind(), {"constructor", "method"}))
+    defineThis(sub.getClassName());
   for (const auto &pair: sub.getParameterList().getArgs())
+    // (type, name)
     defineSubroutineVar(pair.second, pair.first, SymbolKind::ARG);
+
   // populate vars
   for (const VarDec &dec : sub.getBody().getVarDecs())
     for (const std::string &name: dec.getNames())
@@ -84,6 +87,10 @@ void SymbolTable::clear() {
   _classSymbols.clear();
   _subroutineSymbols.clear();
   _indices.clear();
+}
+
+void SymbolTable::defineThis(std::string type) {
+  define("this", type, SymbolKind::ARG, _subroutineSymbols);
 }
 
 void SymbolTable::defineClassVar(std::string name, std::string type, SymbolKind kind) {
@@ -113,7 +120,7 @@ Symbol SymbolTable::get(std::string name) const {
     return _subroutineSymbols.at(name);
   if (_classSymbols.find(name) != _classSymbols.end())
     return _classSymbols.at(name);
-  throw std::runtime_error("SymbolTable::get couldn't find symbol " + name);
+  return Symbol();  // empty, evaluates to falsy
 }
 
 int SymbolTable::varCount(SymbolKind kind) const {
@@ -128,9 +135,3 @@ int SymbolTable::varCount(SymbolKind kind) const {
   );
   return count;
 }
-
-SymbolKind SymbolTable::kindOf(std::string name) const { return get(name).kind; }
-
-std::string SymbolTable::typeOf(std::string name) const { return get(name).type; }
-
-int SymbolTable::indexOf(std::string name) const { return get(name).index; }

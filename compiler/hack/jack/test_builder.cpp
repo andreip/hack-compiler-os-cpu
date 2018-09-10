@@ -43,9 +43,9 @@ struct fixture {
     _buildFromVector<ClassVarDec>(stream, fp);
   }
 
-  void buildSubroutineDecs(istringstream &stream) {
+  void buildSubroutineDecs(istringstream &stream, std::string className="") {
     auto fp = std::bind(&Builder::buildSubroutineDecs, builder,
-                        std::placeholders::_1);
+                        std::placeholders::_1, className);
     _buildFromVector<SubroutineDec>(stream, fp);
   }
 

@@ -399,12 +399,17 @@ std::string ParameterList::toXML() const {
 SubroutineDec::SubroutineDec(
     Token kind, Token _return, Token name,
     ParameterList parameters,
-    SubroutineBody body)
+    SubroutineBody body,
+    std::string className)
   : GrammarElement("subroutineDec"),
     _kind(kind), _return(_return), _subroutineName(name),
-    _parameters(parameters), _body(body) { }
+    _parameters(parameters), _body(body), _className(className) { }
 
 std::string SubroutineDec::getName() const { return _subroutineName.value(); }
+
+std::string SubroutineDec::getKind() const { return _kind.value(); }
+
+std::string SubroutineDec::getClassName() const { return _className; }
 
 ParameterList SubroutineDec::getParameterList() const { return _parameters; }
 

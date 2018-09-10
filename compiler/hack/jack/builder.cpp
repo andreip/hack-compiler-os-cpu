@@ -60,7 +60,7 @@ ClassElement JackCompilationEngineBuilder::buildClass(JackTokenizer &t) {
   Token className = eat(t, TokenType::IDENTIFIER);
   eat(t, "{");
   std::vector<ClassVarDec> classVarDecs = buildClassVarDecs(t);
-  std::vector<SubroutineDec> subroutineDecs = buildSubroutineDecs(t);
+  std::vector<SubroutineDec> subroutineDecs = buildSubroutineDecs(t, className.value());
   eat(t, "}");
   return ClassElement(className.value(), classVarDecs, subroutineDecs);
 }
@@ -97,7 +97,7 @@ std::vector<ClassVarDec> JackCompilationEngineBuilder::buildClassVarDecs(JackTok
 }
 
 /* (constructor|function|method) (void|<type>) <subroutineName> (<parameterList>) <subroutineBody> */
-std::vector<SubroutineDec> JackCompilationEngineBuilder::buildSubroutineDecs(JackTokenizer &t) {
+std::vector<SubroutineDec> JackCompilationEngineBuilder::buildSubroutineDecs(JackTokenizer &t, std::string className) {
   std::vector<SubroutineDec> subroutineDecs;
 
   while (t.hasMore() &&
@@ -119,7 +119,7 @@ std::vector<SubroutineDec> JackCompilationEngineBuilder::buildSubroutineDecs(Jac
     SubroutineBody body = buildSubroutineBody(t);
 
     subroutineDecs.push_back(
-      SubroutineDec(kind, _return, name, parameters, body)
+      SubroutineDec(kind, _return, name, parameters, body, className)
     );
   }
 

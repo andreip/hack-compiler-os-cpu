@@ -189,9 +189,12 @@ class SubroutineDec: public GrammarElement {
 public:
   SubroutineDec(Token kind, Token _return, Token name,
                 ParameterList parameters,
-                SubroutineBody body);
+                SubroutineBody body,
+                std::string className);
   virtual std::string toXML() const override;
   std::string getName() const;
+  std::string getKind() const;
+  std::string getClassName() const;
   ParameterList getParameterList() const;
   SubroutineBody getBody() const;
 private:
@@ -200,6 +203,7 @@ private:
   Token _subroutineName;
   ParameterList _parameters;
   SubroutineBody _body;
+  std::string _className;
 };
 
 /* class <className> { <classVarDec*> <subroutineDec*> } */

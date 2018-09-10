@@ -37,7 +37,7 @@ public:
   void build(JackTokenizer&, std::ostream&);
   ClassElement buildClass(JackTokenizer&);
   std::vector<ClassVarDec> buildClassVarDecs(JackTokenizer&);
-  std::vector<SubroutineDec> buildSubroutineDecs(JackTokenizer&);
+  std::vector<SubroutineDec> buildSubroutineDecs(JackTokenizer&, std::string className="");
   ParameterList buildParameterList(JackTokenizer &t);
   SubroutineBody buildSubroutineBody(JackTokenizer &t);
   VarDec buildVarDec(JackTokenizer &t);

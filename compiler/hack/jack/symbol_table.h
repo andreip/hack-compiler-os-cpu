@@ -54,12 +54,10 @@ public:
   void clear();  // clears everything
   void defineClassVar(std::string name, std::string type, SymbolKind kind);
   void defineSubroutineVar(std::string name, std::string type, SymbolKind kind);
+  void defineThis(std::string type);
   // query methods
   Symbol get(std::string name) const;
   int varCount(SymbolKind) const;
-  SymbolKind kindOf(std::string name) const;
-  std::string typeOf(std::string name) const;
-  int indexOf(std::string name) const;
 private:
   template <typename MapT>
   void define(std::string name, std::string type, SymbolKind kind, MapT &map);
