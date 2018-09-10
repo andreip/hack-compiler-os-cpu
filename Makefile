@@ -6,7 +6,7 @@ LDFLAGS=
 
 ASM_OUT=AsmHack
 VM_OUT=VMTranslator
-CPL_OUT=JackAnalyzer
+CPL_OUT=JackCompiler
 
 FILES=main.o
 COMMON_DIRS=compiler compiler/hack

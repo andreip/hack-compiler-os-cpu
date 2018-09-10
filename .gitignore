@@ -6,6 +6,7 @@ JackAnalyzer
 lang.txt
 test_tokenizer
 test_builder
+test/
 
 *.vm
 *.asm
