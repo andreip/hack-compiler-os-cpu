@@ -41,7 +41,7 @@ BOOST_FIXTURE_TEST_CASE(test_empty, fixture) {
   istringstream stream("class Test {}");
   populate(stream);
 
-  for (SymbolKind kind: SymbolKindAll)
+  for (SymbolKind kind: SymbolKindHelpers::ALL)
     BOOST_TEST(symbol_table.varCount(kind) == 0);
   BOOST_CHECK_THROW(symbol_table.get("invalid"), std::runtime_error);
 }

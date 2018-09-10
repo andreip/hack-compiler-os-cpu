@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 enum class SymbolKind {
   STATIC,
@@ -11,8 +12,20 @@ enum class SymbolKind {
   VAR,  // local
   ARG,
 };
-const SymbolKind SymbolKindAll[] = {
-  SymbolKind::STATIC, SymbolKind::FIELD, SymbolKind::VAR, SymbolKind::ARG
+
+namespace SymbolKindHelpers {
+  const SymbolKind ALL[] = {
+    SymbolKind::STATIC, SymbolKind::FIELD, SymbolKind::VAR, SymbolKind::ARG
+  };
+  const std::pair<SymbolKind, std::string> MAPPING[] = {
+    std::make_pair(SymbolKind::STATIC, "static"),
+    std::make_pair(SymbolKind::FIELD, "field"),
+    std::make_pair(SymbolKind::VAR, "local"),
+    std::make_pair(SymbolKind::ARG, "argument"),
+  };
+
+  SymbolKind toKind(std::string);
+  std::string toString(SymbolKind);
 };
 
 struct Symbol {
@@ -25,10 +38,6 @@ struct Symbol {
 };
 std::ostream& operator<<(std::ostream &out, const Symbol &s);
 
-//struct SymbolHash {
-//  std::size_t operator()(const Symbol &s) const noexcept;
-//};
-
 class ClassElement;
 class SubroutineDec;
 
@@ -37,13 +46,11 @@ class SubroutineDec;
 class SymbolTable {
 public:
   SymbolTable();
-  void populateFromClass(ClassElement&);
-  void populateFromSubroutine(SubroutineDec&);
+  void populateFromClass(const ClassElement&);
+  void populateFromSubroutine(const SubroutineDec&);
   void clearSubroutineSymbols();
   void clear();  // clears everything
-  void define(std::string name,
-              std::string type,
-              SymbolKind kind);
+  void defineClassVar(std::string name, std::string type, SymbolKind kind);
   // query methods
   Symbol get(std::string name);
   int varCount(SymbolKind);
@@ -51,6 +58,10 @@ public:
   std::string typeOf(std::string name);
   int indexOf(std::string name);
 private:
+  std::unordered_map<std::string, Symbol> _classSymbols;
+  std::unordered_map<std::string, Symbol> _subroutineSymbols;
+  std::string _className;
+  std::unordered_map<SymbolKind, int, EnumClassHash> _indices;
 };
 
 #endif

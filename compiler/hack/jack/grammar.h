@@ -6,6 +6,8 @@
 #include <utility>
 #include <vector>
 
+#include "../../utils.h"
+
 #include "tokenizer.h"
 
 enum class Op {
@@ -16,13 +18,6 @@ enum class UnaryOp {
   NEG, // -
   NOT, // ~
   NONE,
-};
-// https://stackoverflow.com/questions/18837857/cant-use-enum-class-as-unordered-map-key
-struct EnumClassHash {
-  template <typename T>
-  std::size_t operator()(T t) const {
-    return static_cast<std::size_t>(t);
-  }
 };
 extern std::unordered_map<Op, std::string, EnumClassHash> opStr;
 extern std::unordered_map<std::string, Op> strOp;
@@ -46,6 +41,9 @@ class ClassVarDec: public GrammarElement {
 public:
   ClassVarDec(Token kind, Token type, std::vector<Token> varNames);
   virtual std::string toXML() const override;
+  std::string getKind() const;
+  std::string getType() const;
+  std::vector<std::string> getVarNames() const;
 private:
   Token _kind;  // static|field
   Token _type;
@@ -203,7 +201,9 @@ class ClassElement: public GrammarElement {
 public:
   ClassElement(std::string, std::vector<ClassVarDec>, std::vector<SubroutineDec>);
   virtual std::string toXML() const override;
-  std::vector<SubroutineDec> getSubroutineDecs();
+  std::vector<SubroutineDec> getSubroutineDecs() const;
+  std::vector<ClassVarDec> getClassVarDecs() const;
+  std::string getName() const;
 private:
   std::string className;
   std::vector<ClassVarDec> classVarDecs;

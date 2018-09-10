@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <cstdio>
+#include <iterator>
 #include <string>
 #include <sstream>
 #include <unordered_map>
@@ -46,6 +48,17 @@ ClassVarDec::ClassVarDec(Token kind,
                          Token type,
                          std::vector<Token> varNames)
   : GrammarElement("classVarDec"), _kind(kind), _type(type), _varNames(varNames) { }
+
+std::string ClassVarDec::getKind() const { return _kind.value(); }
+std::string ClassVarDec::getType() const { return _type.value(); }
+std::vector<std::string> ClassVarDec::getVarNames() const {
+  std::vector<std::string> out;
+  std::transform(
+    _varNames.begin(), _varNames.end(), std::back_inserter(out),
+    [](const Token &t) { return t.value(); }
+  );
+  return out;
+}
 
 std::string ClassVarDec::toXML() const {
   if (_varNames.empty())
@@ -390,14 +403,18 @@ ClassElement::ClassElement(std::string className,
 {
 }
 
-std::vector<SubroutineDec> ClassElement::getSubroutineDecs() { return subroutineDecs; }
+std::vector<SubroutineDec> ClassElement::getSubroutineDecs() const { return subroutineDecs; }
+
+std::vector<ClassVarDec> ClassElement::getClassVarDecs() const { return classVarDecs; }
+
+std::string ClassElement::getName() const { return className; }
 
 std::string ClassElement::toXML() const {
   std::ostringstream out;
   out << "<keyword>class</keyword>\n";
   out << "<identifier>" << className << "</identifier>\n";
   out << "<symbol>{</symbol>\n";
-  for (const ClassVarDec &varDec : classVarDecs)
+  for (const ClassVarDec &varDec : getClassVarDecs())
     out << varDec.toXML();
   for (const SubroutineDec &subDec : subroutineDecs)
     out << subDec.toXML();
