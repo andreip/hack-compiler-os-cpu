@@ -10,6 +10,7 @@
 #include "../../utils.h"
 
 #include "grammar.h"
+#include "symbol_table.h"
 
 std::unordered_map<Op, std::string, EnumClassHash> opStr {
   {Op::ADD, "+"}, {Op::SUB, "-"}, {Op::MUL, "*"}, {Op::DIV, "/"},
@@ -60,6 +61,11 @@ std::vector<std::string> ClassVarDec::getVarNames() const {
   return out;
 }
 
+std::vector<std::string> ClassVarDec::toVMCode(SymbolTable &table) const {
+  std::vector<std::string> code;
+  return code;
+}
+
 std::string ClassVarDec::toXML() const {
   if (_varNames.empty())
     throw_and_debug("Class var declaration cannot be w/ empty variables.");
@@ -83,6 +89,11 @@ ExpressionList::ExpressionList() : GrammarElement("expressionList") { }
 ExpressionList::ExpressionList(std::vector<Expression> expressions)
   : GrammarElement("expressionList"), _expressions(expressions) { }
 
+std::vector<std::string> ExpressionList::toVMCode(SymbolTable &table) const {
+  std::vector<std::string> code;
+  return code;
+}
+
 std::string ExpressionList::toXML() const {
   std::ostringstream out;
   if (!_expressions.empty()) {
@@ -105,6 +116,11 @@ SubroutineCall::SubroutineCall(Token subroutineName, Token classOrVarName, Expre
   : GrammarElement("subroutineCall"),
     _subroutineName(subroutineName), _classOrVarName(classOrVarName),
     _expressionList(expressionList) { }
+
+std::vector<std::string> SubroutineCall::toVMCode(SymbolTable &table) const {
+  std::vector<std::string> code;
+  return code;
+}
 
 std::string SubroutineCall::toXML() const {
   std::ostringstream out;
@@ -176,6 +192,11 @@ Term::operator bool() const {
   );
 }
 
+std::vector<std::string> Term::toVMCode(SymbolTable &table) const {
+  std::vector<std::string> code;
+  return code;
+}
+
 std::string Term::toXML() const {
   std::ostringstream out;
 
@@ -225,6 +246,11 @@ Expression::Expression(std::vector<Term> terms, std::vector<Op> ops)
 bool Expression::operator!() const { return _terms.empty(); }
 Expression::operator bool() const { return !(!*this); }
 
+std::vector<std::string> Expression::toVMCode(SymbolTable &table) const {
+  std::vector<std::string> code;
+  return code;
+}
+
 std::string Expression::toXML() const {
   std::ostringstream out;
   out << _terms[0].toXML();
@@ -259,6 +285,11 @@ Statement::Statement(Token type, std::vector<Expression> expressions,
 Statement::Statement(Token type, SubroutineCall subroutineCall)
   : GrammarElement(type.value() + "Statement"), _type(type),
     _subroutineCall(subroutineCall) { }
+
+std::vector<std::string> Statement::toVMCode(SymbolTable &table) const {
+  std::vector<std::string> code;
+  return code;
+}
 
 std::string Statement::toXML() const {
   std::ostringstream out;
@@ -326,6 +357,11 @@ std::vector<std::string> VarDec::getNames() const {
   return out;
 }
 
+std::vector<std::string> VarDec::toVMCode(SymbolTable &table) const {
+  std::vector<std::string> code;
+  return code;
+}
+
 std::string VarDec::toXML() const {
   std::ostringstream out;
   out << "<keyword>var</keyword>\n";
@@ -348,6 +384,11 @@ SubroutineBody::SubroutineBody(std::vector<VarDec> varDecs,
 
 std::vector<VarDec> SubroutineBody::getVarDecs() const {
   return _varDecs;
+}
+
+std::vector<std::string> SubroutineBody::toVMCode(SymbolTable &table) const {
+  std::vector<std::string> code;
+  return code;
 }
 
 std::string SubroutineBody::toXML() const {
@@ -376,6 +417,11 @@ std::vector<std::pair<std::string, std::string>> ParameterList::getArgs() const 
                                                  pair.second.value()); }
   );
   return out;
+}
+
+std::vector<std::string> ParameterList::toVMCode(SymbolTable &table) const {
+  std::vector<std::string> code;
+  return code;
 }
 
 std::string ParameterList::toXML() const {
@@ -415,6 +461,11 @@ ParameterList SubroutineDec::getParameterList() const { return _parameters; }
 
 SubroutineBody SubroutineDec::getBody() const { return _body; }
 
+std::vector<std::string> SubroutineDec::toVMCode(SymbolTable &table) const {
+  std::vector<std::string> code;
+  return code;
+}
+
 std::string SubroutineDec::toXML() const {
   std::ostringstream out;
   out << _kind.toXML() << '\n';
@@ -442,6 +493,19 @@ std::vector<SubroutineDec> ClassElement::getSubroutineDecs() const { return subr
 std::vector<ClassVarDec> ClassElement::getClassVarDecs() const { return classVarDecs; }
 
 std::string ClassElement::getName() const { return className; }
+
+std::vector<std::string> ClassElement::toVMCode(SymbolTable &table) const {
+  table.clear();  // just for sanity
+  table.populateFromClass(*this);
+
+  std::vector<std::string> code;
+  for (const SubroutineDec &subroutine: getSubroutineDecs()) {
+    std::vector<std::string> subroutineCode = subroutine.toVMCode(table);
+    code.insert(code.end(), subroutineCode.begin(), subroutineCode.end());
+  }
+
+  return code;
+}
 
 std::string ClassElement::toXML() const {
   std::ostringstream out;

@@ -10,6 +10,7 @@
 #include "builder.h"
 #include "grammar.h"
 #include "tokenizer.h"
+#include "symbol_table.h"
 
 // JackBuilder
 
@@ -48,10 +49,17 @@ void JackCompilationEngineBuilder::build(const std::string &inputFile) {
   ClassElement classElement = buildClass(tokenizer);
 
   // output parsed tree to xml format.
-  std::string outputFile = replaceExtension(inputFile, "xml");
+  std::string xmlOutputFile = replaceExtension(inputFile, "xml");
+  std::cout << "Extracting parsed grammar from " << inputFile << " into " << xmlOutputFile << '\n';
+  std::ofstream xmlOut(xmlOutputFile);
+  xmlOut << classElement.toXML();
+
+  // output vm code
+  std::string outputFile = replaceExtension(inputFile, "vm");
   std::cout << "Extracting parsed grammar from " << inputFile << " into " << outputFile << '\n';
   std::ofstream out(outputFile);
-  out << classElement.toXML();
+  SymbolTable symbolTable;
+  out << join(classElement.toVMCode(symbolTable), "\n");
 }
 
 /* class <className> { <classVarDec*> <subroutineDec*> } */

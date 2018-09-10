@@ -24,10 +24,13 @@ extern std::unordered_map<std::string, Op> strOp;
 extern std::unordered_map<UnaryOp, std::string, EnumClassHash> unaryOpStr;
 extern std::unordered_map<std::string, UnaryOp> strUnaryOp;
 
+class SymbolTable;
+
 // base class for all grammar elements from jack
 class GrammarElement {
 public:
   virtual std::string toXML() const = 0;
+  virtual std::vector<std::string> toVMCode(SymbolTable&) const = 0;
   std::string getType() const;
   std::string wrapXMLWithType(const std::string &xml) const;
 protected:
@@ -40,6 +43,7 @@ private:
 class ClassVarDec: public GrammarElement {
 public:
   ClassVarDec(Token kind, Token type, std::vector<Token> varNames);
+  virtual std::vector<std::string> toVMCode(SymbolTable&) const override;
   virtual std::string toXML() const override;
   std::string getKind() const;
   std::string getType() const;
@@ -56,6 +60,7 @@ class ExpressionList : public GrammarElement {
 public:
   ExpressionList();
   ExpressionList(std::vector<Expression> expressions);
+  virtual std::vector<std::string> toVMCode(SymbolTable&) const override;
   virtual std::string toXML() const override;
   operator bool() const;
 private:
@@ -66,6 +71,7 @@ class SubroutineCall: public GrammarElement {
 public:
   SubroutineCall();
   SubroutineCall(Token subroutineName, Token classOrVarName, ExpressionList);
+  virtual std::vector<std::string> toVMCode(SymbolTable&) const override;
   virtual std::string toXML() const override;
   operator bool() const;
 private:
@@ -84,6 +90,7 @@ class Expression : public GrammarElement {
 public:
   Expression();
   Expression(std::vector<Term> terms, std::vector<Op> ops);
+  virtual std::vector<std::string> toVMCode(SymbolTable&) const override;
   virtual std::string toXML() const override;
   std::string opToXML(Op op) const;
   bool operator!() const;
@@ -113,6 +120,7 @@ public:
   Term(const Term&, UnaryOp);
   virtual ~Term();
   operator bool() const;
+  virtual std::vector<std::string> toVMCode(SymbolTable&) const override;
   virtual std::string toXML() const override;
   std::string unaryOpToXML(UnaryOp op) const;
 private:
@@ -139,6 +147,7 @@ public:
   Statement(Token type, Token varName, std::vector<Expression>);  // let
   Statement(Token type, std::vector<Expression>, std::vector<Statement>, std::vector<Statement>);  // if/while/return
   Statement(Token type, SubroutineCall);  // do
+  virtual std::vector<std::string> toVMCode(SymbolTable&) const override;
   virtual std::string toXML() const override;
 private:
   Token _type;  // let/if/while/do/return
@@ -153,6 +162,7 @@ private:
 class VarDec : public GrammarElement {
 public:
   VarDec(Token type, std::vector<Token> varNames);
+  virtual std::vector<std::string> toVMCode(SymbolTable&) const override;
   virtual std::string toXML() const override;
   std::string getType() const;
   std::vector<std::string> getNames() const;
@@ -166,6 +176,7 @@ class SubroutineBody : public GrammarElement {
 public:
   SubroutineBody(std::vector<VarDec> varDecs,
                  std::vector<Statement> statements);
+  virtual std::vector<std::string> toVMCode(SymbolTable&) const override;
   virtual std::string toXML() const override;
   std::vector<VarDec> getVarDecs() const;
 private:
@@ -177,6 +188,7 @@ private:
 class ParameterList : public GrammarElement {
 public:
   ParameterList(std::vector<std::pair<Token, Token>>);
+  virtual std::vector<std::string> toVMCode(SymbolTable&) const override;
   virtual std::string toXML() const override;
   std::vector<std::pair<std::string, std::string>> getArgs() const;
 private:
@@ -191,6 +203,7 @@ public:
                 ParameterList parameters,
                 SubroutineBody body,
                 std::string className);
+  virtual std::vector<std::string> toVMCode(SymbolTable&) const override;
   virtual std::string toXML() const override;
   std::string getName() const;
   std::string getKind() const;
@@ -210,6 +223,7 @@ private:
 class ClassElement: public GrammarElement {
 public:
   ClassElement(std::string, std::vector<ClassVarDec>, std::vector<SubroutineDec>);
+  virtual std::vector<std::string> toVMCode(SymbolTable&) const override;
   virtual std::string toXML() const override;
   std::vector<SubroutineDec> getSubroutineDecs() const;
   std::vector<ClassVarDec> getClassVarDecs() const;
