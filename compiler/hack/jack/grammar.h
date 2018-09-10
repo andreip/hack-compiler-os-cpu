@@ -154,6 +154,8 @@ class VarDec : public GrammarElement {
 public:
   VarDec(Token type, std::vector<Token> varNames);
   virtual std::string toXML() const override;
+  std::string getType() const;
+  std::vector<std::string> getNames() const;
 private:
   Token _type;
   std::vector<Token> _varNames;
@@ -165,6 +167,7 @@ public:
   SubroutineBody(std::vector<VarDec> varDecs,
                  std::vector<Statement> statements);
   virtual std::string toXML() const override;
+  std::vector<VarDec> getVarDecs() const;
 private:
   std::vector<VarDec> _varDecs;
   std::vector<Statement> _statements;
@@ -175,6 +178,7 @@ class ParameterList : public GrammarElement {
 public:
   ParameterList(std::vector<std::pair<Token, Token>>);
   virtual std::string toXML() const override;
+  std::vector<std::pair<std::string, std::string>> getArgs() const;
 private:
   // pairs of (type, varName)
   std::vector<std::pair<Token, Token>> _parameters;
@@ -188,6 +192,8 @@ public:
                 SubroutineBody body);
   virtual std::string toXML() const override;
   std::string getName() const;
+  ParameterList getParameterList() const;
+  SubroutineBody getBody() const;
 private:
   Token _kind;
   Token _return;

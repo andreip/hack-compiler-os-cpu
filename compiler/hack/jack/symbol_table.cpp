@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <stdexcept>
@@ -35,6 +36,9 @@ bool Symbol::operator==(const Symbol &other) const {
   );
 }
 
+Symbol::operator bool() const { return !name.empty(); }
+bool Symbol::operator!() const { return name.empty(); }
+
 std::ostream& operator<<(std::ostream &out, const Symbol &s) {
   out << "Symbol(name=" << s.name
       << ", type= " << s.type
@@ -58,7 +62,17 @@ void SymbolTable::populateFromClass(const ClassElement &classElement) {
   }
 }
 
-void SymbolTable::populateFromSubroutine(const SubroutineDec&) {
+void SymbolTable::populateFromSubroutine(const SubroutineDec &sub) {
+  clearSubroutineSymbols();  // can't have two subroutine's symbols at same time
+  // populate args
+  // TODO: if method/constructor, first put "this"
+  // (type, name)
+  for (const auto &pair: sub.getParameterList().getArgs())
+    defineSubroutineVar(pair.second, pair.first, SymbolKind::ARG);
+  // populate vars
+  for (const VarDec &dec : sub.getBody().getVarDecs())
+    for (const std::string &name: dec.getNames())
+      defineSubroutineVar(name, dec.getType(), SymbolKind::VAR);
 }
 
 void SymbolTable::clearSubroutineSymbols() {
@@ -73,11 +87,20 @@ void SymbolTable::clear() {
 }
 
 void SymbolTable::defineClassVar(std::string name, std::string type, SymbolKind kind) {
-  if (_classSymbols.find(name) != _classSymbols.end())
+  define(name, type, kind, _classSymbols);
+}
+
+void SymbolTable::defineSubroutineVar(std::string name, std::string type, SymbolKind kind) {
+  define(name, type, kind, _subroutineSymbols);
+}
+
+template <typename MapT>
+void SymbolTable::define(std::string name, std::string type, SymbolKind kind, MapT &map) {
+  if (map.find(name) != map.end())
     throw_and_debug("Redefinition of symbol '" + name + "' in class " + _className);
 
   int index = _indices[kind]++;
-  _classSymbols[name] = {
+  map[name] = {
     .name=name,
     .type=type,
     .kind=kind,
@@ -85,24 +108,29 @@ void SymbolTable::defineClassVar(std::string name, std::string type, SymbolKind 
   };
 }
 
-Symbol SymbolTable::get(std::string name) {
+Symbol SymbolTable::get(std::string name) const {
   if (_subroutineSymbols.find(name) != _subroutineSymbols.end())
-    return _subroutineSymbols[name];
+    return _subroutineSymbols.at(name);
   if (_classSymbols.find(name) != _classSymbols.end())
-    return _classSymbols[name];
-  throw std::runtime_error("not found");
+    return _classSymbols.at(name);
+  throw std::runtime_error("SymbolTable::get couldn't find symbol " + name);
 }
 
-int SymbolTable::varCount(SymbolKind kind) { return 0; }
-
-SymbolKind SymbolTable::kindOf(std::string name) {
-  throw std::runtime_error("not found");
+int SymbolTable::varCount(SymbolKind kind) const {
+  int count = 0;
+  std::for_each(
+    _classSymbols.begin(), _classSymbols.end(),
+    [&count, kind](auto &e) { if (e.second.kind == kind) ++count; }
+  );
+  std::for_each(
+    _subroutineSymbols.begin(), _subroutineSymbols.end(),
+    [&count, kind](auto &e) { if (e.second.kind == kind) ++count; }
+  );
+  return count;
 }
 
-std::string SymbolTable::typeOf(std::string name) {
-  throw std::runtime_error("not found");
-}
+SymbolKind SymbolTable::kindOf(std::string name) const { return get(name).kind; }
 
-int SymbolTable::indexOf(std::string name) {
-  throw std::runtime_error("not found");
-}
+std::string SymbolTable::typeOf(std::string name) const { return get(name).type; }
+
+int SymbolTable::indexOf(std::string name) const { return get(name).index; }

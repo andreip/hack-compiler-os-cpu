@@ -65,3 +65,39 @@ BOOST_FIXTURE_TEST_CASE(test_class_var_decs, fixture) {
 
   check(expected);
 }
+
+BOOST_FIXTURE_TEST_CASE(test_class_var_decs_error, fixture) {
+  istringstream stream(
+  "class Test {\n"
+    "local int x, y;\n"
+  "}"
+  );
+
+  // can't have local at class level.
+  BOOST_CHECK_THROW(populate(stream), std::runtime_error);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_function_var_dec, fixture) {
+  istringstream stream(
+  "class Test {\n"
+    "function void test(char x, boolean y) {\n"
+      "var Point p1, p2;\n"
+      "return;\n"
+    "}\n"
+  "}"
+  );
+  populate(stream, "test");
+
+  const std::vector<Symbol> expected {
+    {.name="x", .type="char", .kind=SymbolKind::ARG, .index=0},
+    {.name="y", .type="boolean", .kind=SymbolKind::ARG, .index=1},
+    {.name="p1", .type="Point", .kind=SymbolKind::VAR, .index=0},
+    {.name="p2", .type="Point", .kind=SymbolKind::VAR, .index=1},
+  };
+
+  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::ARG), 2);
+  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::VAR), 2);
+  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::STATIC), 0);
+  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::FIELD), 0);
+  check(expected);
+}

@@ -35,6 +35,8 @@ struct Symbol {
   int index;
 
   bool operator==(const Symbol &other) const;
+  operator bool() const;
+  bool operator!() const;
 };
 std::ostream& operator<<(std::ostream &out, const Symbol &s);
 
@@ -51,13 +53,16 @@ public:
   void clearSubroutineSymbols();
   void clear();  // clears everything
   void defineClassVar(std::string name, std::string type, SymbolKind kind);
+  void defineSubroutineVar(std::string name, std::string type, SymbolKind kind);
   // query methods
-  Symbol get(std::string name);
-  int varCount(SymbolKind);
-  SymbolKind kindOf(std::string name);
-  std::string typeOf(std::string name);
-  int indexOf(std::string name);
+  Symbol get(std::string name) const;
+  int varCount(SymbolKind) const;
+  SymbolKind kindOf(std::string name) const;
+  std::string typeOf(std::string name) const;
+  int indexOf(std::string name) const;
 private:
+  template <typename MapT>
+  void define(std::string name, std::string type, SymbolKind kind, MapT &map);
   std::unordered_map<std::string, Symbol> _classSymbols;
   std::unordered_map<std::string, Symbol> _subroutineSymbols;
   std::string _className;

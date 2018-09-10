@@ -315,6 +315,17 @@ std::string Statement::toXML() const {
 VarDec::VarDec(Token type, std::vector<Token> varNames)
   : GrammarElement("varDec"), _type(type), _varNames(varNames) { }
 
+std::string VarDec::getType() const { return _type.value(); }
+
+std::vector<std::string> VarDec::getNames() const {
+  std::vector<std::string> out;
+  std::transform(
+    _varNames.begin(), _varNames.end(), std::back_inserter(out),
+    [](const Token &var) { return var.value(); }
+  );
+  return out;
+}
+
 std::string VarDec::toXML() const {
   std::ostringstream out;
   out << "<keyword>var</keyword>\n";
@@ -335,6 +346,10 @@ SubroutineBody::SubroutineBody(std::vector<VarDec> varDecs,
   : GrammarElement("subroutineBody"), _varDecs(varDecs),
     _statements(statements) { }
 
+std::vector<VarDec> SubroutineBody::getVarDecs() const {
+  return _varDecs;
+}
+
 std::string SubroutineBody::toXML() const {
   std::ostringstream out;
   out << "<symbol>{</symbol>\n";
@@ -352,6 +367,16 @@ std::string SubroutineBody::toXML() const {
 
 ParameterList::ParameterList(std::vector<std::pair<Token, Token>> parameters)
   : GrammarElement("parameterList"), _parameters(parameters) { }
+
+std::vector<std::pair<std::string, std::string>> ParameterList::getArgs() const {
+  std::vector<std::pair<std::string, std::string>> out;
+  std::transform(
+    _parameters.begin(), _parameters.end(), std::back_inserter(out),
+    [](const auto &pair) { return std::make_pair(pair.first.value(),
+                                                 pair.second.value()); }
+  );
+  return out;
+}
 
 std::string ParameterList::toXML() const {
   std::ostringstream out;
@@ -380,6 +405,10 @@ SubroutineDec::SubroutineDec(
     _parameters(parameters), _body(body) { }
 
 std::string SubroutineDec::getName() const { return _subroutineName.value(); }
+
+ParameterList SubroutineDec::getParameterList() const { return _parameters; }
+
+SubroutineBody SubroutineDec::getBody() const { return _body; }
 
 std::string SubroutineDec::toXML() const {
   std::ostringstream out;
