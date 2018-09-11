@@ -105,9 +105,8 @@ BOOST_FIXTURE_TEST_CASE(test_constructor_var_dec, fixture) {
     {.name="name", .type="char", .kind=SymbolKind::STATIC, .index=0},
     {.name="x", .type="int", .kind=SymbolKind::FIELD, .index=0},
     {.name="y", .type="int", .kind=SymbolKind::FIELD, .index=1},
-    {.name="this", .type="Point", .kind=SymbolKind::ARG, .index=0},
-    {.name="_x", .type="int", .kind=SymbolKind::ARG, .index=1},
-    {.name="_y", .type="int", .kind=SymbolKind::ARG, .index=2},
+    {.name="_x", .type="int", .kind=SymbolKind::ARG, .index=0},
+    {.name="_y", .type="int", .kind=SymbolKind::ARG, .index=1},
   };
 
   BOOST_CHECK_EQUAL(symbol_table.varCount(), 0);

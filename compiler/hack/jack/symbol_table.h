@@ -54,8 +54,6 @@ public:
   int varCount() const;
 private:
   void reset();
-  void initFromClass(const ClassElement&);
-  void initFromSubroutine(const SubroutineDec&);
   void defineClassVar(std::string name, std::string type, SymbolKind kind);
   void defineSubroutineVar(std::string name, std::string type, SymbolKind kind);
   void defineThis(std::string type);

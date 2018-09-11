@@ -61,31 +61,34 @@ SymbolTable::SymbolTable() { }
 
 void SymbolTable::init(const ClassElement &classElement, const SubroutineDec &subroutine) {
   reset();
-  initFromClass(classElement);
-  initFromSubroutine(subroutine);
-}
-
-void SymbolTable::initFromClass(const ClassElement &classElement) {
   _className = classElement.getName();
+
+  // init class-level args
   for (const ClassVarDec &varsDec : classElement.getClassVarDecs()) {
     std::string kind = varsDec.getKind();
     std::string type = varsDec.getType();
+
+    // if subroutine is a function, skip over "field" type
+    // variables, since those aren't accessible from the subroutine.
+    if (kind == "field" && subroutine.getKind() == "function")
+      continue;
+
     for (std::string &name : varsDec.getVarNames()) {
       defineClassVar(name, type, SymbolKindHelpers::toKind(kind));
     }
   }
-}
 
-void SymbolTable::initFromSubroutine(const SubroutineDec &sub) {
-  // populate args
-  if (in_array(sub.getKind(), {"constructor", "method"}))
-    defineThis(sub.getClassName());
-  for (const auto &pair: sub.getParameterList().getArgs())
+  // init subroutine-level args
+  // populate args; if it's a method, the first argument is
+  // a hidden "this" pointer
+  if (subroutine.getKind() == "method")
+    defineThis(subroutine.getClassName());
+  for (const auto &pair: subroutine.getParameterList().getArgs())
     // (type, name)
     defineSubroutineVar(pair.second, pair.first, SymbolKind::ARG);
 
   // populate vars
-  for (const VarDec &dec : sub.getBody().getVarDecs())
+  for (const VarDec &dec : subroutine.getBody().getVarDecs())
     for (const std::string &name: dec.getNames())
       defineSubroutineVar(name, dec.getType(), SymbolKind::VAR);
 }
@@ -123,22 +126,12 @@ void SymbolTable::define(std::string name, std::string type, SymbolKind kind, Ma
   };
 }
 
-// returns a symbol if it's accessible from the current
-// active subroutine.
 Symbol SymbolTable::get(std::string name) const {
-  Symbol s;
   if (_subroutineSymbols.find(name) != _subroutineSymbols.end())
-    s = _subroutineSymbols.at(name);
+    return _subroutineSymbols.at(name);
   if (_classSymbols.find(name) != _classSymbols.end())
-    s = _classSymbols.at(name);
-
-  if (s && s.kind == SymbolKind::FIELD) {
-    if (get("this"))
-      return s;
-    return Symbol();
-  }
-
-  return s;  // empty evaluates to falsy
+    return _classSymbols.at(name);
+  return Symbol();  // empty evaluates to falsy
 }
 
 int SymbolTable::varCount() const {
