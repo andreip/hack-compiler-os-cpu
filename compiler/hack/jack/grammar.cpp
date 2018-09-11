@@ -11,6 +11,7 @@
 
 #include "grammar.h"
 #include "symbol_table.h"
+#include "vm_commands.h"
 
 std::unordered_map<Op, std::string, EnumClassHash> opStr {
   {Op::ADD, "+"}, {Op::SUB, "-"}, {Op::MUL, "*"}, {Op::DIV, "/"},
@@ -194,6 +195,60 @@ Term::operator bool() const {
 
 std::vector<std::string> Term::toVMCode(SymbolTable &table) const {
   std::vector<std::string> code;
+
+  if (_unaryOp != UnaryOp::NONE && _term) {
+    concat(code, {
+      _term->toVMCode(table),
+      { VMCommands::ArithmeticLogic(_unaryOp) }
+    });
+  // constants | varName | varName[expression]
+  } else if (_type) {
+    // varName
+    if (_type.isIdentifier()) {
+      Symbol s = table.get(_type.value());
+      if (!s)
+        _type.raise("Variable not defined");
+
+      concat(code, { VMCommands::Push(s.segment(), s.index) });
+
+      // TODO arrays
+      // varName[expression]
+      if (_expression) { }
+    } else if (_type.isIntConstant()) {
+      concat(code, { VMCommands::Push("constant", _type.value()) });
+    } else if (_type.isStringConstant()) {
+      std::string strCt = _type.escapedValue();
+      concat(code, {
+        VMCommands::Push("constant", strCt.length()),
+        VMCommands::Call("String.new", 1),
+      });
+
+      for (int  i = 0; i < strCt.length(); ++i) {
+        std::cout << "ascii code of " << char(strCt[i]) << ": " << int(strCt[i]) << '\n';
+        concat(code, {
+          VMCommands::Push("constant", strCt[i]),
+          VMCommands::Call("String.appendChar", 2),
+        });
+      }
+    } else if (_type.isKeyword()) {
+      if (_type.value() == "true") {
+        concat(code, { VMCommands::Push("constant", -1) });
+      } else if (in_array(_type.value(), {"false", "null"})) {
+        concat(code, { VMCommands::Push("constant", 0) });
+      } else if (_type.value() == "this") {
+        Symbol s = table.get("this");
+        if (s)
+          concat(code, { VMCommands::Push(s.type, s.index) });
+        // don't have access to this
+        else
+          _type.raise("Can't access this outside methods");
+      } else {
+        throw_and_debug("Term::toVMCode: cannot use keyword " + _type.value() + " in an expression.");
+      }
+    } else {
+      throw_and_debug("Term::toVMCode: invalid type " + _type.value());
+    }
+  }
   return code;
 }
 
@@ -247,7 +302,17 @@ bool Expression::operator!() const { return _terms.empty(); }
 Expression::operator bool() const { return !(!*this); }
 
 std::vector<std::string> Expression::toVMCode(SymbolTable &table) const {
+  if (_terms.size() > 2)
+    throw_and_debug("Expression has >2 terms in it? It should have been recursive and not have >2 terms in it.");
+
   std::vector<std::string> code;
+  concat(code, _terms[0].toVMCode(table));
+  if (_terms.size() == 2) {
+    concat(code, {
+      _terms[1].toVMCode(table),
+      { VMCommands::ArithmeticLogic(_ops[0]) },
+    });
+  }
   return code;
 }
 
@@ -288,6 +353,76 @@ Statement::Statement(Token type, SubroutineCall subroutineCall)
 
 std::vector<std::string> Statement::toVMCode(SymbolTable &table) const {
   std::vector<std::string> code;
+
+  std::vector<std::string> codeSt1;
+  for (const Statement &s: _statements1)
+    concat(codeSt1, s.toVMCode(table));
+  std::vector<std::string> codeSt2;
+  for (const Statement &s: _statements2)
+    concat(codeSt2, s.toVMCode(table));
+
+  if (_type.value() == "let") {
+    const Symbol &s = table.get(_varName.value());
+    if (!s)
+      _varName.raise("Variable not defined");
+
+    // TODO: also treat varname[x]
+    std::vector<std::string> rhsCode = _expressions[0].toVMCode(table);
+
+    concat(code, {
+      std::move(rhsCode),
+      { VMCommands::Pop(s.segment(), s.index) }
+    });
+  } else if (_type.value() == "if") {
+    std::string L1 = VMCommands::UniqueLabel();
+    std::string L2 = VMCommands::UniqueLabel();
+    std::cout << "Generated unique numbers " << L1 << " " << L2 << '\n';
+
+    concat(code, {
+      _expressions[0].toVMCode(table),
+      { VMCommands::ArithmeticLogic("not") },
+      { VMCommands::IfGoto(L1) },
+      std::move(codeSt1),
+      { VMCommands::Goto(L2) },
+      { VMCommands::Label(L1) },
+      std::move(codeSt2),
+      { VMCommands::Goto(L2) },
+      { VMCommands::Label(L2) },
+    });
+  } else if (_type.value() == "while") {
+    std::string L1 = VMCommands::UniqueLabel();
+    std::string L2 = VMCommands::UniqueLabel();
+    std::cout << "Generated unique numbers " << L1 << " " << L2 << '\n';
+
+    concat(code, {
+      { VMCommands::Label(L1) },
+      _expressions[0].toVMCode(table),
+      { VMCommands::ArithmeticLogic("not") },
+      { VMCommands::IfGoto(L2) },
+      std::move(codeSt1),
+      { VMCommands::Goto(L1) },
+      { VMCommands::Label(L2) },
+    });
+  } else if (_type.value() == "do") {
+    concat(code, {
+      _subroutineCall.toVMCode(table),
+      { VMCommands::Pop("temp", "0") },  // pop unused return value
+    });
+  } else if (_type.value() == "return") {
+    std::vector<std::string> returnValCode;
+    if (!_expressions.empty())
+      returnValCode = _expressions[0].toVMCode(table);
+    else
+      returnValCode = { VMCommands::Push("constant", "0") };
+
+    concat(code, {
+      std::move(returnValCode),
+      { VMCommands::Return() },
+    });
+  } else {
+    throw_and_debug("Unknown statement starting with " + _type.value());
+  }
+
   return code;
 }
 
@@ -358,6 +493,7 @@ std::vector<std::string> VarDec::getNames() const {
 }
 
 std::vector<std::string> VarDec::toVMCode(SymbolTable &table) const {
+  // does nothing, symbol table was generated already in subroutine.
   std::vector<std::string> code;
   return code;
 }
@@ -388,6 +524,8 @@ std::vector<VarDec> SubroutineBody::getVarDecs() const {
 
 std::vector<std::string> SubroutineBody::toVMCode(SymbolTable &table) const {
   std::vector<std::string> code;
+  for (const Statement &s: _statements)
+    concat(code, s.toVMCode(table));
   return code;
 }
 
@@ -420,6 +558,7 @@ std::vector<std::pair<std::string, std::string>> ParameterList::getArgs() const 
 }
 
 std::vector<std::string> ParameterList::toVMCode(SymbolTable &table) const {
+  // does nothing, symbol table was generated already in subroutine.
   std::vector<std::string> code;
   return code;
 }
@@ -462,8 +601,13 @@ ParameterList SubroutineDec::getParameterList() const { return _parameters; }
 SubroutineBody SubroutineDec::getBody() const { return _body; }
 
 std::vector<std::string> SubroutineDec::toVMCode(SymbolTable &table) const {
-  std::vector<std::string> code;
-  return code;
+  std::string funcName = getClassName() + "." + getName();
+  int nLocals = table.varCount();
+  std::vector<std::string> code = {
+    VMCommands::Function(funcName, nLocals),
+  };
+
+  return concat(code, getBody().toVMCode(table));
 }
 
 std::string SubroutineDec::toXML() const {

@@ -37,6 +37,7 @@ struct Symbol {
   bool operator==(const Symbol &other) const;
   operator bool() const;
   bool operator!() const;
+  std::string segment() const;
 };
 std::ostream& operator<<(std::ostream &out, const Symbol &s);
 

@@ -66,9 +66,22 @@ void split_by_any_char(ContainerT &parts,
                        // if to keep the elements we split by in output
                        bool keepSplitElements = false);
 
+// array
+
 template <typename T>
 bool in_array(const T val, const std::vector<T> &array) {
   return std::find(array.begin(), array.end(), val) != array.end();
+}
+
+template <typename T>
+std::vector<T>& concat(std::vector<T> &v1, const std::initializer_list<std::vector<T>> &&vectors) {
+  for (const auto &v2: vectors)
+    v1.insert(v1.end(), v2.begin(), v2.end());
+  return v1;  // for chaining
+}
+template <typename T>
+std::vector<T>& concat(std::vector<T> &v1, const std::vector<T> &v2) {
+  return concat(v1, { v2 });
 }
 
 // prints before throwing
@@ -105,7 +118,7 @@ template <class T>
 std::ostream& operator<<(std::ostream &out, const std::vector<T> &c) {
   out << "[";
   for (const auto &it : c)
-    out << it << " ";
+    out << it << ", ";
   out << "]";
   return out;
 }

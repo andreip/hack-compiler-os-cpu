@@ -267,6 +267,15 @@ bool Token::isAType() const {
 bool Token::isIdentifier() const {
   return getType() == TokenType::IDENTIFIER;
 }
+bool Token::isKeyword() const {
+  return getType() == TokenType::KEYWORD;
+}
+bool Token::isIntConstant() const {
+  return getType() == TokenType::INT_CONSTANT;
+}
+bool Token::isStringConstant() const {
+  return getType() == TokenType::STR_CONSTANT;
+}
 
 void Token::raise(std::string moreInfo) const {
   char msg[100];

@@ -39,6 +39,14 @@ bool Symbol::operator==(const Symbol &other) const {
 Symbol::operator bool() const { return !name.empty(); }
 bool Symbol::operator!() const { return name.empty(); }
 
+std::string Symbol::segment() const {
+  if (kind == SymbolKind::FIELD) return "this";
+  if (kind == SymbolKind::STATIC) return "static";
+  if (kind == SymbolKind::VAR) return "local";
+  if (kind == SymbolKind::ARG) return "argument";
+  throw_and_debug("Symbol::segment: unknown segment for kind");
+}
+
 std::ostream& operator<<(std::ostream &out, const Symbol &s) {
   out << "Symbol(name=" << s.name
       << ", type= " << s.type

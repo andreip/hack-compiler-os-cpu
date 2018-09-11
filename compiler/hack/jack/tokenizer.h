@@ -39,6 +39,9 @@ public:
 
   bool isAType() const;
   bool isIdentifier() const;
+  bool isKeyword() const;
+  bool isIntConstant() const;
+  bool isStringConstant() const;
 
   void raise(std::string moreInfo="Found unexpected token") const;
 
