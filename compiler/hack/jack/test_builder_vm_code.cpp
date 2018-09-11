@@ -304,3 +304,80 @@ BOOST_FIXTURE_TEST_CASE(test_call_methods_on_objects, fixture) {
 
   compute_vmcode(stream);
 }
+
+BOOST_FIXTURE_TEST_CASE(test_while_statement, fixture) {
+  istringstream stream(
+  "class Test {\n"
+    "function void test(int x) {\n"
+      "while (x > 0) {\n"
+        "do Output.printInt(x);\n"
+        "let x = x - 1;\n"
+      "}\n"
+      "return;\n"
+    "}\n"
+  "}"
+  );
+  std::string L0 = "L0";
+  std::string L1 = "L1";
+  expected = {
+    VMCommands::Function("Test.test", 0),
+    VMCommands::Label(L0),                      // L0
+    VMCommands::Push("argument", 0),
+    VMCommands::Push("constant", 0),
+    VMCommands::ArithmeticLogic(Op::GT),
+    VMCommands::ArithmeticLogic(UnaryOp::NOT),  // not <expr>
+    VMCommands::IfGoto(L1),                     // if-goto L1
+    VMCommands::Push("argument", 0),
+    VMCommands::Call("Output.printInt", 1),
+    VMCommands::Pop("temp", 0),                 // do Output.printInt(x);
+    VMCommands::Push("argument", 0),
+    VMCommands::Push("constant", 1),
+    VMCommands::ArithmeticLogic(Op::SUB),
+    VMCommands::Pop("argument", 0),             // let x = x - 1;
+    VMCommands::Goto(L0),                       // goto L0
+    VMCommands::Label(L1),                      // L1
+    VMCommands::Push("constant", 0),
+    VMCommands::Return(),                       // return;
+  };
+
+  compute_vmcode(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_if_statement, fixture) {
+  istringstream stream(
+  "class Test {\n"
+    "function void test(int x, int y) {\n"
+      "if (x > 0) {\n"
+        "do Output.printInt(x);\n"
+      "} else {\n"
+        "do Output.printInt(y);\n"
+      "}\n"
+      "return;\n"
+    "}\n"
+  "}"
+  );
+  std::string L0 = "L2";
+  std::string L1 = "L3";
+  expected = {
+    VMCommands::Function("Test.test", 0),
+    VMCommands::Push("argument", 0),
+    VMCommands::Push("constant", 0),
+    VMCommands::ArithmeticLogic(Op::GT),
+    VMCommands::ArithmeticLogic(UnaryOp::NOT),  // not <expr>
+    VMCommands::IfGoto(L0),                     // if-goto L1
+    VMCommands::Push("argument", 0),
+    VMCommands::Call("Output.printInt", 1),
+    VMCommands::Pop("temp", 0),                 // do Output.printInt(x);
+    VMCommands::Goto(L1),                       // goto L1
+    VMCommands::Label(L0),                      // L0
+    VMCommands::Push("argument", 1),
+    VMCommands::Call("Output.printInt", 1),
+    VMCommands::Pop("temp", 0),                 // do Output.printInt(y);
+    VMCommands::Goto(L1),                       // goto L1
+    VMCommands::Label(L1),                      // L1
+    VMCommands::Push("constant", 0),
+    VMCommands::Return(),                       // return;
+  };
+
+  compute_vmcode(stream);
+}

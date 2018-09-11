@@ -265,16 +265,17 @@ std::vector<std::string> Term::toVMCode(SymbolTable &table) const {
         VMCommands::Call("String.new", 1),
       });
 
-      for (int  i = 0; i < strCt.length(); ++i) {
-        std::cout << "ascii code of " << char(strCt[i]) << ": " << int(strCt[i]) << '\n';
+      for (int  i = 0; i < strCt.length(); ++i)
         concat(code, {
           VMCommands::Push("constant", strCt[i]),
           VMCommands::Call("String.appendChar", 2),
         });
-      }
     } else if (_type.isKeyword()) {
       if (_type.value() == "true") {
-        concat(code, { VMCommands::Push("constant", -1) });
+        concat(code, {
+          VMCommands::Push("constant", 0),
+          VMCommands::ArithmeticLogic(UnaryOp::NOT),
+        });
       } else if (in_array(_type.value(), {"false", "null"})) {
         concat(code, { VMCommands::Push("constant", 0) });
       } else if (_type.value() == "this") {
@@ -422,7 +423,6 @@ std::vector<std::string> Statement::toVMCode(SymbolTable &table) const {
   } else if (_type.value() == "if") {
     std::string L1 = VMCommands::UniqueLabel();
     std::string L2 = VMCommands::UniqueLabel();
-    std::cout << "Generated unique numbers " << L1 << " " << L2 << '\n';
 
     concat(code, {
       _expressions[0].toVMCode(table),
@@ -438,7 +438,6 @@ std::vector<std::string> Statement::toVMCode(SymbolTable &table) const {
   } else if (_type.value() == "while") {
     std::string L1 = VMCommands::UniqueLabel();
     std::string L2 = VMCommands::UniqueLabel();
-    std::cout << "Generated unique numbers " << L1 << " " << L2 << '\n';
 
     concat(code, {
       { VMCommands::Label(L1) },

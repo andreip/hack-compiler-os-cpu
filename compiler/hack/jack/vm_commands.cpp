@@ -42,7 +42,7 @@ std::string VMCommands::ArithmeticLogic(UnaryOp op) {
 
 std::string VMCommands::Goto(std::string label) { return "goto " + label; }
 
-std::string VMCommands::IfGoto(std::string label) { return "if_goto " + label; }
+std::string VMCommands::IfGoto(std::string label) { return "if-goto " + label; }
 
 std::string VMCommands::Label(std::string label) { return "label " + label; }
 
