@@ -92,6 +92,8 @@ ExpressionList::ExpressionList(std::vector<Expression> expressions)
 
 std::vector<std::string> ExpressionList::toVMCode(SymbolTable &table) const {
   std::vector<std::string> code;
+  for (const Expression &e: _expressions)
+    concat(code, { e.toVMCode(table) });
   return code;
 }
 
@@ -109,6 +111,10 @@ std::string ExpressionList::toXML() const {
 
 ExpressionList::operator bool() const { return !_expressions.empty(); }
 
+int ExpressionList::size() const {
+  return _expressions.size();
+}
+
 // SubroutineCall
 
 SubroutineCall::SubroutineCall(): GrammarElement("subroutineCall") { }
@@ -120,6 +126,41 @@ SubroutineCall::SubroutineCall(Token subroutineName, Token classOrVarName, Expre
 
 std::vector<std::string> SubroutineCall::toVMCode(SymbolTable &table) const {
   std::vector<std::string> code;
+
+  int nArgs = _expressionList.size();
+  std::string subroutineFullName;
+
+  if (_classOrVarName) {
+    Symbol s = table.get(_classOrVarName.value());
+    // it's a class variable
+    if (!s) {
+      subroutineFullName = (
+        _classOrVarName.value() + "." + _subroutineName.value()
+      );
+    // it's a method of an object
+    } else {
+      // push method's "this" on the stack as 1st arg.
+      concat(code, { VMCommands::Push(s.segment(), s.index) });
+      nArgs++;
+      subroutineFullName = s.type + "." + _subroutineName.value();
+    }
+  // it's a this->subroutine() call, from inside another method.
+  } else {
+    Symbol s = table.get("this");
+    if (!s)
+      _subroutineName.raise("Cannot access method outside method scope");
+
+    // push "this" to the new method as well
+    concat(code, { VMCommands::Push(s.segment(), s.index) });
+    nArgs++;
+    subroutineFullName = s.type + "." + _subroutineName.value();
+  }
+
+  concat(code, {
+    _expressionList.toVMCode(table),
+    { VMCommands::Call(subroutineFullName, nArgs) },
+  });
+
   return code;
 }
 

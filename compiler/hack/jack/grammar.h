@@ -63,6 +63,7 @@ public:
   virtual std::vector<std::string> toVMCode(SymbolTable&) const override;
   virtual std::string toXML() const override;
   operator bool() const;
+  int size() const;
 private:
   std::vector<Expression> _expressions;
 };

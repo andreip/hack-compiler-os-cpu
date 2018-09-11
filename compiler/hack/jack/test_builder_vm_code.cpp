@@ -55,12 +55,66 @@ BOOST_FIXTURE_TEST_CASE(test_let_statement, fixture) {
     // function
     VMCommands::Function("Test.test", 0),
     // let x = x + 1;
-    VMCommands::Push("argument", "0"),
-    VMCommands::Push("constant", "1"),
+    VMCommands::Push("argument", 0),
+    VMCommands::Push("constant", 1),
     VMCommands::ArithmeticLogic("add"),
-    VMCommands::Pop("argument", "0"),
+    VMCommands::Pop("argument", 0),
     // return x;
-    VMCommands::Push("argument", "0"),
+    VMCommands::Push("argument", 0),
+    VMCommands::Return(),
+  };
+
+  compute_vmcode(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_let_statement_str_constant, fixture) {
+  istringstream stream(
+  "class Test {\n"
+    "function int test(String x) {\n"
+      "let x = \"abc\";\n"
+      "return x;\n"
+    "}\n"
+  "}"
+  );
+  expected = {
+    // function
+    VMCommands::Function("Test.test", 0),
+    // let x = "abc"
+    VMCommands::Push("constant", 3),
+    VMCommands::Call("String.new", 1),
+    VMCommands::Push("constant", 'a'),
+    VMCommands::Call("String.appendChar", 2),
+    VMCommands::Push("constant", 'b'),
+    VMCommands::Call("String.appendChar", 2),
+    VMCommands::Push("constant", 'c'),
+    VMCommands::Call("String.appendChar", 2),
+    VMCommands::Pop("argument", 0),
+    // return x;
+    VMCommands::Push("argument", 0),
+    VMCommands::Return(),
+  };
+
+  compute_vmcode(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_do_statement, fixture) {
+  istringstream stream(
+  "class Test {\n"
+    "function void print(String msg) {\n"
+      "do Output.printString(msg);\n"
+      "return;\n"
+    "}\n"
+  "}"
+  );
+  expected = {
+    // function
+    VMCommands::Function("Test.print", 0),
+    // do Output.printString(msg);
+    VMCommands::Push("argument", 0),
+    VMCommands::Call("Output.printString", 1),
+    VMCommands::Pop("temp", 0),
+    // return x;
+    VMCommands::Push("constant", 0),
     VMCommands::Return(),
   };
 
