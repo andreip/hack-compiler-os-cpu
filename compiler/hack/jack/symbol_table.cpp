@@ -51,7 +51,13 @@ std::ostream& operator<<(std::ostream &out, const Symbol &s) {
 
 SymbolTable::SymbolTable() { }
 
-void SymbolTable::populateFromClass(const ClassElement &classElement) {
+void SymbolTable::init(const ClassElement &classElement, const SubroutineDec &subroutine) {
+  reset();
+  initFromClass(classElement);
+  initFromSubroutine(subroutine);
+}
+
+void SymbolTable::initFromClass(const ClassElement &classElement) {
   _className = classElement.getName();
   for (const ClassVarDec &varsDec : classElement.getClassVarDecs()) {
     std::string kind = varsDec.getKind();
@@ -62,9 +68,7 @@ void SymbolTable::populateFromClass(const ClassElement &classElement) {
   }
 }
 
-void SymbolTable::populateFromSubroutine(const SubroutineDec &sub) {
-  clearSubroutineSymbols();  // can't have two subroutine's symbols at same time
-
+void SymbolTable::initFromSubroutine(const SubroutineDec &sub) {
   // populate args
   if (in_array(sub.getKind(), {"constructor", "method"}))
     defineThis(sub.getClassName());
@@ -78,15 +82,11 @@ void SymbolTable::populateFromSubroutine(const SubroutineDec &sub) {
       defineSubroutineVar(name, dec.getType(), SymbolKind::VAR);
 }
 
-void SymbolTable::clearSubroutineSymbols() {
-  _subroutineSymbols.clear();
-  _indices[SymbolKind::VAR] = _indices[SymbolKind::ARG] = 0;
-}
-
-void SymbolTable::clear() {
+void SymbolTable::reset() {
   _classSymbols.clear();
   _subroutineSymbols.clear();
   _indices.clear();
+  _className = "NoClassName";
 }
 
 void SymbolTable::defineThis(std::string type) {
@@ -115,23 +115,29 @@ void SymbolTable::define(std::string name, std::string type, SymbolKind kind, Ma
   };
 }
 
+// returns a symbol if it's accessible from the current
+// active subroutine.
 Symbol SymbolTable::get(std::string name) const {
+  Symbol s;
   if (_subroutineSymbols.find(name) != _subroutineSymbols.end())
-    return _subroutineSymbols.at(name);
+    s = _subroutineSymbols.at(name);
   if (_classSymbols.find(name) != _classSymbols.end())
-    return _classSymbols.at(name);
-  return Symbol();  // empty, evaluates to falsy
+    s = _classSymbols.at(name);
+
+  if (s && s.kind == SymbolKind::FIELD) {
+    if (get("this"))
+      return s;
+    return Symbol();
+  }
+
+  return s;  // empty evaluates to falsy
 }
 
-int SymbolTable::varCount(SymbolKind kind) const {
+int SymbolTable::varCount() const {
   int count = 0;
   std::for_each(
-    _classSymbols.begin(), _classSymbols.end(),
-    [&count, kind](auto &e) { if (e.second.kind == kind) ++count; }
-  );
-  std::for_each(
     _subroutineSymbols.begin(), _subroutineSymbols.end(),
-    [&count, kind](auto &e) { if (e.second.kind == kind) ++count; }
+    [&count](auto &e) { if (e.second.kind == SymbolKind::VAR) ++count; }
   );
   return count;
 }

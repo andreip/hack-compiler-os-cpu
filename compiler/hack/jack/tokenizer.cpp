@@ -268,6 +268,14 @@ bool Token::isIdentifier() const {
   return getType() == TokenType::IDENTIFIER;
 }
 
+void Token::raise(std::string moreInfo) const {
+  char msg[100];
+  snprintf(msg, sizeof(msg), "Line %d, '%s': %s",
+           getLineNo(), value().c_str(),
+           moreInfo.c_str());
+  throw_and_debug(msg);
+}
+
 std::ostream& operator<<(std::ostream &out, const Token &t) {
   out << t.value();
   return out;

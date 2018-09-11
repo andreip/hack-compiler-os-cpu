@@ -495,11 +495,10 @@ std::vector<ClassVarDec> ClassElement::getClassVarDecs() const { return classVar
 std::string ClassElement::getName() const { return className; }
 
 std::vector<std::string> ClassElement::toVMCode(SymbolTable &table) const {
-  table.clear();  // just for sanity
-  table.populateFromClass(*this);
-
   std::vector<std::string> code;
   for (const SubroutineDec &subroutine: getSubroutineDecs()) {
+    // fill table with current class & subroutine we're on.
+    table.init(*this, subroutine);
     std::vector<std::string> subroutineCode = subroutine.toVMCode(table);
     code.insert(code.end(), subroutineCode.begin(), subroutineCode.end());
   }

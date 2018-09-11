@@ -1,4 +1,3 @@
-#include <cstdio>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -383,12 +382,8 @@ Token JackCompilationEngineBuilder::eat(JackTokenizer &t, std::function<bool(Tok
   _assert(t.hasMore(), "Tokenizer hasn't got any more tokens to give");
 
   Token tok = t.getCurrentToken();
-  if (!isValidFunc(tok)) {
-    char msg[100];
-    snprintf(msg, sizeof(msg), "Line %d: Found unexpected token %s",
-             tok.getLineNo(), tok.value().c_str());
-    throw_and_debug(msg);
-  }
+  if (!isValidFunc(tok))
+    tok.raise();
   return eat(t);
 }
 

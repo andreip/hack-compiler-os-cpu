@@ -5,6 +5,8 @@
 #define BOOST_TEST_MAIN
 #include <boost/test/included/unit_test.hpp>
 
+#include "../../utils.h"
+
 #include "builder.h"
 #include "tokenizer.h"
 #include "grammar.h"
@@ -15,17 +17,19 @@ using namespace std;
 struct fixture {
   SymbolTable symbol_table;
 
-  void populate(std::istream &stream, std::string subroutineName="") {
+  void init(std::istream &stream, std::string subroutineName) {
     JackTokenizer tokenizer(stream);
     JackCompilationEngineBuilder builder;
     ClassElement classElement = builder.buildClass(tokenizer);
-    symbol_table.populateFromClass(classElement);
-    if (!subroutineName.empty())
-      for (auto &subroutine: classElement.getSubroutineDecs())
-        if (subroutine.getName() == subroutineName) {
-          symbol_table.populateFromSubroutine(subroutine);
-          break;
-        }
+    bool found = false;
+    for (auto &subroutine: classElement.getSubroutineDecs())
+      if (subroutine.getName() == subroutineName) {
+        symbol_table.init(classElement, subroutine);
+        found = true;
+        break;
+      }
+   if (!found)
+    throw_and_debug("Couldn't find subroutine name " + subroutineName);
   }
 
   void check(const std::vector<Symbol> &expected) {
@@ -35,35 +39,21 @@ struct fixture {
         expected_symbol
       );
   }
+
+  void check_false(const std::vector<Symbol> &expected) {
+    for (const Symbol &expected_symbol: expected)
+      BOOST_CHECK(
+        symbol_table.get(expected_symbol.name) == false
+      );
+  }
 };
 
 BOOST_FIXTURE_TEST_CASE(test_empty, fixture) {
-  istringstream stream("class Test {}");
-  populate(stream);
+  istringstream stream("class Test { function void test() {} }");
+  init(stream, "test");
 
-  for (SymbolKind kind: SymbolKindHelpers::ALL)
-    BOOST_TEST(symbol_table.varCount(kind) == 0);
+  BOOST_CHECK_EQUAL(symbol_table.varCount(), 0);
   BOOST_CHECK(bool(symbol_table.get("invalid")) == false);
-}
-
-BOOST_FIXTURE_TEST_CASE(test_class_var_decs, fixture) {
-  istringstream stream(
-  "class Test {\n"
-    "field int x, y;\n"
-    "static Point p1;\n"
-    "field String z;\n"
-  "}"
-  );
-  populate(stream);
-
-  const std::vector<Symbol> expected {
-    {.name="x", .type="int", .kind=SymbolKind::FIELD, .index=0},
-    {.name="y", .type="int", .kind=SymbolKind::FIELD, .index=1},
-    {.name="p1", .type="Point", .kind=SymbolKind::STATIC, .index=0},
-    {.name="z", .type="String", .kind=SymbolKind::FIELD, .index=2},
-  };
-
-  check(expected);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_class_var_decs_error, fixture) {
@@ -74,7 +64,7 @@ BOOST_FIXTURE_TEST_CASE(test_class_var_decs_error, fixture) {
   );
 
   // can't have local at class level.
-  BOOST_CHECK_THROW(populate(stream), std::runtime_error);
+  BOOST_CHECK_THROW(init(stream, ""), std::runtime_error);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_function_var_dec, fixture) {
@@ -86,7 +76,7 @@ BOOST_FIXTURE_TEST_CASE(test_function_var_dec, fixture) {
     "}\n"
   "}"
   );
-  populate(stream, "test");
+  init(stream, "test");
 
   const std::vector<Symbol> expected {
     {.name="x", .type="char", .kind=SymbolKind::ARG, .index=0},
@@ -95,10 +85,7 @@ BOOST_FIXTURE_TEST_CASE(test_function_var_dec, fixture) {
     {.name="p2", .type="Point", .kind=SymbolKind::VAR, .index=1},
   };
 
-  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::ARG), 2);
-  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::VAR), 2);
-  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::STATIC), 0);
-  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::FIELD), 0);
+  BOOST_CHECK_EQUAL(symbol_table.varCount(), 2);
   check(expected);
 }
 
@@ -112,7 +99,7 @@ BOOST_FIXTURE_TEST_CASE(test_constructor_var_dec, fixture) {
     "}\n"
   "}"
   );
-  populate(stream, "new");
+  init(stream, "new");
 
   const std::vector<Symbol> expected {
     {.name="name", .type="char", .kind=SymbolKind::STATIC, .index=0},
@@ -123,21 +110,14 @@ BOOST_FIXTURE_TEST_CASE(test_constructor_var_dec, fixture) {
     {.name="_y", .type="int", .kind=SymbolKind::ARG, .index=2},
   };
 
-  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::ARG), 3);
-  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::VAR), 0);
-  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::STATIC), 1);
-  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::FIELD), 2);
+  BOOST_CHECK_EQUAL(symbol_table.varCount(), 0);
   check(expected);
 
-  // check that clearing works
-  symbol_table.clearSubroutineSymbols();
-  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::ARG), 0);
-  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::VAR), 0);
-  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::STATIC), 1);
-  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::FIELD), 2);
-  symbol_table.clear();
-  for (auto &kind : SymbolKindHelpers::ALL)
-    BOOST_CHECK_EQUAL(symbol_table.varCount(kind), 0);
+  // check that switching works and erases previous symbols.
+  istringstream empty("class Test { function void test() {} }");
+  init(empty, "test");
+  BOOST_CHECK_EQUAL(symbol_table.varCount(), 0);
+  check_false(expected);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_method_var_dec, fixture) {
@@ -155,7 +135,7 @@ BOOST_FIXTURE_TEST_CASE(test_method_var_dec, fixture) {
     "}\n"
   "}"
   );
-  populate(stream, "equals");
+  init(stream, "equals");
 
   const std::vector<Symbol> expected {
     {.name="name", .type="char", .kind=SymbolKind::STATIC, .index=0},
@@ -166,9 +146,26 @@ BOOST_FIXTURE_TEST_CASE(test_method_var_dec, fixture) {
     {.name="res", .type="boolean", .kind=SymbolKind::VAR, .index=0},
   };
 
-  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::ARG), 2);
-  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::VAR), 1);
-  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::STATIC), 1);
-  BOOST_CHECK_EQUAL(symbol_table.varCount(SymbolKind::FIELD), 2);
+  BOOST_CHECK_EQUAL(symbol_table.varCount(), 1);
   check(expected);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_function_no_field_access, fixture) {
+  istringstream stream(
+  "class Point {\n"
+    "static char name;\n"
+    "field int x;\n"
+    "function void test() { }\n"
+  "}"
+  );
+  init(stream, "test");
+
+  const std::vector<Symbol> expected {
+    {.name="name", .type="char", .kind=SymbolKind::STATIC, .index=0},
+  };
+
+  BOOST_CHECK_EQUAL(symbol_table.varCount(), 0);
+  check(expected);
+  // can't access a field from a function
+  BOOST_CHECK(!symbol_table.get("x"));
 }

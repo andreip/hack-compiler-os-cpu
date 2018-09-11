@@ -40,6 +40,8 @@ public:
   bool isAType() const;
   bool isIdentifier() const;
 
+  void raise(std::string moreInfo="Found unexpected token") const;
+
   // TODO: implement these
   //KeywordTokenType getKeywordType() const;
   //char getSymbol() const;

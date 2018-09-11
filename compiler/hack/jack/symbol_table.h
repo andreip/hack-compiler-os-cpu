@@ -48,19 +48,19 @@ class SubroutineDec;
 class SymbolTable {
 public:
   SymbolTable();
-  void populateFromClass(const ClassElement&);
-  void populateFromSubroutine(const SubroutineDec&);
-  void clearSubroutineSymbols();
-  void clear();  // clears everything
+  void init(const ClassElement&, const SubroutineDec&);
+  Symbol get(std::string name) const;
+  int varCount() const;
+private:
+  void reset();
+  void initFromClass(const ClassElement&);
+  void initFromSubroutine(const SubroutineDec&);
   void defineClassVar(std::string name, std::string type, SymbolKind kind);
   void defineSubroutineVar(std::string name, std::string type, SymbolKind kind);
   void defineThis(std::string type);
-  // query methods
-  Symbol get(std::string name) const;
-  int varCount(SymbolKind) const;
-private:
   template <typename MapT>
   void define(std::string name, std::string type, SymbolKind kind, MapT &map);
+private:
   std::unordered_map<std::string, Symbol> _classSymbols;
   std::unordered_map<std::string, Symbol> _subroutineSymbols;
   std::string _className;
