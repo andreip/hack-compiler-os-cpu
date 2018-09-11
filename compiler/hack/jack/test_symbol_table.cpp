@@ -52,7 +52,10 @@ BOOST_FIXTURE_TEST_CASE(test_empty, fixture) {
   istringstream stream("class Test { function void test() {} }");
   init(stream, "test");
 
-  BOOST_CHECK_EQUAL(symbol_table.varCount(), 0);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::VAR), 0);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::ARG), 0);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::STATIC), 0);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::FIELD), 0);
   BOOST_CHECK(bool(symbol_table.get("invalid")) == false);
 }
 
@@ -85,7 +88,10 @@ BOOST_FIXTURE_TEST_CASE(test_function_var_dec, fixture) {
     {.name="p2", .type="Point", .kind=SymbolKind::VAR, .index=1},
   };
 
-  BOOST_CHECK_EQUAL(symbol_table.varCount(), 2);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::VAR), 2);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::ARG), 2);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::STATIC), 0);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::FIELD), 0);
   check(expected);
 }
 
@@ -109,13 +115,17 @@ BOOST_FIXTURE_TEST_CASE(test_constructor_var_dec, fixture) {
     {.name="_y", .type="int", .kind=SymbolKind::ARG, .index=1},
   };
 
-  BOOST_CHECK_EQUAL(symbol_table.varCount(), 0);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::VAR), 0);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::ARG), 2);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::STATIC), 1);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::FIELD), 2);
   check(expected);
 
   // check that switching works and erases previous symbols.
   istringstream empty("class Test { function void test() {} }");
   init(empty, "test");
-  BOOST_CHECK_EQUAL(symbol_table.varCount(), 0);
+  for (SymbolKind kind : SymbolKindHelpers::ALL)
+    BOOST_CHECK_EQUAL(symbol_table.count(kind), 0);
   check_false(expected);
 }
 
@@ -145,7 +155,10 @@ BOOST_FIXTURE_TEST_CASE(test_method_var_dec, fixture) {
     {.name="res", .type="boolean", .kind=SymbolKind::VAR, .index=0},
   };
 
-  BOOST_CHECK_EQUAL(symbol_table.varCount(), 1);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::VAR), 1);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::ARG), 2); // including "this"
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::STATIC), 1);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::FIELD), 2);
   check(expected);
 }
 
@@ -163,7 +176,10 @@ BOOST_FIXTURE_TEST_CASE(test_function_no_field_access, fixture) {
     {.name="name", .type="char", .kind=SymbolKind::STATIC, .index=0},
   };
 
-  BOOST_CHECK_EQUAL(symbol_table.varCount(), 0);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::VAR), 0);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::ARG), 0);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::STATIC), 1);
+  BOOST_CHECK_EQUAL(symbol_table.count(SymbolKind::FIELD), 0);
   check(expected);
   // can't access a field from a function
   BOOST_CHECK(!symbol_table.get("x"));

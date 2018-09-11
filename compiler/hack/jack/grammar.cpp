@@ -146,14 +146,15 @@ std::vector<std::string> SubroutineCall::toVMCode(SymbolTable &table) const {
     }
   // it's a this->subroutine() call, from inside another method.
   } else {
-    Symbol s = table.get("this");
-    if (!s)
-      _subroutineName.raise("Cannot access method outside method scope");
+    if (table.getCurrentSubroutineKind() == "function")
+      _subroutineName.raise("Cannot call method from function");
 
-    // push "this" to the new method as well
-    concat(code, { VMCommands::Push(s.segment(), s.index) });
+    // push "this" to the new method as 1st arg
+    concat(code, { VMCommands::Push("pointer", 0) });
     nArgs++;
-    subroutineFullName = s.type + "." + _subroutineName.value();
+    subroutineFullName = (
+      table.getCurrentClassName() + "." + _subroutineName.value()
+    );
   }
 
   concat(code, {
@@ -277,19 +278,23 @@ std::vector<std::string> Term::toVMCode(SymbolTable &table) const {
       } else if (in_array(_type.value(), {"false", "null"})) {
         concat(code, { VMCommands::Push("constant", 0) });
       } else if (_type.value() == "this") {
-        Symbol s = table.get("this");
-        if (s)
-          concat(code, { VMCommands::Push(s.type, s.index) });
-        // don't have access to this
-        else
-          _type.raise("Can't access this outside methods");
+        if (table.getCurrentSubroutineKind() == "function")
+          _type.raise("Can't access this from function");
+        concat(code, { VMCommands::Push("pointer", 0) });
       } else {
         throw_and_debug("Term::toVMCode: cannot use keyword " + _type.value() + " in an expression.");
       }
     } else {
       throw_and_debug("Term::toVMCode: invalid type " + _type.value());
     }
+  } else if (_expression) {
+    concat(code, _expression.toVMCode(table));
+  } else if (_subroutineCall) {
+    concat(code, _subroutineCall.toVMCode(table));
+  } else {
+    throw_and_debug("Term::toVMCode: Some error in if/else logic");
   }
+
   return code;
 }
 
@@ -643,10 +648,31 @@ SubroutineBody SubroutineDec::getBody() const { return _body; }
 
 std::vector<std::string> SubroutineDec::toVMCode(SymbolTable &table) const {
   std::string funcName = getClassName() + "." + getName();
-  int nLocals = table.varCount();
+  int nLocals = table.count(SymbolKind::VAR);
   std::vector<std::string> code = {
     VMCommands::Function(funcName, nLocals),
   };
+
+  // have to setup THIS base ptr from 1st argument which points to "this"
+  if (getKind() == "method") {
+    Symbol s = table.get("this");
+    concat(code, {
+      VMCommands::Push(s.segment(), s.index),
+      VMCommands::Pop("pointer", 0),
+    });
+  // have to allocate space for an object and then set THIS
+  // base ptr to point to that newly allocated space.
+  } else if (getKind() == "constructor") {
+    // Allocate at least 1 in size if we've got a constructor,
+    // to have some address to pass around.
+    // https://www.coursera.org/learn/nand2tetris2/discussions/weeks/5/threads/qm11ULYCEeieGhKKx3bnrg
+    int size = std::max(1, table.count(SymbolKind::FIELD));
+    concat(code, {
+      VMCommands::Push("constant", size),
+      VMCommands::Call("Memory.alloc", 1),
+      VMCommands::Pop("pointer", 0),
+    });
+  }
 
   return concat(code, getBody().toVMCode(table));
 }

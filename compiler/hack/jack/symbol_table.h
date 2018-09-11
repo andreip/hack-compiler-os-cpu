@@ -49,9 +49,12 @@ class SubroutineDec;
 class SymbolTable {
 public:
   SymbolTable();
+  ~SymbolTable();
   void init(const ClassElement&, const SubroutineDec&);
   Symbol get(std::string name) const;
-  int varCount() const;
+  int count(SymbolKind) const;
+  std::string getCurrentSubroutineKind() const;
+  std::string getCurrentClassName() const;
 private:
   void reset();
   void defineClassVar(std::string name, std::string type, SymbolKind kind);
@@ -64,6 +67,8 @@ private:
   std::unordered_map<std::string, Symbol> _subroutineSymbols;
   std::string _className;
   std::unordered_map<SymbolKind, int, EnumClassHash> _indices;
+  const SubroutineDec *_subroutine;
+  const ClassElement *_classElement;
 };
 
 #endif

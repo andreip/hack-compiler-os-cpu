@@ -59,9 +59,13 @@ std::ostream& operator<<(std::ostream &out, const Symbol &s) {
 
 SymbolTable::SymbolTable() { }
 
+SymbolTable::~SymbolTable() { reset(); }
+
 void SymbolTable::init(const ClassElement &classElement, const SubroutineDec &subroutine) {
   reset();
   _className = classElement.getName();
+  _subroutine = &subroutine;
+  _classElement = &classElement;
 
   // init class-level args
   for (const ClassVarDec &varsDec : classElement.getClassVarDecs()) {
@@ -98,6 +102,8 @@ void SymbolTable::reset() {
   _subroutineSymbols.clear();
   _indices.clear();
   _className = "NoClassName";
+  _subroutine = nullptr;
+  _classElement = nullptr;
 }
 
 void SymbolTable::defineThis(std::string type) {
@@ -134,11 +140,26 @@ Symbol SymbolTable::get(std::string name) const {
   return Symbol();  // empty evaluates to falsy
 }
 
-int SymbolTable::varCount() const {
+int SymbolTable::count(SymbolKind kind) const {
   int count = 0;
   std::for_each(
+    _classSymbols.begin(), _classSymbols.end(),
+    [&count, kind](auto &e) { if (e.second.kind == kind) ++count; }
+  );
+  std::for_each(
     _subroutineSymbols.begin(), _subroutineSymbols.end(),
-    [&count](auto &e) { if (e.second.kind == SymbolKind::VAR) ++count; }
+    [&count, kind](auto &e) { if (e.second.kind == kind) ++count; }
   );
   return count;
+}
+
+std::string SymbolTable::getCurrentSubroutineKind() const {
+  if (_subroutine)
+    return _subroutine->getKind();
+
+  throw_and_debug("SymbolTable::getCurrentSubroutineKind: No subroutine on table");
+}
+
+std::string SymbolTable::getCurrentClassName() const {
+  return _className;
 }
