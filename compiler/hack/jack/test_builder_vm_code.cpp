@@ -381,3 +381,61 @@ BOOST_FIXTURE_TEST_CASE(test_if_statement, fixture) {
 
   compute_vmcode(stream);
 }
+
+BOOST_FIXTURE_TEST_CASE(test_array, fixture) {
+  istringstream stream(
+  "class Main {\n"
+    "function void main() {\n"
+      "var Array a;\n"
+      "let a = Array.new(2);\n"
+      "let a[0] = 1;\n"
+      "let a[1] = a[0] + 2;\n"
+      "do Output.printInt(a[1]);\n"
+      "return;\n"
+    "}\n"
+  "}"
+  );
+  expected = {
+    VMCommands::Function("Main.main", 1),
+    VMCommands::Push("constant", 2),
+    VMCommands::Call("Array.new", 1),
+    VMCommands::Pop("local", 0),
+    // let a[0] = 1;
+    VMCommands::Push("constant", 1),
+    VMCommands::Pop("temp", 0),         // puts rhs in temp0
+    VMCommands::Push("local", 0),
+    VMCommands::Push("constant", 0),
+    VMCommands::ArithmeticLogic(Op::ADD),   // array + index
+    VMCommands::Pop("pointer", 1),      // puts THAT on array + index
+    VMCommands::Push("temp", 0),
+    VMCommands::Pop("that", 0),         // *THAT = rhs
+    // let a[1] = a[0] + 2;
+    VMCommands::Push("local", 0),
+    VMCommands::Push("constant", 0),
+    VMCommands::ArithmeticLogic(Op::ADD), // a + 0 offset
+    VMCommands::Pop("pointer", 1),
+    VMCommands::Push("that", 0),          // a[0] push
+    VMCommands::Push("constant", 2),
+    VMCommands::ArithmeticLogic(Op::ADD),
+    VMCommands::Pop("temp", 0),           // temp0 = a[0] + 2
+    VMCommands::Push("local", 0),
+    VMCommands::Push("constant", 1),
+    VMCommands::ArithmeticLogic(Op::ADD), // a + 1 offset
+    VMCommands::Pop("pointer", 1),        // set THAT = a + 1
+    VMCommands::Push("temp", 0),
+    VMCommands::Pop("that", 0),           // let a[1] = temp0
+    // do Output.printInt(a[1]);
+    VMCommands::Push("local", 0),
+    VMCommands::Push("constant", 1),
+    VMCommands::ArithmeticLogic(Op::ADD),
+    VMCommands::Pop("pointer", 1),
+    VMCommands::Push("that", 0),          // push a[1]
+    VMCommands::Call("Output.printInt", 1),
+    VMCommands::Pop("temp", 0),
+    // return;
+    VMCommands::Push("constant", 0),
+    VMCommands::Return(),
+  };
+
+  compute_vmcode(stream);
+}

@@ -253,9 +253,15 @@ std::vector<std::string> Term::toVMCode(SymbolTable &table) const {
 
       concat(code, { VMCommands::Push(s.segment(), s.index) });
 
-      // TODO arrays
       // varName[expression]
-      if (_expression) { }
+      if (_expression) {
+        concat(code, {
+          _expression.toVMCode(table),
+          { VMCommands::ArithmeticLogic(Op::ADD) },
+          { VMCommands::Pop("pointer", 1) },  // set THAT = varName + index
+          { VMCommands::Push("that", 0) },    // push varName[index]
+        });
+      }
     } else if (_type.isIntConstant()) {
       concat(code, { VMCommands::Push("constant", _type.value()) });
     } else if (_type.isStringConstant()) {
@@ -288,8 +294,10 @@ std::vector<std::string> Term::toVMCode(SymbolTable &table) const {
     } else {
       throw_and_debug("Term::toVMCode: invalid type " + _type.value());
     }
+  // ( <expression> )
   } else if (_expression) {
     concat(code, _expression.toVMCode(table));
+  // <subroutineCall>
   } else if (_subroutineCall) {
     concat(code, _subroutineCall.toVMCode(table));
   } else {
@@ -413,13 +421,38 @@ std::vector<std::string> Statement::toVMCode(SymbolTable &table) const {
     if (!s)
       _varName.raise("Variable not defined");
 
-    // TODO: also treat varname[x]
-    std::vector<std::string> rhsCode = _expressions[0].toVMCode(table);
+    // possibly a let could look like
+    // let varName[<lhs>] = rhs;
+    Expression lhs, rhs;
+    if (_expressions.size() == 2) {
+      lhs = _expressions[0];
+      rhs = _expressions[1];
+    } else {
+      rhs = _expressions[0];
+    }
 
+    // compute rhs and put it in temp
     concat(code, {
-      std::move(rhsCode),
-      { VMCommands::Pop(s.segment(), s.index) }
+      rhs.toVMCode(table),
     });
+
+    // pop to varName, no array expression on the left
+    if (!lhs) {
+      concat(code, {
+        VMCommands::Pop(s.segment(), s.index),
+      });
+    // else we've got a varName[<expression>] on the left
+    } else {
+      concat(code, {
+        { VMCommands::Pop("temp", 0) },
+        { VMCommands::Push(s.segment(), s.index) },
+        lhs.toVMCode(table),
+        { VMCommands::ArithmeticLogic(Op::ADD) },
+        { VMCommands::Pop("pointer", 1) },    // sets THAT = varName + index
+        { VMCommands::Push("temp", 0) },
+        { VMCommands::Pop("that", 0) },       // varName[expr] = temp0
+      });
+    }
   } else if (_type.value() == "if") {
     std::string L1 = VMCommands::UniqueLabel();
     std::string L2 = VMCommands::UniqueLabel();
