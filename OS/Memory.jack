@@ -12,7 +12,7 @@ class Memory {
     static Array arr;
     static int heapBase;
     static int heapSize;
-    static int freeList;
+    static int freeList, freeListTail;
 
     /** Initializes the class. */
     function void init() {
@@ -21,6 +21,7 @@ class Memory {
         //let heapSize = 10;
         let heapSize = 14336;  // from [2048, 16384)
         let freeList = heapBase;  // also by default freeList[0] -> NULL
+        let freeListTail = heapBase;
         do Memory.poke(freeList+1, heapSize - 2);
         return;
     }
@@ -40,8 +41,9 @@ class Memory {
      *  a reference to its base address. */
     function int alloc(int size) {
         var int i, blockSize, block;
+        var int bestBlock, bestSize;
 
-        // first fit of memory is returned.
+        // best fit of memory is returned.
         let i = freeList;
         while (~(i = 0)) {
             let blockSize = Memory.peek(i + 1);
@@ -50,20 +52,18 @@ class Memory {
             // info of next pointer and block size in those two cells
             // of the returning block.
             if ((blockSize - size) > 1) {
-                // we've consumed size + 2 out of blockSize of current
-                // segment we're on, update its size.
-                do Memory.poke(i + 1, blockSize - (size + 2));
-
-                // where new block starts, out of which first two cells
-                // keep track of next ptr and block size. We return block+2
-                // to user.
-                let block = i + (blockSize - size);
-                do Memory.poke(block, 0);  // NULL as next of this block, just for sanity
-                do Memory.poke(block + 1, size);
-                return block + 2;
+                if ((bestSize = 0) | (blockSize < bestSize)) {
+                    let bestSize = blockSize;
+                    let bestBlock = i;
+                }
             }
             // try next block
             let i = Memory.peek(i);
+        }
+
+        let blockSize = Memory.peek(bestBlock + 1);
+        if ((blockSize - size) > 1) {
+            return Memory.doAlloc(bestBlock, size);
         }
 
         // TODO, call defrag and retry?
@@ -71,19 +71,37 @@ class Memory {
         return -1;
     }
 
+    function int doAlloc(int base, int size) {
+        var int blockSize, block;
+        let blockSize = Memory.peek(base + 1);
+        if ((blockSize - size) > 1) {
+            // we've consumed size + 2 out of blockSize of current
+            // segment we're on, update its size.
+            do Memory.poke(base + 1, blockSize - (size + 2));
+
+            // where new block starts, out of which first two cells
+            // keep track of next ptr and block size. We return block+2
+            // to user.
+            let block = base + (blockSize - size);
+            do Memory.poke(block, 0);  // NULL as next of this block, just for sanity
+            do Memory.poke(block + 1, size);
+            return block + 2;
+        }
+        return -1;
+    }
+
     /** De-allocates the given object (cast as an array) by making
      *  it available for future allocations. */
     function void deAlloc(Array o) {
         var int i;
-        let i = freeList;
         // go to the end of the linked list of free segments.
-        while (~(Memory.peek(i) = 0)) {
-            let i = Memory.peek(i);
-        }
+        let i = freeListTail;
         // puts last->next = block_address of object received
         do Memory.poke(i, o - 2);
         // set object->next = null.
         do Memory.poke(o - 2, 0);
+        // updates the tail of linked list.
+        let freeListTail = o - 2;
         return;
     }
 }
