@@ -63,9 +63,11 @@ class Memory {
             let i = Memory.peek(i);
         }
 
-        let blockSize = Memory.peek(bestBlock + 1);
-        if ((blockSize - size) > 1) {
-            return Memory.doAlloc(bestBlock, size);
+        if (Memory.inHeap(bestBlock)) {
+            let blockSize = Memory.peek(bestBlock + 1);
+            if ((blockSize - size) > 1) {
+                return Memory.doAlloc(bestBlock, size);
+            }
         }
 
         // since we've reached this point, memory is full
@@ -118,9 +120,82 @@ class Memory {
     }
 
     function void defrag() {
+        var int i, j, prev_i, prev_j;
+
+        // N^2 aggregated running time, two nested loops; whatever..
+        let i = freeList;
+        let prev_i = i;
+        while (~(i = 0)) {
+            let j = Memory.peek(i);
+            let prev_j = i;
+            while (~(j = 0)) {
+                if (Memory.areContiguousSegments(i, j)) {
+                    // update tail of list in case j is last
+                    if (j = freeListTail) { let freeListTail = prev_j; }
+                    // Removes j from list and adds it to i.
+                    do Memory.poke(prev_j, Memory.peek(j));
+                    do Memory.joinSegments(i, j);
+
+                    // go again forward, since segment i has increased.
+                    let j = Memory.peek(i);
+                    let prev_j = i;
+                } else {
+                    if (Memory.areContiguousSegments(j, i)) {
+                        // 'i' can't be freeList, since that is never moved,
+                        // even if it ends up being of size 0 internally.
+                        // So no need for if (i == freeList) check.
+
+                        // Removes i from list and adds it to j.
+                        do Memory.poke(prev_i, Memory.peek(i));
+                        do Memory.joinSegments(j, i);
+
+                        // Update i to next element so we can continue the loop.
+                        let i = Memory.peek(prev_i);
+                        if (~(i = 0)) {
+                            let j = Memory.peek(i);
+                        } else {
+                            let j = 0;
+                        }
+                    // if we didn't find any two contiguous segments,
+                    // just continue to advance j until its end.
+                    } else {
+                        let prev_j = j;
+                        let j = Memory.peek(j);
+                    }
+                }
+            }
+            let prev_i = i;
+            let i = Memory.peek(i);
+        }
+
         // we just did a defrag, so no need for another one until
         // we get new deallocated blocks.
         let mightNeedDefrag = false;
         return;
+    }
+
+    // adds segment j to i, order is important.
+    function void joinSegments(int i, int j) {
+        var int size_i, size_j;
+
+        // put j inside i by increasing i's size.
+        let size_i = Memory.peek(i + 1);
+        let size_j = Memory.peek(j + 1) + 2;
+        do Memory.poke(i + 1, size_i + size_j);
+        // set j->next to NULL after we've advanced j.
+        do Memory.poke(j, 0);
+        return;
+    }
+
+    // if segment i continues itself with segment j, in this order.
+    function boolean areContiguousSegments(int i, int j) {
+        return ((i + 2) + Memory.peek(i + 1)) = j;
+    }
+
+    function boolean inHeap(int i) {
+        return (
+            ~(i < heapBase) &
+            (i < (heapBase + heapSize))
+        );
     }
 }

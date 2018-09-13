@@ -1,0 +1,154 @@
+class Main {
+    function void main() {
+        do Main.testMemory2();
+        //do Main.testMemory1();
+        //do Main.testMathsqrt();
+        //do Main.testMathDiv();
+        //do Main.testMathMultiply();
+        //do Main.testMathbit();
+        //do Main.testMathIntToBinary();
+        return;
+    }
+
+    // get big chunks of the heap to exhaust it, then release part of few
+    // chunks and see that when asking for more memory and not having enough,
+    // a defrag is attempted to have the memory alloc finally succeed.
+    function void testMemory2() {
+        var Array a, b;
+        let a = Array.new(8000);
+        do Output.printString("1st alloc of 8k should succeed: ");
+        do Output.printInt(a);
+        do Output.println();
+        let b = Array.new(8000);  // should fail with -1
+        do Output.printString("2nd alloc of 8k should fail: ");
+        do Output.printInt(b);
+        do Output.println();
+        do Output.printString("Releasing first 8k..");
+        do Output.println();
+        do a.dispose();
+        let b = Array.new(8000);
+        do Output.printString("3rd alloc of 8k should work: ");
+        do Output.printInt(b);
+        do Output.println();
+        //do Memory.defrag();
+        return;
+    }
+
+    // test that defrag joines bits and pieces together when called
+    // explicitly.
+    function void testMemory1() {
+        var Array w, x, y, z;
+        var Array p;
+        var int i;
+        while (i < 5) {
+            let w = Array.new(i + 1);  // space waste
+            do Output.printInt(w);
+            do Output.println();
+            let x = Array.new(i + 5);
+            do Output.printInt(x);
+            do Output.println();
+            let y = Array.new(i + 4);
+            do Output.printInt(y);
+            do Output.println();
+            let z = Array.new(i + 3);
+            do Output.printInt(y);
+            do Output.println();
+
+            if (i = 4) {
+                let p = z;
+            }
+
+            do x.dispose();
+            do y.dispose();
+            do w.dispose();
+            if (~(p = z)) {
+                do z.dispose();
+            }
+            let i = i + 1;
+        }
+        // it will cause to have two batches, one initial one where
+        // freeList points too, and another one of size > 100 words where all
+        // the rest of the disposes were joined into. The two blocks can't be
+        // merged together because p didn't dispose its memory
+        // in time, before callind defrag. Nice! Seems it's working nicely :)
+        do Memory.defrag();
+        do p.dispose();
+        return;
+    }
+
+    function void testMathsqrt() {
+        do Output.printInt(Math.sqrt(101));
+        do Output.println();
+        do Output.printInt(Math.sqrt(15128));
+        do Output.println();
+        do Output.printInt(Math.sqrt(15129));
+        do Output.println();
+        do Output.printInt(Math.sqrt(32761));  // 181
+        do Output.println();
+        do Output.printInt(Math.sqrt(32767));
+        do Output.println();
+        return;
+    }
+
+    function void testMathDiv() {
+        do Output.printInt(5 / 5);
+        do Output.println();
+        do Output.printInt(5 / -5);
+        do Output.println();
+        do Output.printInt(-5 / -5);
+        do Output.println();
+        do Output.printInt(7 / 11);
+        do Output.println();
+        do Output.printInt(15 / 12);
+        do Output.println();
+        do Output.printInt(16 / -4);
+        do Output.println();
+        do Output.printInt(15 / -5);
+        do Output.println();
+        do Output.printInt(15 / -6);
+        do Output.println();
+        do Output.printInt(15 / 0);
+        do Output.println();
+        return;
+    }
+
+    function void testMathMultiply() {
+        do Output.printInt(5 * 5);
+        do Output.println();
+        do Output.printInt(5 * -5);
+        do Output.println();
+        do Output.printInt(-5 * -5);
+        do Output.println();
+        do Output.printInt(7 * 11);
+        do Output.println();
+        do Output.printInt(15 * 12);
+        do Output.println();
+        do Output.printString(Math.intToBin(15 * 12));
+        do Output.println();
+        return;
+    }
+
+    function void testMathIntToBinary() {
+        do Output.printString(Math.intToBin(1));
+        do Output.println();
+        do Output.printString(Math.intToBin(4));
+        do Output.println();
+        do Output.printString(Math.intToBin(-1));
+        do Output.println();
+        do Output.printString(Math.intToBin(16384));
+        do Output.println();
+        do Output.printString(Math.intToBin(16384 + 16384));
+        do Output.println();
+        return;
+    }
+
+    function void testMathbit() {
+        do Output.printInt(Math.bit(16384 + 16384, 15));
+        do Output.println();
+        do Output.printInt(Math.bit(16384 + 16384, 14));
+        do Output.println();
+        do Output.printInt(Math.bit(16384 + 16384, 13));
+        do Output.println();
+        return;
+    }
+}
