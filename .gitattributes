@@ -1,0 +1,5 @@
+* text=auto
+*.jack text
+*.h text
+*.c text
+*.cpp text

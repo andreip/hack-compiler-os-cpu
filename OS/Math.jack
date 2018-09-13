@@ -1,0 +1,153 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Math.jack
+
+/**
+ * A library of commonly used mathematical functions.
+ * Note: Jack compilers implement multiplication and division using OS method calls.
+ */
+class Math {
+    static Array twoToThe;
+
+    /** Initializes the library. */
+    function void init() {
+        let twoToThe = Array.new(16);
+        let twoToThe[0] = 1;
+        let twoToThe[1] = 2;
+        let twoToThe[2] = 4;
+        let twoToThe[3] = 8;
+        let twoToThe[4] = 16;
+        let twoToThe[5] = 32;
+        let twoToThe[6] = 64;
+        let twoToThe[7] = 128;
+        let twoToThe[8] = 256;
+        let twoToThe[9] = 512;
+        let twoToThe[10] = 1024;
+        let twoToThe[11] = 2048;
+        let twoToThe[12] = 4096;
+        let twoToThe[13] = 8192;
+        let twoToThe[14] = 16384;
+        let twoToThe[15] = 16384 + 16384;   // shift to right
+        return;
+    }
+
+    /** Returns the absolute value of x. */
+    function int abs(int x) {
+        if (x < 0) { return -x; }
+        return x;
+    }
+
+    /** Returns the product of x and y. 
+     *  When a Jack compiler detects the multiplication operator '*' in the 
+     *  program's code, it handles it by invoking this method. In other words,
+     *  the Jack expressions x*y and multiply(x,y) return the same value.
+     */
+    function int multiply(int x, int y) {
+        var int m, i;
+        // keeps on adding x and shifted version a number of
+        // z times (z = #bits of y), but only if the i-th bit
+        // of y is set to 1.
+        while (i < 16) {
+            if (Math.bit(y, i)) {
+                let m = m + x;
+            }
+            let x = x + x;      // shift x to the right
+            let i = i + 1;
+        }
+        return m;
+    }
+
+    /** Returns the integer part of x/y.
+     *  When a Jack compiler detects the multiplication operator '/' in the 
+     *  program's code, it handles it by invoking this method. In other words,
+     *  the Jack expressions x/y and divide(x,y) return the same value.
+     */
+    function int divide(int x, int y) {
+        var boolean negative;  // final result's sign; false by default
+        var int q, reminder;
+
+        if (y = 0) { return 0; } // division by 0; what to do
+
+        // extra fluff to make both numbers positive but record
+        // if final result should be turned negative.
+        if (~(x < 0) & (y < 0)) { let negative = true; }
+        if ((x < 0) & ~(y < 0)) { let negative = true; }
+        let x = Math.abs(x);
+        let y = Math.abs(y);
+
+        // The actual algorithm: if x / y = q1, reminder r1
+        // and we know through recursivity that x / 2y = q2 r2
+        // then x = y * q1 + r1 = 2 * y * q2 + r2
+        // and need to figure out if r2 has a y in it or not
+        // so final result is either (2 * q2) or (2 * q2 + 1)
+        if (y > x) { return 0; }
+        let q = Math.divide(x, 2 * y);
+        let reminder = x - (2 * (y * q));  // x % (2y)
+        // reminder is < 2y for sure; but how is it compared to y?
+        if (reminder < y) {
+            let q = 2 * q;
+        } else {
+            let q = (2 * q) + 1;
+        }
+
+        if (negative) { return -q; }
+        return q;
+    }
+
+    /** Returns the integer part of the square root of x. */
+    /* 0 <= x < 2^n, where n = 16 bits on hack architecture.
+     * so we can go searching for sqrt(x) in the range
+     * 0 <= sqrt(x) <= 2^(n/2) - 1.
+     */
+    function int sqrt(int x) {
+        var int n, i, y, yy;  // y = 0
+        let n = 16;
+        let i = (n / 2) - 1;  // 2^(n/2) - 1 to start with
+        while (~(i < 0)) {
+            let yy = (y + twoToThe[i]) * (y + twoToThe[i]);
+            // if (y + 2^i)^2 <= x then we add 2^i to y
+            // helping y converge to sqrt(x)
+            if (~(yy > x) & (yy > 0)) {
+                let y = y + twoToThe[i];
+            }
+            let i = i - 1;
+        }
+        return y;
+    }
+
+    /** Returns the greater number. */
+    function int max(int a, int b) {
+        if (a < b) { return b; }
+        return a;
+    }
+
+    /** Returns the smaller number. */
+    function int min(int a, int b) {
+        if (a < b) { return a; }
+        return b;
+    }
+
+    /** Private functions not part of API. **/
+
+    function String intToBin(int x) {
+        var int i;
+        var String bin;
+        let bin = String.new(16);
+        let i = 15;
+        while (~(i < 0)) {
+            if (Math.bit(x, i)) {
+                let bin = bin.appendChar(49); // '1'
+            } else {
+                let bin = bin.appendChar(48); // '0'
+            }
+            let i = i - 1;
+        }
+        return bin;
+    }
+
+    /* Returns true if ith bit of x is on. */
+    function boolean bit(int x, int i) {
+        return ~((twoToThe[i] & x) = 0);
+    }
+}
