@@ -1,6 +1,7 @@
 class Main {
     function void main() {
-        do Main.testMemory2();
+        do Main.testMemory3();
+        //do Main.testMemory2();
         //do Main.testMemory1();
         //do Main.testMathsqrt();
         //do Main.testMathDiv();
@@ -10,26 +11,50 @@ class Main {
         return;
     }
 
+    function void testMemory3() {
+        var Array a;
+        let a = Array.new(8000);
+        do Output.printString("1st alloc of 8k should work:");
+        do Output.printInt(a);
+        do Output.println();
+        do a.dispose();
+        // thanks to an optimization done that returns segments
+        // from list directly if their size matches exactly, this will work
+        // and it wouldn't have worked otherwise.
+        let a = Array.new(8000);
+        do Output.printString("2nd alloc of 8k should use same segment, defrag doesn't get triggered:");
+        do Output.printInt(a);
+        do Output.println();
+        return;
+    }
+
     // get big chunks of the heap to exhaust it, then release part of few
     // chunks and see that when asking for more memory and not having enough,
     // a defrag is attempted to have the memory alloc finally succeed.
     function void testMemory2() {
-        var Array a, b;
+        var Array a, b, c;
         let a = Array.new(8000);
+        let b = Array.new(8000);  // should fail with -1
+        do a.dispose();
+        // should succeed since defrag() runs in the bg and aggregates the 8k
+        // released above to the existing space.
+        let c = Array.new(12000);
+
+        // put outputs at the end since strings don't release
+        // their memory after them :( so we would get fragmented
+        // heap otherwise and it would fail to have a 12k contiguous space.
         do Output.printString("1st alloc of 8k should succeed: ");
         do Output.printInt(a);
         do Output.println();
-        let b = Array.new(8000);  // should fail with -1
         do Output.printString("2nd alloc of 8k should fail: ");
         do Output.printInt(b);
         do Output.println();
         do Output.printString("Releasing first 8k..");
         do Output.println();
-        do a.dispose();
-        let b = Array.new(8000);
-        do Output.printString("3rd alloc of 8k should work: ");
-        do Output.printInt(b);
+        do Output.printString("3rd alloc of 12k succeeds because defrag ran in the bg: ");
+        do Output.printInt(c);
         do Output.println();
+        // no need to call it, it'll call itself above when in need of memory
         //do Memory.defrag();
         return;
     }

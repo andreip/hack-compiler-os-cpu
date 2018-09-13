@@ -42,17 +42,28 @@ class Memory {
     /** Finds an available RAM block of the given size and returns
      *  a reference to its base address. */
     function int alloc(int size) {
-        var int i, blockSize, block;
+        var int i, prev_i, blockSize, block;
         var int bestBlock, bestSize;
 
         // best fit of memory is returned.
         let i = freeList;
+        let prev_i = i;
         while (~(i = 0)) {
-            let blockSize = Memory.peek(i + 1);
-            // need to find a block size at least with two cells
+            // Need to find a block size at least with two cells
             // bigger than the requesting size, to keep bookkeeping
             // info of next pointer and block size in those two cells
             // of the returning block.
+            // Or, if the size exactly matches the requested size, we can just
+            // give it the segment that's in freeList directly - optimization :)
+            let blockSize = Memory.peek(i + 1);
+
+            // if the first block is exact size, can't give that one, since we
+            // need to keep metainformation that the memory is exhausted. Can
+            // give exact size only for any subsequent free segment.
+            if ((blockSize = size) & ~(i = freeList)) {
+                return Memory.doAllocExactBlock(prev_i, i, size);
+            }
+
             if ((blockSize - size) > 1) {
                 if ((bestSize = 0) | (blockSize < bestSize)) {
                     let bestSize = blockSize;
@@ -60,13 +71,14 @@ class Memory {
                 }
             }
             // try next block
+            let prev_i = i;
             let i = Memory.peek(i);
         }
 
         if (Memory.inHeap(bestBlock)) {
             let blockSize = Memory.peek(bestBlock + 1);
             if ((blockSize - size) > 1) {
-                return Memory.doAlloc(bestBlock, size);
+                return Memory.doAllocPartFromBlock(bestBlock, size);
             }
         }
 
@@ -82,7 +94,17 @@ class Memory {
         return -1;
     }
 
-    function int doAlloc(int base, int size) {
+    function int doAllocExactBlock(int prev_i, int i, int size) {
+        // shouldn't happen, treated this case before calling.
+        if (freeList = i) { return -1; }
+
+        if (freeListTail = i) { let freeListTail = prev_i; }
+        // unlink segment i from list.
+        do Memory.poke(prev_i, Memory.peek(i));
+        return i + 2;
+    }
+
+    function int doAllocPartFromBlock(int base, int size) {
         var int blockSize, block;
         let blockSize = Memory.peek(base + 1);
         if ((blockSize - size) > 1) {
@@ -121,6 +143,11 @@ class Memory {
 
     function void defrag() {
         var int i, j, prev_i, prev_j;
+
+        // uncomment this if you want to see if defrag gets called. Don't use
+        // strings though, since those call alloc().
+        //do Output.printInt(42);
+        //do Output.println();
 
         // N^2 aggregated running time, two nested loops; whatever..
         let i = freeList;
