@@ -13,6 +13,7 @@ class Memory {
     static int heapBase;
     static int heapSize;
     static int freeList, freeListTail;
+    static boolean mightNeedDefrag;
 
     /** Initializes the class. */
     function void init() {
@@ -23,6 +24,7 @@ class Memory {
         let freeList = heapBase;  // also by default freeList[0] -> NULL
         let freeListTail = heapBase;
         do Memory.poke(freeList+1, heapSize - 2);
+        let mightNeedDefrag = false;
         return;
     }
 
@@ -66,8 +68,15 @@ class Memory {
             return Memory.doAlloc(bestBlock, size);
         }
 
-        // TODO, call defrag and retry?
-        // Memory is full or fragmented.
+        // since we've reached this point, memory is full
+        // or defragmented; try a defrag and retry once.
+        if (mightNeedDefrag) {
+            do Memory.defrag();
+            return Memory.alloc(size); // retry once
+        }
+
+        // Memory is full or too fragmented and there's
+        // nothing we can do about it with this algorithm :).
         return -1;
     }
 
@@ -102,6 +111,16 @@ class Memory {
         do Memory.poke(o - 2, 0);
         // updates the tail of linked list.
         let freeListTail = o - 2;
+        // now that we've added a new list to the tail, we tell
+        // the system that a defragmentation could help.
+        let mightNeedDefrag = true;
+        return;
+    }
+
+    function void defrag() {
+        // we just did a defrag, so no need for another one until
+        // we get new deallocated blocks.
+        let mightNeedDefrag = false;
         return;
     }
 }
