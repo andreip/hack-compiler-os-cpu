@@ -109,6 +109,20 @@ class Math {
         return q;
     }
 
+    /*
+     * divideCeil(15, 4) = 4, not 3.
+     * divideCeil(16, 4) = 4.
+     */
+    function int divideCeil(int x, int y) {
+        var int q;
+        let q = x / y;
+        if ((q * y) = x) {
+            return q;
+        } else {
+            return q + 1;
+        }
+    }
+
     /** Returns the integer part of the square root of x. */
     /* 0 <= x < 2^n, where n = 16 bits on hack architecture.
      * so we can go searching for sqrt(x) in the range

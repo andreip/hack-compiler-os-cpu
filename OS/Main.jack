@@ -1,6 +1,7 @@
 class Main {
     function void main() {
-        do Main.testScreenDrawLine();
+        do Main.testScreenDraw2();
+        //do Main.testScreenDraw1();
         //do Main.testScreenDrawPixel();
         //do Main.testMemory3();
         //do Main.testMemory2();
@@ -13,11 +14,60 @@ class Main {
         return;
     }
 
-    function void testScreenDrawLine() {
-        do Screen.setColor(true);
-        do Screen.drawLine(500, 100, 0, 150);
-        do Screen.drawRectangle(50, 50, 10, 10);
-        do Screen.drawCircle(200, 100, 50);
+    function void testScreenDraw2() {
+        do Screen.drawLine(0,220,511,220);        // base line
+        do Screen.drawRectangle(280,90,410,220);  // house
+
+        do Screen.drawCircle(140,60,30);          // sun
+
+        do Screen.drawLine(124, 85, 156, 85);
+        do Screen.drawLine(126, 86, 154, 86);
+        do Screen.drawLine(127, 87, 153, 87);
+        do Screen.drawLine(130, 88, 150, 88);
+        do Screen.drawLine(133, 89, 147, 89);
+        do Screen.drawLine(140, 90, 140, 90);
+
+        do Screen.drawLine(140,26, 140, 6);
+        do Screen.drawLine(163,35,178,20);
+        do Screen.drawLine(174,60,194,60);
+        do Screen.drawLine(163,85,178,100);
+        do Screen.drawLine(140,94,140,114);
+        do Screen.drawLine(117,85,102,100);
+        do Screen.drawLine(106,60,86,60);
+        do Screen.drawLine(117,35,102,20);
+        return;
+    }
+
+    function void testScreenDraw1() {
+        var int i;
+        // draw a shorter line than a word, to see it doesn't overdraw.
+        do Screen.drawLine(51, 45, 51, 55);
+        do Screen.drawLine(60, 45, 60, 55);
+        do Screen.drawLineHorizontal(51, 60, 50); // shorter than a word
+
+        // another horizontal line given in reverse x coords
+        do Screen.drawLine(86, 55, 86, 65);
+        do Screen.drawLine(106, 55, 106, 65);
+        do Screen.drawLine(106,60,86,60);
+
+        // yet another horizontal line w/ vertical ones alongside
+        // but which span two sides of the word, even if shorter
+        // than a word.
+        do Screen.drawLine(133, 84, 133, 94);
+        do Screen.drawLine(147, 84, 147, 94);
+        do Screen.drawLine(133, 89, 147, 89);
+
+        do Screen.drawLine(300, 100, 0, 150);
+        do Screen.drawRectangle(200, 200, 100, 100);
+        do Screen.drawCircle(400, 100, 50);
+        //let i = 100;
+        //while (i < 200) {
+        //    do Screen.drawLine(i, 100, i, 200);
+        //    let i = i + 1;
+        //}
+
+        //do Screen.setColor(false);
+        //do Screen.clearScreen();
         return;
     }
 

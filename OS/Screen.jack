@@ -13,19 +13,29 @@ class Screen {
     static boolean color;
     static int baseAddr;
     static int X, Y, word, wordsPerRow;
+    static int ERR;
 
     /** Initializes the Screen. */
     function void init() {
+        let ERR = 4;
         let baseAddr = 16384;
-        let X = 512;
-        let Y = 256;
+        let X = 512; let Y = 256;
         let word = 16;
         let wordsPerRow = X / word;
+        let color = true;
         return;
     }
 
     /** Erases the entire screen. */
     function void clearScreen() {
+        var int i, size, val;
+        let size = wordsPerRow * Y;
+        while (i < size) {
+            let val = Memory.peek(baseAddr + i);
+            let val = Screen.applyMask(val, true);
+            do Memory.poke(baseAddr + i, val);
+            let i = i + 1;
+        }
         return;
     }
 
@@ -39,88 +49,50 @@ class Screen {
     /** Draws the (x,y) pixel, using the current color. */
     function void drawPixel(int x, int y) {
         var int addr, val, mask;
-        if (~(x < X) | (x < 0)) { return; }
-        if (~(y < Y) | (y < 0)) { return; }
+        if (~(x < X) | (x < 0)) { do Sys.error(ERR); }
+        if (~(y < Y) | (y < 0)) { do Sys.error(ERR); }
 
         let addr = (y * wordsPerRow) + (x / word);
         let val = Memory.peek(baseAddr + addr);
         let mask = Math.mask(Math.mod(x, word));
-        if (color) {
-            let val = val | mask;
-        } else {
-            let val = val & ~mask;
-        }
+        let val = Screen.applyMask(val, mask);
         do Memory.poke(baseAddr + addr, val);
         return;
     }
 
     /** Draws a line from pixel (x1,y1) to pixel (x2,y2), using the current color. */
     function void drawLine(int x1, int y1, int x2, int y2) {
-        var int dx, dy, diff, direction;
+        var int dx, dy, diff, directionX, directionY;
 
-        if (y1 > y2) {
-            do Screen.drawLine(x2, y2, x1, y1);
+        // simplified. it doesn't partially draw what's valid.
+        if (~(x1 < X) | (x1 < 0)) { do Sys.error(ERR); }
+        if (~(y1 < Y) | (y1 < 0)) { do Sys.error(ERR); }
+        if (~(x2 < X) | (x2 < 0)) { do Sys.error(ERR); }
+        if (~(y2 < Y) | (y2 < 0)) { do Sys.error(ERR); }
+
+        // faster implementation for horizontal lines.
+        if (y1 = y2) {
+            do Screen.drawLineHorizontal(x1, x2, y1);
             return;
         }
 
-        // special case for vertical/horizontal lines
-        if ((x1 = x2) | (y1 = y2)) {
-            do Screen.drawLineStraight(x1, y1, x2, y2);
-            return;
-        }
-
+        if (x1 < x2) { let directionX = 1; } else { let directionX = -1; }
+        if (y1 < y2) { let directionY = 1; } else { let directionY = -1; }
         let dx = Math.abs(x1 - x2);
         let dy = Math.abs(y1 - y2);
 
-        if (x1 < x2) {
-            let direction = 1;
-        } else {
-            let direction = -1;
-        }
-
+        // Draws vertically first, since we might have a vertical
+        // line to draw. Horizontal lines are handled in a faster way.
+        // A vertical line will keep on drawing until its end if it starts ok.
         while ( ~(x1 = x2) | ~(y1 = y2) ) {
             do Screen.drawPixel(x1, y1);
             if (diff < 0) {
-                let x1 = x1 + direction;
+                let x1 = x1 + directionX;
                 let diff = diff + dy;
             } else {
-                let y1 = y1 + 1;
+                let y1 = y1 + directionY;
                 let diff = diff - dx;
             }
-        }
-
-        return;
-    }
-
-    function void drawLineStraight(int x1, int y1, int x2, int y2) {
-        var int dx, dy;
-
-        // edge case where they're not actually a straight line.
-        if (~(x1 = x2) & ~(y1 = y2)) { return; }
-
-        if ((x1 = x2) & (y1 = y2)) {
-            do Screen.drawPixel(x1, y1);
-            return;
-        }
-
-        if (x1 = x2) {
-            if (y1 < y2) {
-                let dy = 1;
-            } else {
-                let dy = -1;
-            }
-        } else {
-            if (x1 < x2) {
-                let dx = 1;
-            } else {
-                let dx = -1;
-            }
-        }
-
-        while ( ~(x1 = x2) | ~(y1 = y2) ) {
-            do Screen.drawPixel(x1, y1);
-            let x1 = x1 + dx;
-            let y1 = y1 + dy;
         }
         return;
     }
@@ -128,10 +100,14 @@ class Screen {
     /** Draws a filled rectangle whose top left corner is (x1, y1)
      * and bottom right corner is (x2,y2), using the current color. */
     function void drawRectangle(int x1, int y1, int x2, int y2) {
-        do Screen.drawLine(x1, y1, x1, y2);
-        do Screen.drawLine(x1, y1, x2, y1);
-        do Screen.drawLine(x1, y2, x2, y2);
-        do Screen.drawLine(x2, y2, x2, y1);
+        if (y1 > y2) {
+            do Screen.drawRectangle(x2, y2, x1, y1);
+            return;
+        }
+        while (~(y1 > y2)) {
+            do Screen.drawLineHorizontal(x1, x2, y1);
+            let y1 = y1 + 1;
+        }
         return;
     }
 
@@ -147,4 +123,92 @@ class Screen {
         }
         return;
     }
+
+    /** Private functions. **/
+
+    /**
+     * The line to draw looks like schema below:
+     *
+     *  word----[x1---word---...----word---x2)
+     *
+     * So we can greatly increase speed if we draw the edges first:
+     * - from x1 to a word (any number divisible by 16)
+     * - from x2 to a previous word
+     * - and fill in everything else in between with words, since
+     *   filling with words is going to be very fast, not like pixel by pixel
+     */
+    function void drawLineHorizontal(int x1, int x2, int y) {
+        var int addr, val, tmp, row, col;
+        var int maskX1, maskX2, modX1, modX2;
+        var int i, stop;
+
+        // swap if needed to make x1 < x2
+        if (x1 > x2) { let tmp = x1; let x1 = x2; let x2 = tmp; }
+
+        // Make x2 an exclusive interval - easier to work with.
+        // So we draw in [x1, x2), from x1 to x2 without x2.
+        let x2 = x2 + 1;
+
+        let modX1 = Math.mod(x1, word);
+        let modX2 = Math.mod(x2, word);
+        // 0 0 0 ... 1  1 ... 1
+        // ---------[x1 ... word-1]
+        let maskX1 = ~(Math.mask(modX1) - 1);
+        //  1  1  ...  1   0  ...  0
+        // [word ... x2-1] x2  ...
+        let maskX2 = Math.mask(modX2) - 1;
+
+        let row = y * wordsPerRow;
+        // x1 and x2 form a word or less; draw and exit
+        if ((x2 / word) = (x1 / word)) {
+            let addr = row + (x1 / word);
+            let val = Memory.peek(baseAddr + addr);
+            let val = Screen.applyMask(val, maskX1 & maskX2);
+            do Memory.poke(baseAddr + addr, val);
+            return;
+        }
+
+        // draw from x1 to a word
+        if (modX1 > 0) {
+            let addr = row + (x1 / word);
+            let val = Memory.peek(baseAddr + addr);
+            let val = Screen.applyMask(val, maskX1);
+            do Memory.poke(baseAddr + addr, val);
+        }
+
+        // draws all words between [x1, x2), stopping at the last word before x2
+        let i = Math.divideCeil(x1, word) * word;
+        let stop = (x2 / word) * word;
+        let col = i / word;
+        while (i < stop) {
+            let addr = row + col;
+            let val = Memory.peek(baseAddr + addr);
+            // fill entire word with a 111...111 mask
+            let val = Screen.applyMask(val, true);
+            do Memory.poke(baseAddr + addr, val);
+            // go to next word
+            let i = i + word;
+            let col = col + 1;
+        }
+
+        // draw from x2 to a previous word
+        if (modX2 > 0) {
+            let addr = row + col;
+            let val = Memory.peek(baseAddr + addr);
+            let val = Screen.applyMask(val, maskX2);
+            do Memory.poke(baseAddr + addr, val);
+        }
+
+        return;
+    }
+
+    /* Knows how to apply the mask for both colors. */
+    function int applyMask(int value, int mask) {
+        if (color) {
+            return value | mask;
+        } else {
+            return value & ~mask;
+        }
+    }
+
 }
