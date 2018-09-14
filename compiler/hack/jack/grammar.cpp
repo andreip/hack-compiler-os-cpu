@@ -454,8 +454,8 @@ std::vector<std::string> Statement::toVMCode(SymbolTable &table) const {
       });
     }
   } else if (_type.value() == "if") {
-    std::string L1 = VMCommands::UniqueLabel();
-    std::string L2 = VMCommands::UniqueLabel();
+    std::string L1 = VMCommands::UniqueLabel("IF_FALSE");
+    std::string L2 = VMCommands::UniqueLabel("IF_TRUE");
 
     concat(code, {
       _expressions[0].toVMCode(table),
@@ -469,8 +469,8 @@ std::vector<std::string> Statement::toVMCode(SymbolTable &table) const {
       { VMCommands::Label(L2) },
     });
   } else if (_type.value() == "while") {
-    std::string L1 = VMCommands::UniqueLabel();
-    std::string L2 = VMCommands::UniqueLabel();
+    std::string L1 = VMCommands::UniqueLabel("WHILE_EXP");
+    std::string L2 = VMCommands::UniqueLabel("WHILE_END");
 
     concat(code, {
       { VMCommands::Label(L1) },

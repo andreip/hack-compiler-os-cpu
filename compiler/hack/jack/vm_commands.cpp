@@ -10,9 +10,9 @@ const std::vector<std::string> VMCommands::Segments = {
   "that", "static", "temp", "pointer"
 };
 
-std::string VMCommands::UniqueLabel() {
+std::string VMCommands::UniqueLabel(std::string prefix) {
   static int n = 0;
-  return "L" + toString(n++);
+  return prefix + toString(n++);
 }
 
 std::string VMCommands::Function(std::string name, int nLocals) {

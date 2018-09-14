@@ -317,8 +317,8 @@ BOOST_FIXTURE_TEST_CASE(test_while_statement, fixture) {
     "}\n"
   "}"
   );
-  std::string L0 = "L0";
-  std::string L1 = "L1";
+  std::string L0 = "WHILE_EXP0";
+  std::string L1 = "WHILE_END1";
   expected = {
     VMCommands::Function("Test.test", 0),
     VMCommands::Label(L0),                      // L0
@@ -356,8 +356,8 @@ BOOST_FIXTURE_TEST_CASE(test_if_statement, fixture) {
     "}\n"
   "}"
   );
-  std::string L0 = "L2";
-  std::string L1 = "L3";
+  std::string L0 = "IF_FALSE2";
+  std::string L1 = "IF_TRUE3";
   expected = {
     VMCommands::Function("Test.test", 0),
     VMCommands::Push("argument", 0),

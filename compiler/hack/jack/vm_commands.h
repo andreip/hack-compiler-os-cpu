@@ -9,7 +9,7 @@ enum class UnaryOp;
 
 class VMCommands {
 public:
-  static std::string UniqueLabel();
+  static std::string UniqueLabel(std::string prefix="L");
   static std::string Function(std::string name, int nLocals);
   static std::string ArithmeticLogic(std::string name);
   static std::string ArithmeticLogic(Op);
