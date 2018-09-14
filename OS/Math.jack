@@ -44,18 +44,32 @@ class Math {
      *  the Jack expressions x*y and multiply(x,y) return the same value.
      */
     function int multiply(int x, int y) {
-        var int m, i;
-        // keeps on adding x and shifted version a number of
-        // z times (z = #bits of y), but only if the i-th bit
-        // of y is set to 1.
-        while (i < 16) {
-            if (Math.bit(y, i)) {
-                let m = m + x;
+        var int i, prod, neg, partialY, tmp;
+
+        let neg = ((x < 0) & (y > 0)) | ((x > 0) & (y < 0));
+        let x = Math.abs(x);
+        let y = Math.abs(y);
+
+        // swap, to loop on the smaller number
+        if (x < y) {
+            let tmp = x;
+            let x = y;
+            let y = tmp;
+        }
+
+        // while i-th bit of y is 1, add the shifted x to the
+        // final product.
+        while (partialY < y) {
+            if (Math.bitIsSet(y, i)) {
+                let prod = prod + x;
+                let partialY = partialY + twoToThe[i];
             }
             let x = x + x;      // shift x to the right
             let i = i + 1;
         }
-        return m;
+
+        if (neg) { return -prod; }
+        return prod;
     }
 
     /** Returns the integer part of x/y.
@@ -136,7 +150,7 @@ class Math {
         let bin = String.new(16);
         let i = 15;
         while (~(i < 0)) {
-            if (Math.bit(x, i)) {
+            if (Math.bitIsSet(x, i)) {
                 let bin = bin.appendChar(49); // '1'
             } else {
                 let bin = bin.appendChar(48); // '0'
@@ -147,7 +161,7 @@ class Math {
     }
 
     /* Returns true if ith bit of x is on. */
-    function boolean bit(int x, int i) {
+    function boolean bitIsSet(int x, int i) {
         return ~((twoToThe[i] & x) = 0);
     }
 }
