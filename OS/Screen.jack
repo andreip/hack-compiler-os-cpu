@@ -1,0 +1,150 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Screen.jack
+
+/**
+ * A library of functions for displaying graphics on the screen.
+ * The Hack physical screen consists of 512 rows (indexed 0..511, top to bottom)
+ * of 256 pixels each (indexed 0..255, left to right). The top left pixel on 
+ * the screen is indexed (0,0).
+ */
+class Screen {
+    static boolean color;
+    static int baseAddr;
+    static int X, Y, word, wordsPerRow;
+
+    /** Initializes the Screen. */
+    function void init() {
+        let baseAddr = 16384;
+        let X = 512;
+        let Y = 256;
+        let word = 16;
+        let wordsPerRow = X / word;
+        return;
+    }
+
+    /** Erases the entire screen. */
+    function void clearScreen() {
+        return;
+    }
+
+    /** Sets the current color, to be used for all subsequent drawXXX commands.
+     *  Black is represented by true, white by false. */
+    function void setColor(boolean b) {
+        let color = b;
+        return;
+    }
+
+    /** Draws the (x,y) pixel, using the current color. */
+    function void drawPixel(int x, int y) {
+        var int addr, val, mask;
+        if (~(x < X) | (x < 0)) { return; }
+        if (~(y < Y) | (y < 0)) { return; }
+
+        let addr = (y * wordsPerRow) + (x / word);
+        let val = Memory.peek(baseAddr + addr);
+        let mask = Math.mask(Math.mod(x, word));
+        if (color) {
+            let val = val | mask;
+        } else {
+            let val = val & ~mask;
+        }
+        do Memory.poke(baseAddr + addr, val);
+        return;
+    }
+
+    /** Draws a line from pixel (x1,y1) to pixel (x2,y2), using the current color. */
+    function void drawLine(int x1, int y1, int x2, int y2) {
+        var int dx, dy, diff, direction;
+
+        if (y1 > y2) {
+            do Screen.drawLine(x2, y2, x1, y1);
+            return;
+        }
+
+        // special case for vertical/horizontal lines
+        if ((x1 = x2) | (y1 = y2)) {
+            do Screen.drawLineStraight(x1, y1, x2, y2);
+            return;
+        }
+
+        let dx = Math.abs(x1 - x2);
+        let dy = Math.abs(y1 - y2);
+
+        if (x1 < x2) {
+            let direction = 1;
+        } else {
+            let direction = -1;
+        }
+
+        while ( ~(x1 = x2) | ~(y1 = y2) ) {
+            do Screen.drawPixel(x1, y1);
+            if (diff < 0) {
+                let x1 = x1 + direction;
+                let diff = diff + dy;
+            } else {
+                let y1 = y1 + 1;
+                let diff = diff - dx;
+            }
+        }
+
+        return;
+    }
+
+    function void drawLineStraight(int x1, int y1, int x2, int y2) {
+        var int dx, dy;
+
+        // edge case where they're not actually a straight line.
+        if (~(x1 = x2) & ~(y1 = y2)) { return; }
+
+        if ((x1 = x2) & (y1 = y2)) {
+            do Screen.drawPixel(x1, y1);
+            return;
+        }
+
+        if (x1 = x2) {
+            if (y1 < y2) {
+                let dy = 1;
+            } else {
+                let dy = -1;
+            }
+        } else {
+            if (x1 < x2) {
+                let dx = 1;
+            } else {
+                let dx = -1;
+            }
+        }
+
+        while ( ~(x1 = x2) | ~(y1 = y2) ) {
+            do Screen.drawPixel(x1, y1);
+            let x1 = x1 + dx;
+            let y1 = y1 + dy;
+        }
+        return;
+    }
+
+    /** Draws a filled rectangle whose top left corner is (x1, y1)
+     * and bottom right corner is (x2,y2), using the current color. */
+    function void drawRectangle(int x1, int y1, int x2, int y2) {
+        do Screen.drawLine(x1, y1, x1, y2);
+        do Screen.drawLine(x1, y1, x2, y1);
+        do Screen.drawLine(x1, y2, x2, y2);
+        do Screen.drawLine(x2, y2, x2, y1);
+        return;
+    }
+
+    /** Draws a filled circle of radius r<=181 around (x,y), using the current color. */
+    function void drawCircle(int x, int y, int r) {
+        var int h, d, rSquared;
+        let rSquared = r * r;
+        let h = -r;
+        while (~(h > r)) {
+            let d = Math.sqrt(rSquared - (h * h));
+            do Screen.drawLine(x-d, y+h, x+d, y+h);
+            let h = h + 1;
+        }
+        return;
+    }
+}

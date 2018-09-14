@@ -1,13 +1,40 @@
 class Main {
     function void main() {
-        do Main.testMemory3();
+        do Main.testScreenDrawLine();
+        //do Main.testScreenDrawPixel();
+        //do Main.testMemory3();
         //do Main.testMemory2();
         //do Main.testMemory1();
         //do Main.testMathsqrt();
         //do Main.testMathDiv();
         //do Main.testMathMultiply();
-        //do Main.testMathbit();
+        //do Main.testMathbitIsSet();
         //do Main.testMathIntToBinary();
+        return;
+    }
+
+    function void testScreenDrawLine() {
+        do Screen.setColor(true);
+        do Screen.drawLine(500, 100, 0, 150);
+        do Screen.drawRectangle(50, 50, 10, 10);
+        do Screen.drawCircle(200, 100, 50);
+        return;
+    }
+
+    function void testScreenDrawPixel() {
+        var int i;
+        do Screen.setColor(true);
+        while (i < 100) {
+            do Screen.drawPixel(256, i);
+            let i = i + 1;
+        }
+        do Screen.setColor(false);
+        let i = 30;
+        while (i < 60) {
+            do Screen.drawPixel(256, i);
+            let i = i + 1;
+        }
+        //do Screen.setColor(false);
         return;
     }
 
@@ -132,6 +159,7 @@ class Main {
         do Output.println();
         do Output.printInt(15 / -6);
         do Output.println();
+        // causes it to halt
         do Output.printInt(15 / 0);
         do Output.println();
         return;
@@ -167,12 +195,12 @@ class Main {
         return;
     }
 
-    function void testMathbit() {
-        do Output.printInt(Math.bit(16384 + 16384, 15));
+    function void testMathbitIsSet() {
+        do Output.printInt(Math.bitIsSet(16384 + 16384, 15));
         do Output.println();
-        do Output.printInt(Math.bit(16384 + 16384, 14));
+        do Output.printInt(Math.bitIsSet(16384 + 16384, 14));
         do Output.println();
-        do Output.printInt(Math.bit(16384 + 16384, 13));
+        do Output.printInt(Math.bitIsSet(16384 + 16384, 13));
         do Output.println();
         return;
     }

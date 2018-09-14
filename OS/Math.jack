@@ -144,6 +144,14 @@ class Math {
 
     /** Private functions not part of API. **/
 
+    function int mod(int a, int b) {
+        return a - ((a / b) * b);
+    }
+
+    function int mask(int i) {
+        return twoToThe[i];
+    }
+
     function String intToBin(int x) {
         var int i;
         var String bin;
