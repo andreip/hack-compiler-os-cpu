@@ -1,9 +1,11 @@
 class Utils {
     static Array twoToThe;
+    static boolean calledInit;
     static int ERR;
 
     function void init() {
         let ERR = 5;
+        let calledInit = true;
         let twoToThe = Array.new(16);
         let twoToThe[0] = 1;
         let twoToThe[1] = 2;
@@ -29,6 +31,9 @@ class Utils {
     }
 
     function int twoToPow(int i) {
+        // bootstraps itself :)
+        if (~calledInit) { do Utils.init(); }
+
         if ((i < 0) | (i > 15)) { do Sys.error(ERR); }
         return twoToThe[i];
     }
@@ -51,7 +56,7 @@ class Utils {
 
     /* Returns true if ith bit of x is on. */
     function boolean bitIsSet(int x, int i) {
-        return ~((twoToThe[i] & x) = 0);
+        return ~((Utils.twoToPow(i) & x) = 0);
     }
 
     /*

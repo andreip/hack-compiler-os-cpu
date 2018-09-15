@@ -14,6 +14,7 @@ class Screen {
     static int baseAddr;
     static int X, Y, word, wordsPerRow;
     static int ERR;
+    static Array twoToThe;
 
     /** Initializes the Screen. */
     function void init() {
@@ -23,6 +24,24 @@ class Screen {
         let word = 16;
         let wordsPerRow = X / word;
         let color = true;
+
+        let twoToThe = Array.new(16);
+        let twoToThe[0] = 1;
+        let twoToThe[1] = 2;
+        let twoToThe[2] = 4;
+        let twoToThe[3] = 8;
+        let twoToThe[4] = 16;
+        let twoToThe[5] = 32;
+        let twoToThe[6] = 64;
+        let twoToThe[7] = 128;
+        let twoToThe[8] = 256;
+        let twoToThe[9] = 512;
+        let twoToThe[10] = 1024;
+        let twoToThe[11] = 2048;
+        let twoToThe[12] = 4096;
+        let twoToThe[13] = 8192;
+        let twoToThe[14] = 16384;
+        let twoToThe[15] = 16384 + 16384;   // shift to right
         return;
     }
 
@@ -46,12 +65,14 @@ class Screen {
 
     /** Draws the (x,y) pixel, using the current color. */
     function void drawPixel(int x, int y) {
-        var int addr, mask;
+        var int addr, mask, div, mod;
         if (~(x < X) | (x < 0)) { do Sys.error(ERR); }
         if (~(y < Y) | (y < 0)) { do Sys.error(ERR); }
 
-        let addr = (y * wordsPerRow) + (x / word);
-        let mask = Utils.twoToPow(Utils.mod(x, word));
+        let div = x / word;
+        let mod = x - (div * word);
+        let addr = (y * wordsPerRow) + div;
+        let mask = twoToThe[mod];
         do Screen.updateLocation(addr, mask);
         return;
     }
@@ -97,12 +118,18 @@ class Screen {
     function void drawCircle(int x, int y, int r) {
         var int h, d, rSquared;
         let rSquared = r * r;
-        let h = -r;
+        let h = 0;
         while (~(h > r)) {
             let d = Math.sqrt(rSquared - (h * h));
-            do Screen.drawLine(x-d, y+h, x+d, y+h);
+            do Screen.drawSymetric(x-d, x+d, y, h);
             let h = h + 1;
         }
+        return;
+    }
+
+    function void drawSymetric(int x1, int x2, int Yaxis, int dist) {
+        do Screen.drawLineHorizontal(x1, x2, Yaxis + dist);
+        do Screen.drawLineHorizontal(x1, x2, Yaxis - dist);
         return;
     }
 
@@ -123,11 +150,6 @@ class Screen {
         if (x1 > x2) { let tmp = x1; let x1 = x2; let x2 = tmp; }
         if (y1 > y2) { let tmp = y1; let y1 = y2; let y2 = tmp; }
 
-        while (~(y1 > y2)) {
-            do Screen.drawLineHorizontal(x1, x2, y1);
-            let y1 = y1 + 1;
-        }
-
         // Make x2 an exclusive interval - easier to work with.
         // So we draw in [x1, x2), from x1 to x2 without x2.
         let x2 = x2 + 1;
@@ -139,10 +161,10 @@ class Screen {
 
         // 0 0 0 ... 1  1 ... 1
         // ---------[x1 ... word-1]
-        let maskX1 = ~(Utils.twoToPow(modX1) - 1);
+        let maskX1 = ~(twoToThe[modX1] - 1);
         //  1  1  ...  1   0  ...  0
         // [word ... x2-1] x2  ...
-        let maskX2 = Utils.twoToPow(modX2) - 1;
+        let maskX2 = twoToThe[modX2] - 1;
 
         let row = y1 * wordsPerRow;
         while (~(y1 > y2)) {
@@ -213,10 +235,10 @@ class Screen {
 
         // 0 0 0 ... 1  1 ... 1
         // ---------[x1 ... word-1]
-        let maskX1 = ~(Utils.twoToPow(modX1) - 1);
+        let maskX1 = ~(twoToThe[modX1] - 1);
         //  1  1  ...  1   0  ...  0
         // [word ... x2-1] x2  ...
-        let maskX2 = Utils.twoToPow(modX2) - 1;
+        let maskX2 = twoToThe[modX2] - 1;
 
         let row = y * wordsPerRow;
         let col = divX1;

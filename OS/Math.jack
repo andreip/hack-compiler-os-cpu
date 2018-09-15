@@ -8,11 +8,29 @@
  * Note: Jack compilers implement multiplication and division using OS method calls.
  */
 class Math {
+    static Array twoToThe;
     static int ERR;
 
     /** Initializes the library. */
     function void init() {
         let ERR = 3;
+        let twoToThe = Array.new(16);
+        let twoToThe[0] = 1;
+        let twoToThe[1] = 2;
+        let twoToThe[2] = 4;
+        let twoToThe[3] = 8;
+        let twoToThe[4] = 16;
+        let twoToThe[5] = 32;
+        let twoToThe[6] = 64;
+        let twoToThe[7] = 128;
+        let twoToThe[8] = 256;
+        let twoToThe[9] = 512;
+        let twoToThe[10] = 1024;
+        let twoToThe[11] = 2048;
+        let twoToThe[12] = 4096;
+        let twoToThe[13] = 8192;
+        let twoToThe[14] = 16384;
+        let twoToThe[15] = 16384 + 16384;   // shift to right
         return;
     }
 
@@ -46,9 +64,9 @@ class Math {
         // while i-th bit of y is 1, add the shifted x to the
         // final product.
         while (partialY < y) {
-            if (Utils.bitIsSet(y, i)) {
+            if (~((twoToThe[i] & y) = 0)) {
                 let prod = prod + x;
-                let partialY = partialY + Utils.twoToPow(i);
+                let partialY = partialY + twoToThe[i];
             }
             let x = x + x;      // shift x to the right
             let i = i + 1;
@@ -103,13 +121,13 @@ class Math {
         let n = 16;
         let i = (n / 2) - 1;  // 2^(n/2) - 1 to start with
         while (~(i < 0)) {
-            let yy = y + Utils.twoToPow(i);
+            let yy = y + twoToThe[i];
             let yy = yy * yy;
 
             // if (y + 2^i)^2 <= x then we add 2^i to y
             // helping y converge to sqrt(x)
             if (~(yy > x) & (yy > 0)) {
-                let y = y + Utils.twoToPow(i);
+                let y = y + twoToThe[i];
             }
             let i = i - 1;
         }
