@@ -1,6 +1,7 @@
 class Main {
     function void main() {
-        do Main.testScreenDraw2();
+        do Main.testOutput();
+        //do Main.testScreenDraw2();
         //do Main.testScreenDraw1();
         //do Main.testScreenDrawPixel();
         //do Main.testMemory3();
@@ -11,6 +12,38 @@ class Main {
         //do Main.testMathMultiply();
         //do Main.testUtilsbitIsSet();
         //do Main.testUtilsIntToBinary();
+        //do Main.testUtilsIntToString();
+        return;
+    }
+
+    function void testOutput() {
+        var int i;
+        let i = 30;
+        while (i < 127) {
+            do Output.printChar(i);
+            if (i = 50) {
+                do Output.println();
+            }
+            let i = i + 1;
+        }
+
+        do Output.moveCursor(10, 1);
+        do Output.printString("Ana are mere ");
+        do Output.printString("multe");
+        do Output.backSpace();
+
+        do Output.println();
+        do Output.printInt(123);
+        do Output.printChar(32);
+        do Output.printInt(10);
+        // this should only erase two characters, w/o other parts
+        // of its neighbouring characters.
+        do Output.moveCursor(0, 0);
+        do Output.printChar(32);
+        do Output.printInt(0);
+
+        do Output.moveCursor(12, 0);
+        do Output.printInt(-12345);
         return;
     }
 
@@ -251,6 +284,24 @@ class Main {
         do Output.printInt(Utils.bitIsSet(16384 + 16384, 14));
         do Output.println();
         do Output.printInt(Utils.bitIsSet(16384 + 16384, 13));
+        do Output.println();
+        return;
+    }
+
+    function void testUtilsIntToString() {
+        do Output.printString("Converting ints to strings");
+        do Output.println();
+        do Output.printString("123: ");
+        do Output.printString(Utils.intToString(123));
+        do Output.println();
+        do Output.printString("ten: ");
+        do Output.printString(Utils.intToString(10));
+        do Output.println();
+        do Output.printString("one: ");
+        do Output.printString(Utils.intToString(1));
+        do Output.println();
+        do Output.printString("zero: ");
+        do Output.printString(Utils.intToString(0));
         do Output.println();
         return;
     }

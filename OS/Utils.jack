@@ -54,6 +54,45 @@ class Utils {
         return bin;
     }
 
+    function int getIntegerAscii(int digit) {
+        if ((digit < 0) | (digit > 9)) { do Sys.error(7); }
+        // 48 is ascii code of '0'
+        return 48 + digit;
+    }
+
+    function String intToString(int x) {
+        var int tmp, digits, i, d;
+        var String xStr;
+
+        // base case where it's already 0.
+        if (x = 0) {
+            let xStr = String.new(1);
+            let xStr = xStr.appendChar(Utils.getIntegerAscii(0));
+            return xStr;
+        }
+
+        let tmp = x;
+        while (~(tmp = 0)) {
+            let digits = digits + 1;
+            let tmp = tmp / 10;
+        }
+        let xStr = String.new(digits);
+        // fill string so I can use setCharAt(position) on it.
+        // since we know its length anyway.
+        while (i < digits) {
+            let xStr = xStr.appendChar(0);
+            let i = i + 1;
+        }
+        while (~(x = 0)) {
+            let tmp = x / 10;
+            let d = x - (tmp * 10);  // last digit
+            let i = i - 1;
+            do xStr.setCharAt(i, Utils.getIntegerAscii(d));
+            let x = tmp;
+        }
+        return xStr;
+    }
+
     /* Returns true if ith bit of x is on. */
     function boolean bitIsSet(int x, int i) {
         return ~((Utils.twoToPow(i) & x) = 0);
