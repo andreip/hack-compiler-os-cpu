@@ -12,7 +12,7 @@ Translator* getTranslatorFromPath(const std::string &path) {
 
 JackTranslator::JackTranslator(const std::string &path): HackTranslator(path) {
   _jack_builders = {
-    new JackTokenizerBuilder(),
+    //new JackTokenizerBuilder(),
     new JackCompilationEngineBuilder(),
   };
 }
