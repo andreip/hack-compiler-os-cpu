@@ -1,0 +1,70 @@
+class Utils {
+    static Array twoToThe;
+    static int ERR;
+
+    function void init() {
+        let ERR = 5;
+        let twoToThe = Array.new(16);
+        let twoToThe[0] = 1;
+        let twoToThe[1] = 2;
+        let twoToThe[2] = 4;
+        let twoToThe[3] = 8;
+        let twoToThe[4] = 16;
+        let twoToThe[5] = 32;
+        let twoToThe[6] = 64;
+        let twoToThe[7] = 128;
+        let twoToThe[8] = 256;
+        let twoToThe[9] = 512;
+        let twoToThe[10] = 1024;
+        let twoToThe[11] = 2048;
+        let twoToThe[12] = 4096;
+        let twoToThe[13] = 8192;
+        let twoToThe[14] = 16384;
+        let twoToThe[15] = 16384 + 16384;   // shift to right
+        return;
+    }
+
+    function int mod(int a, int b) {
+        return a - ((a / b) * b);
+    }
+
+    function int twoToPow(int i) {
+        if ((i < 0) | (i > 15)) { do Sys.error(ERR); }
+        return twoToThe[i];
+    }
+
+    function String intToBin(int x) {
+        var int i;
+        var String bin;
+        let bin = String.new(16);
+        let i = 15;
+        while (~(i < 0)) {
+            if (Utils.bitIsSet(x, i)) {
+                let bin = bin.appendChar(49); // '1'
+            } else {
+                let bin = bin.appendChar(48); // '0'
+            }
+            let i = i - 1;
+        }
+        return bin;
+    }
+
+    /* Returns true if ith bit of x is on. */
+    function boolean bitIsSet(int x, int i) {
+        return ~((twoToThe[i] & x) = 0);
+    }
+
+    /*
+     * divideCeil(15, 4) = 4, not 3.
+     * divideCeil(16, 4) = 4.
+     */
+    function int divideCeil(int x, int y) {
+        var int q;
+        let q = x / y;
+        if ((q * y) = x) {
+            return q;
+        } else {
+            return q + 1;
+        }
+    }
+}

@@ -32,7 +32,7 @@ class Screen {
         let size = wordsPerRow * Y;
         while (i < size) {
             let val = Memory.peek(baseAddr + i);
-            let val = Screen.applyMask(val, true);
+            let val = Screen.applyMask(val, false);
             do Memory.poke(baseAddr + i, val);
             let i = i + 1;
         }
@@ -54,7 +54,7 @@ class Screen {
 
         let addr = (y * wordsPerRow) + (x / word);
         let val = Memory.peek(baseAddr + addr);
-        let mask = Math.mask(Math.mod(x, word));
+        let mask = Utils.twoToPow(Utils.mod(x, word));
         let val = Screen.applyMask(val, mask);
         do Memory.poke(baseAddr + addr, val);
         return;
@@ -100,13 +100,11 @@ class Screen {
     /** Draws a filled rectangle whose top left corner is (x1, y1)
      * and bottom right corner is (x2,y2), using the current color. */
     function void drawRectangle(int x1, int y1, int x2, int y2) {
-        if (y1 > y2) {
-            do Screen.drawRectangle(x2, y2, x1, y1);
-            return;
-        }
-        while (~(y1 > y2)) {
+        var int dir;
+        if (y1 > y2) { let dir = -1; } else { let dir = 1; }
+        while (~(y1 = y2)) {
             do Screen.drawLineHorizontal(x1, x2, y1);
-            let y1 = y1 + 1;
+            let y1 = y1 + dir;
         }
         return;
     }
@@ -149,14 +147,14 @@ class Screen {
         // So we draw in [x1, x2), from x1 to x2 without x2.
         let x2 = x2 + 1;
 
-        let modX1 = Math.mod(x1, word);
-        let modX2 = Math.mod(x2, word);
+        let modX1 = Utils.mod(x1, word);
+        let modX2 = Utils.mod(x2, word);
         // 0 0 0 ... 1  1 ... 1
         // ---------[x1 ... word-1]
-        let maskX1 = ~(Math.mask(modX1) - 1);
+        let maskX1 = ~(Utils.twoToPow(modX1) - 1);
         //  1  1  ...  1   0  ...  0
         // [word ... x2-1] x2  ...
-        let maskX2 = Math.mask(modX2) - 1;
+        let maskX2 = Utils.twoToPow(modX2) - 1;
 
         let row = y * wordsPerRow;
         // x1 and x2 form a word or less; draw and exit
@@ -177,7 +175,7 @@ class Screen {
         }
 
         // draws all words between [x1, x2), stopping at the last word before x2
-        let i = Math.divideCeil(x1, word) * word;
+        let i = Utils.divideCeil(x1, word) * word;
         let stop = (x2 / word) * word;
         let col = i / word;
         while (i < stop) {

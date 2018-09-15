@@ -8,27 +8,11 @@
  * Note: Jack compilers implement multiplication and division using OS method calls.
  */
 class Math {
-    static Array twoToThe;
+    static int ERR;
 
     /** Initializes the library. */
     function void init() {
-        let twoToThe = Array.new(16);
-        let twoToThe[0] = 1;
-        let twoToThe[1] = 2;
-        let twoToThe[2] = 4;
-        let twoToThe[3] = 8;
-        let twoToThe[4] = 16;
-        let twoToThe[5] = 32;
-        let twoToThe[6] = 64;
-        let twoToThe[7] = 128;
-        let twoToThe[8] = 256;
-        let twoToThe[9] = 512;
-        let twoToThe[10] = 1024;
-        let twoToThe[11] = 2048;
-        let twoToThe[12] = 4096;
-        let twoToThe[13] = 8192;
-        let twoToThe[14] = 16384;
-        let twoToThe[15] = 16384 + 16384;   // shift to right
+        let ERR = 3;
         return;
     }
 
@@ -46,6 +30,8 @@ class Math {
     function int multiply(int x, int y) {
         var int i, prod, neg, partialY, tmp;
 
+        if ((x = 0) | (y = 0)) { return 0; }
+
         let neg = ((x < 0) & (y > 0)) | ((x > 0) & (y < 0));
         let x = Math.abs(x);
         let y = Math.abs(y);
@@ -60,9 +46,9 @@ class Math {
         // while i-th bit of y is 1, add the shifted x to the
         // final product.
         while (partialY < y) {
-            if (Math.bitIsSet(y, i)) {
+            if (Utils.bitIsSet(y, i)) {
                 let prod = prod + x;
-                let partialY = partialY + twoToThe[i];
+                let partialY = partialY + Utils.twoToPow(i);
             }
             let x = x + x;      // shift x to the right
             let i = i + 1;
@@ -78,15 +64,12 @@ class Math {
      *  the Jack expressions x/y and divide(x,y) return the same value.
      */
     function int divide(int x, int y) {
-        var boolean negative;  // final result's sign; false by default
-        var int q, reminder;
+        var boolean neg;
+        var int q, reminder, tmp;
 
-        if (y = 0) { return 0; } // division by 0; what to do
+        if (y = 0) { do Sys.error(ERR); } // division by 0
 
-        // extra fluff to make both numbers positive but record
-        // if final result should be turned negative.
-        if (~(x < 0) & (y < 0)) { let negative = true; }
-        if ((x < 0) & ~(y < 0)) { let negative = true; }
+        let neg = ((x < 0) & (y > 0)) | ((x > 0) & (y < 0));
         let x = Math.abs(x);
         let y = Math.abs(y);
 
@@ -96,31 +79,18 @@ class Math {
         // and need to figure out if r2 has a y in it or not
         // so final result is either (2 * q2) or (2 * q2 + 1)
         if (y > x) { return 0; }
-        let q = Math.divide(x, 2 * y);
-        let reminder = x - (2 * (y * q));  // x % (2y)
+        let q = Math.divide(x, y + y);
+        let tmp = y * q;
+        let reminder = x - (tmp + tmp);  // x % (2y)
         // reminder is < 2y for sure; but how is it compared to y?
         if (reminder < y) {
-            let q = 2 * q;
+            let q = q + q;
         } else {
-            let q = (2 * q) + 1;
+            let q = (q + q) + 1;
         }
 
-        if (negative) { return -q; }
+        if (neg) { return -q; }
         return q;
-    }
-
-    /*
-     * divideCeil(15, 4) = 4, not 3.
-     * divideCeil(16, 4) = 4.
-     */
-    function int divideCeil(int x, int y) {
-        var int q;
-        let q = x / y;
-        if ((q * y) = x) {
-            return q;
-        } else {
-            return q + 1;
-        }
     }
 
     /** Returns the integer part of the square root of x. */
@@ -133,11 +103,13 @@ class Math {
         let n = 16;
         let i = (n / 2) - 1;  // 2^(n/2) - 1 to start with
         while (~(i < 0)) {
-            let yy = (y + twoToThe[i]) * (y + twoToThe[i]);
+            let yy = y + Utils.twoToPow(i);
+            let yy = yy * yy;
+
             // if (y + 2^i)^2 <= x then we add 2^i to y
             // helping y converge to sqrt(x)
             if (~(yy > x) & (yy > 0)) {
-                let y = y + twoToThe[i];
+                let y = y + Utils.twoToPow(i);
             }
             let i = i - 1;
         }
@@ -154,36 +126,5 @@ class Math {
     function int min(int a, int b) {
         if (a < b) { return a; }
         return b;
-    }
-
-    /** Private functions not part of API. **/
-
-    function int mod(int a, int b) {
-        return a - ((a / b) * b);
-    }
-
-    function int mask(int i) {
-        return twoToThe[i];
-    }
-
-    function String intToBin(int x) {
-        var int i;
-        var String bin;
-        let bin = String.new(16);
-        let i = 15;
-        while (~(i < 0)) {
-            if (Math.bitIsSet(x, i)) {
-                let bin = bin.appendChar(49); // '1'
-            } else {
-                let bin = bin.appendChar(48); // '0'
-            }
-            let i = i - 1;
-        }
-        return bin;
-    }
-
-    /* Returns true if ith bit of x is on. */
-    function boolean bitIsSet(int x, int i) {
-        return ~((twoToThe[i] & x) = 0);
     }
 }

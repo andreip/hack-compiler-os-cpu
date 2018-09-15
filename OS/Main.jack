@@ -9,8 +9,8 @@ class Main {
         //do Main.testMathsqrt();
         //do Main.testMathDiv();
         //do Main.testMathMultiply();
-        //do Main.testMathbitIsSet();
-        //do Main.testMathIntToBinary();
+        //do Main.testUtilsbitIsSet();
+        //do Main.testUtilsIntToBinary();
         return;
     }
 
@@ -226,31 +226,31 @@ class Main {
         do Output.println();
         do Output.printInt(15 * 12);
         do Output.println();
-        do Output.printString(Math.intToBin(15 * 12));
+        do Output.printString(Utils.intToBin(15 * 12));
         do Output.println();
         return;
     }
 
-    function void testMathIntToBinary() {
-        do Output.printString(Math.intToBin(1));
+    function void testUtilsIntToBinary() {
+        do Output.printString(Utils.intToBin(1));
         do Output.println();
-        do Output.printString(Math.intToBin(4));
+        do Output.printString(Utils.intToBin(4));
         do Output.println();
-        do Output.printString(Math.intToBin(-1));
+        do Output.printString(Utils.intToBin(-1));
         do Output.println();
-        do Output.printString(Math.intToBin(16384));
+        do Output.printString(Utils.intToBin(16384));
         do Output.println();
-        do Output.printString(Math.intToBin(16384 + 16384));
+        do Output.printString(Utils.intToBin(16384 + 16384));
         do Output.println();
         return;
     }
 
-    function void testMathbitIsSet() {
-        do Output.printInt(Math.bitIsSet(16384 + 16384, 15));
+    function void testUtilsbitIsSet() {
+        do Output.printInt(Utils.bitIsSet(16384 + 16384, 15));
         do Output.println();
-        do Output.printInt(Math.bitIsSet(16384 + 16384, 14));
+        do Output.printInt(Utils.bitIsSet(16384 + 16384, 14));
         do Output.println();
-        do Output.printInt(Math.bitIsSet(16384 + 16384, 13));
+        do Output.printInt(Utils.bitIsSet(16384 + 16384, 13));
         do Output.println();
         return;
     }
