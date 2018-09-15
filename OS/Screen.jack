@@ -137,7 +137,7 @@ class Screen {
      */
     function void drawLineHorizontal(int x1, int x2, int y) {
         var int addr, val, tmp, row, col;
-        var int maskX1, maskX2, modX1, modX2;
+        var int maskX1, maskX2, modX1, modX2, divX1, divX2;
         var int i, stop;
 
         // swap if needed to make x1 < x2
@@ -147,8 +147,11 @@ class Screen {
         // So we draw in [x1, x2), from x1 to x2 without x2.
         let x2 = x2 + 1;
 
-        let modX1 = Utils.mod(x1, word);
-        let modX2 = Utils.mod(x2, word);
+        let divX1 = x1 / word;
+        let divX2 = x2 / word;
+        let modX1 = x1 - (divX1 * word);
+        let modX2 = x2 - (divX2 * word);
+
         // 0 0 0 ... 1  1 ... 1
         // ---------[x1 ... word-1]
         let maskX1 = ~(Utils.twoToPow(modX1) - 1);
@@ -158,8 +161,8 @@ class Screen {
 
         let row = y * wordsPerRow;
         // x1 and x2 form a word or less; draw and exit
-        if ((x2 / word) = (x1 / word)) {
-            let addr = row + (x1 / word);
+        if (divX1 = divX2) {
+            let addr = row + divX1;
             let val = Memory.peek(baseAddr + addr);
             let val = Screen.applyMask(val, maskX1 & maskX2);
             do Memory.poke(baseAddr + addr, val);
@@ -168,16 +171,19 @@ class Screen {
 
         // draw from x1 to a word
         if (modX1 > 0) {
-            let addr = row + (x1 / word);
+            let addr = row + divX1;
             let val = Memory.peek(baseAddr + addr);
             let val = Screen.applyMask(val, maskX1);
             do Memory.poke(baseAddr + addr, val);
+            let i = x1 + (word - modX1);
+            let col = divX1 + 1;
+        } else {
+            let i = x1;
+            let col = divX1;
         }
 
         // draws all words between [x1, x2), stopping at the last word before x2
-        let i = Utils.divideCeil(x1, word) * word;
-        let stop = (x2 / word) * word;
-        let col = i / word;
+        let stop = x2 - modX2;
         while (i < stop) {
             let addr = row + col;
             let val = Memory.peek(baseAddr + addr);
