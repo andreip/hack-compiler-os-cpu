@@ -28,12 +28,10 @@ class Screen {
 
     /** Erases the entire screen. */
     function void clearScreen() {
-        var int i, size, val;
+        var int i, size;
         let size = wordsPerRow * Y;
         while (i < size) {
-            let val = Memory.peek(baseAddr + i);
-            let val = Screen.applyMask(val, false);
-            do Memory.poke(baseAddr + i, val);
+            do Screen.updateLocation(i, false);
             let i = i + 1;
         }
         return;
@@ -48,15 +46,13 @@ class Screen {
 
     /** Draws the (x,y) pixel, using the current color. */
     function void drawPixel(int x, int y) {
-        var int addr, val, mask;
+        var int addr, mask;
         if (~(x < X) | (x < 0)) { do Sys.error(ERR); }
         if (~(y < Y) | (y < 0)) { do Sys.error(ERR); }
 
         let addr = (y * wordsPerRow) + (x / word);
-        let val = Memory.peek(baseAddr + addr);
         let mask = Utils.twoToPow(Utils.mod(x, word));
-        let val = Screen.applyMask(val, mask);
-        do Memory.poke(baseAddr + addr, val);
+        do Screen.updateLocation(addr, mask);
         return;
     }
 
@@ -97,18 +93,6 @@ class Screen {
         return;
     }
 
-    /** Draws a filled rectangle whose top left corner is (x1, y1)
-     * and bottom right corner is (x2,y2), using the current color. */
-    function void drawRectangle(int x1, int y1, int x2, int y2) {
-        var int dir;
-        if (y1 > y2) { let dir = -1; } else { let dir = 1; }
-        while (~(y1 = y2)) {
-            do Screen.drawLineHorizontal(x1, x2, y1);
-            let y1 = y1 + dir;
-        }
-        return;
-    }
-
     /** Draws a filled circle of radius r<=181 around (x,y), using the current color. */
     function void drawCircle(int x, int y, int r) {
         var int h, d, rSquared;
@@ -121,6 +105,81 @@ class Screen {
         }
         return;
     }
+
+    /** Draws a filled rectangle whose top left corner is (x1, y1)
+     * and bottom right corner is (x2,y2), using the current color.
+     *
+     * Copy-pasting from drawLineHorizontal so we compute the
+     * constants that use division/multiplication only once,
+     * and then keep on using addition. This should speed it up
+     * significantly.
+     */
+    function void drawRectangle(int x1, int y1, int x2, int y2) {
+        var int tmp, row, col;
+        var int maskX1, maskX2, modX1, modX2, divX1, divX2;
+        var int i, stop;
+
+        // swap if needed to make x1 < x2, y1 < y2
+        if (x1 > x2) { let tmp = x1; let x1 = x2; let x2 = tmp; }
+        if (y1 > y2) { let tmp = y1; let y1 = y2; let y2 = tmp; }
+
+        while (~(y1 > y2)) {
+            do Screen.drawLineHorizontal(x1, x2, y1);
+            let y1 = y1 + 1;
+        }
+
+        // Make x2 an exclusive interval - easier to work with.
+        // So we draw in [x1, x2), from x1 to x2 without x2.
+        let x2 = x2 + 1;
+
+        let divX1 = x1 / word;
+        let divX2 = x2 / word;
+        let modX1 = x1 - (divX1 * word);
+        let modX2 = x2 - (divX2 * word);
+
+        // 0 0 0 ... 1  1 ... 1
+        // ---------[x1 ... word-1]
+        let maskX1 = ~(Utils.twoToPow(modX1) - 1);
+        //  1  1  ...  1   0  ...  0
+        // [word ... x2-1] x2  ...
+        let maskX2 = Utils.twoToPow(modX2) - 1;
+
+        let row = y1 * wordsPerRow;
+        while (~(y1 > y2)) {
+            let col = divX1;
+            // x1 and x2 form a word or less; draw and exit
+            if (divX1 = divX2) {
+                do Screen.updateLocation(row + col, maskX1 & maskX2);
+            } else {
+                // draw from x1 to a word
+                if (modX1 > 0) {
+                    do Screen.updateLocation(row + divX1, maskX1);
+                    let i = x1 + (word - modX1);
+                    let col = col + 1;
+                } else {
+                    let i = x1;
+                }
+                // draws all words between [x1, x2), stopping at the last word before x2
+                let stop = x2 - modX2;
+                while (i < stop) {
+                    // fill entire word with a 111...111 mask
+                    do Screen.updateLocation(row + col, true);
+                    // go to next word
+                    let i = i + word;
+                    let col = col + 1;
+                }
+                // draw from x2 to a previous word
+                if (modX2 > 0) {
+                    do Screen.updateLocation(row + col, maskX2);
+                }
+            }
+            let row = row + wordsPerRow;
+            let y1 = y1 + 1;
+        }
+
+        return;
+    }
+
 
     /** Private functions. **/
 
@@ -136,7 +195,7 @@ class Screen {
      *   filling with words is going to be very fast, not like pixel by pixel
      */
     function void drawLineHorizontal(int x1, int x2, int y) {
-        var int addr, val, tmp, row, col;
+        var int tmp, row, col;
         var int maskX1, maskX2, modX1, modX2, divX1, divX2;
         var int i, stop;
 
@@ -160,59 +219,49 @@ class Screen {
         let maskX2 = Utils.twoToPow(modX2) - 1;
 
         let row = y * wordsPerRow;
+        let col = divX1;
         // x1 and x2 form a word or less; draw and exit
         if (divX1 = divX2) {
-            let addr = row + divX1;
-            let val = Memory.peek(baseAddr + addr);
-            let val = Screen.applyMask(val, maskX1 & maskX2);
-            do Memory.poke(baseAddr + addr, val);
+            do Screen.updateLocation(row + col, maskX1 & maskX2);
             return;
         }
-
         // draw from x1 to a word
         if (modX1 > 0) {
-            let addr = row + divX1;
-            let val = Memory.peek(baseAddr + addr);
-            let val = Screen.applyMask(val, maskX1);
-            do Memory.poke(baseAddr + addr, val);
+            do Screen.updateLocation(row + divX1, maskX1);
             let i = x1 + (word - modX1);
-            let col = divX1 + 1;
+            let col = col + 1;
         } else {
             let i = x1;
-            let col = divX1;
         }
-
         // draws all words between [x1, x2), stopping at the last word before x2
         let stop = x2 - modX2;
         while (i < stop) {
-            let addr = row + col;
-            let val = Memory.peek(baseAddr + addr);
             // fill entire word with a 111...111 mask
-            let val = Screen.applyMask(val, true);
-            do Memory.poke(baseAddr + addr, val);
+            do Screen.updateLocation(row + col, true);
             // go to next word
             let i = i + word;
             let col = col + 1;
         }
-
         // draw from x2 to a previous word
         if (modX2 > 0) {
-            let addr = row + col;
-            let val = Memory.peek(baseAddr + addr);
-            let val = Screen.applyMask(val, maskX2);
-            do Memory.poke(baseAddr + addr, val);
+            do Screen.updateLocation(row + col, maskX2);
         }
 
         return;
     }
 
     /* Knows how to apply the mask for both colors. */
-    function int applyMask(int value, int mask) {
+    function int updateLocation(int addr, int mask) {
+        var int val;
+        let addr = addr + baseAddr;
+        let val = Memory.peek(addr);
         if (color) {
-            return value | mask;
+            let val = val | mask;
         } else {
-            return value & ~mask;
+            let val = val & ~mask;
         }
+        do Memory.poke(addr, val);
+        return;
     }
 
 }
