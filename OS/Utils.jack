@@ -70,9 +70,8 @@ class Utils {
     }
 
     function String intToString(int x) {
-        var int tmp, numDigits, i, d;
+        var int tmp, numDigits;
         var String xStr;
-        var boolean negative;
 
         // base case where it's already 0.
         if (x = 0) {
@@ -80,10 +79,8 @@ class Utils {
             let xStr = xStr.appendChar(Utils.getIntegerAscii(0));
             return xStr;
         }
-
         if (x < 0) {
             let numDigits = 1;  // make space for minus sign too.
-            let negative = true;
         }
 
         let tmp = x;
@@ -91,24 +88,8 @@ class Utils {
             let numDigits = numDigits + 1;
             let tmp = tmp / 10;
         }
-
         let xStr = String.new(numDigits);
-        // fill string so I can use setCharAt(position) on it.
-        // since we know its length anyway.
-        while (i < numDigits) {
-            let xStr = xStr.appendChar(0);
-            let i = i + 1;
-        }
-        while (~(x = 0)) {
-            let tmp = x / 10;
-            let d = x - (tmp * 10);  // last digit
-            let i = i - 1;
-            do xStr.setCharAt(i, Utils.getIntegerAscii(Math.abs(d)));
-            let x = tmp;
-        }
-        if (negative) {
-            do xStr.setCharAt(0, 45);  // minus sign
-        }
+        do xStr.setInt(x);
         return xStr;
     }
 

@@ -115,35 +115,10 @@ class Keyboard {
      * entered text is detected). Also handles user backspaces. 
      */
     function int readInt(String message) {
-        var boolean negative, done;
-        var int n, i;
-        var char c;
+        var int n;
         var String line;
-
         let line = Keyboard.readLine(message);
-
-        if (line.charAt(0) = 45) {// minus sign
-            let negative = true;
-            let i = i + 1;
-        }
-
-        while ((i < line.length()) & ~done) {
-            let c = line.charAt(i);
-            if (Utils.isIntegerAscii(c)) {
-                let n = (n * 10) + Utils.getIntegerFromAscii(c);
-                // overflowed
-                if (n < 0) {
-                    do Output.printString("Number out of bounds: [-32767, 32767]");
-                    do Output.println();
-                    do Sys.error(10);
-                }
-            } else {
-                let done = true;
-            }
-            let i = i + 1;
-        }
-
-        if (negative) { let n = -n; }
+        let n = line.intValue();
         do line.dispose();
         return n;
     }
