@@ -1,4 +1,4 @@
-class Utils {
+class OSUtils {
     static Array twoToThe;
     static boolean calledInit;
     static int ERR;
@@ -32,7 +32,7 @@ class Utils {
 
     function int twoToPow(int i) {
         // bootstraps itself :)
-        if (~calledInit) { do Utils.init(); }
+        if (~calledInit) { do OSUtils.init(); }
 
         if ((i < 0) | (i > 15)) { do Sys.error(ERR); }
         return twoToThe[i];
@@ -44,7 +44,7 @@ class Utils {
         let bin = String.new(16);
         let i = 15;
         while (~(i < 0)) {
-            if (Utils.bitIsSet(x, i)) {
+            if (OSUtils.bitIsSet(x, i)) {
                 let bin = bin.appendChar(49); // '1'
             } else {
                 let bin = bin.appendChar(48); // '0'
@@ -65,7 +65,7 @@ class Utils {
     }
 
     function int getIntegerFromAscii(char code) {
-        if (~Utils.isIntegerAscii(code)) { do Sys.error(8); }
+        if (~OSUtils.isIntegerAscii(code)) { do Sys.error(8); }
         return code - 48;
     }
 
@@ -76,7 +76,7 @@ class Utils {
         // base case where it's already 0.
         if (x = 0) {
             let xStr = String.new(1);
-            let xStr = xStr.appendChar(Utils.getIntegerAscii(0));
+            let xStr = xStr.appendChar(OSUtils.getIntegerAscii(0));
             return xStr;
         }
         if (x < 0) {
@@ -95,7 +95,7 @@ class Utils {
 
     /* Returns true if ith bit of x is on. */
     function boolean bitIsSet(int x, int i) {
-        return ~((Utils.twoToPow(i) & x) = 0);
+        return ~((OSUtils.twoToPow(i) & x) = 0);
     }
 
     /*

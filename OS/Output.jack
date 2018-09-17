@@ -223,7 +223,7 @@ class Output {
             let j = 0;
             let n = map[i];
             while (j < 8) {
-                if (Utils.bitIsSet(n, j)) {
+                if (OSUtils.bitIsSet(n, j)) {
                     if ((x + j) > 511) { do Sys.error(42); }
                     do Screen.drawPixel(x + j, y + i);
                 }
@@ -255,8 +255,7 @@ class Output {
      *  and advances the cursor appropriately. */
     function void printInt(int i) {
         var String iStr;
-        // TODO: use String.setInt() after moving intToString functionality there.
-        let iStr = Utils.intToString(i);
+        let iStr = OSUtils.intToString(i);
         do Output.printString(iStr);
         do iStr.dispose();
         return;

@@ -11,9 +11,9 @@ class Main {
         //do Main.testMathsqrt();
         //do Main.testMathDiv();
         //do Main.testMathMultiply();
-        //do Main.testUtilsbitIsSet();
-        //do Main.testUtilsIntToBinary();
-        //do Main.testUtilsIntToString();
+        //do Main.testOSUtilsbitIsSet();
+        //do Main.testOSUtilsIntToBinary();
+        //do Main.testOSUtilsIntToString();
         return;
     }
 
@@ -317,64 +317,64 @@ class Main {
         do Output.println();
         do Output.printInt(15 * 12);
         do Output.println();
-        do Output.printString(Utils.intToBin(15 * 12));
+        do Output.printString(OSUtils.intToBin(15 * 12));
         do Output.println();
         return;
     }
 
-    function void testUtilsIntToBinary() {
-        do Output.printString(Utils.intToBin(1));
+    function void testOSUtilsIntToBinary() {
+        do Output.printString(OSUtils.intToBin(1));
         do Output.println();
-        do Output.printString(Utils.intToBin(4));
+        do Output.printString(OSUtils.intToBin(4));
         do Output.println();
-        do Output.printString(Utils.intToBin(-1));
+        do Output.printString(OSUtils.intToBin(-1));
         do Output.println();
-        do Output.printString(Utils.intToBin(16384));
+        do Output.printString(OSUtils.intToBin(16384));
         do Output.println();
-        do Output.printString(Utils.intToBin(16384 + 16384));
-        do Output.println();
-        return;
-    }
-
-    function void testUtilsbitIsSet() {
-        do Output.printInt(Utils.bitIsSet(16384 + 16384, 15));
-        do Output.println();
-        do Output.printInt(Utils.bitIsSet(16384 + 16384, 14));
-        do Output.println();
-        do Output.printInt(Utils.bitIsSet(16384 + 16384, 13));
+        do Output.printString(OSUtils.intToBin(16384 + 16384));
         do Output.println();
         return;
     }
 
-    function void testUtilsIntToString() {
+    function void testOSUtilsbitIsSet() {
+        do Output.printInt(OSUtils.bitIsSet(16384 + 16384, 15));
+        do Output.println();
+        do Output.printInt(OSUtils.bitIsSet(16384 + 16384, 14));
+        do Output.println();
+        do Output.printInt(OSUtils.bitIsSet(16384 + 16384, 13));
+        do Output.println();
+        return;
+    }
+
+    function void testOSUtilsIntToString() {
         do Output.printString("Converting ints to strings");
         do Output.println();
         do Output.printString("123: ");
-        do Output.printString(Utils.intToString(123));
+        do Output.printString(OSUtils.intToString(123));
         do Output.println();
         do Output.printString("ten: ");
-        do Output.printString(Utils.intToString(10));
+        do Output.printString(OSUtils.intToString(10));
         do Output.println();
         do Output.printString("one: ");
-        do Output.printString(Utils.intToString(1));
+        do Output.printString(OSUtils.intToString(1));
         do Output.println();
         do Output.printString("zero: ");
-        do Output.printString(Utils.intToString(0));
+        do Output.printString(OSUtils.intToString(0));
         do Output.println();
         do Output.printString("20000: ");
-        do Output.printString(Utils.intToString(20000));
+        do Output.printString(OSUtils.intToString(20000));
         do Output.println();
         do Output.printString("32000: ");
-        do Output.printString(Utils.intToString(32000));
+        do Output.printString(OSUtils.intToString(32000));
         do Output.println();
         do Output.printString("32767: ");
-        do Output.printString(Utils.intToString(32767));
+        do Output.printString(OSUtils.intToString(32767));
         do Output.println();
         do Output.printString("-1: ");
-        do Output.printString(Utils.intToString(-1));
+        do Output.printString(OSUtils.intToString(-1));
         do Output.println();
         do Output.printString("-32768: ");
-        do Output.printString(Utils.intToString(-(16384 + 16384)));  // smallest num
+        do Output.printString(OSUtils.intToString(-(16384 + 16384)));  // smallest num
         do Output.println();
         return;
     }

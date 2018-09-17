@@ -77,8 +77,8 @@ class String {
 
         while ((i < length()) & ~done) {
             let c = charAt(i);
-            if (Utils.isIntegerAscii(c)) {
-                let n = (n * 10) + Utils.getIntegerFromAscii(c);
+            if (OSUtils.isIntegerAscii(c)) {
+                let n = (n * 10) + OSUtils.getIntegerFromAscii(c);
                 // overflowed
                 if (n < 0) {
                     do Output.printString("String::intValue: Number out of bounds: [-32767, 32767]");
@@ -106,7 +106,7 @@ class String {
 
         // base case where it's already 0.
         if (val = 0) {
-            do appendChar(Utils.getIntegerAscii(0));
+            do appendChar(OSUtils.getIntegerAscii(0));
             return this;
         }
 
@@ -137,7 +137,7 @@ class String {
             let tmp = val / 10;
             let d = val - (tmp * 10);  // last digit
             let i = i - 1;
-            do setCharAt(i, Utils.getIntegerAscii(Math.abs(d)));
+            do setCharAt(i, OSUtils.getIntegerAscii(Math.abs(d)));
             let val = tmp;
         }
         if (negative) {
