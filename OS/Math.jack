@@ -10,6 +10,7 @@
 class Math {
     static Array twoToThe;
     static int ERR;
+    static int MINIMUM;
 
     /** Initializes the library. */
     function void init() {
@@ -31,6 +32,7 @@ class Math {
         let twoToThe[13] = 8192;
         let twoToThe[14] = 16384;
         let twoToThe[15] = 16384 + 16384;   // shift to right
+        let MINIMUM = twoToThe[15];
         return;
     }
 
@@ -85,8 +87,20 @@ class Math {
         var boolean neg;
         var int q;
 
+        if (y = 0) { do Sys.error(ERR); } // division by 0
+
+        // Edge case when x or y are the smallest possible number.
+        if ((x = MINIMUM) & (y = MINIMUM)) { return 1; }
+        if (y = MINIMUM) { return 0; }
+        // Increase x by y so we can turn it positive and
+        // reuse same algorithm below.
+        if (x = MINIMUM) {
+            let x = x + Math.abs(y);
+            let q = 1;
+        }
+
         let neg = ((x < 0) & (y > 0)) | ((x > 0) & (y < 0));
-        let q = Math._dividePos(Math.abs(x), Math.abs(y));
+        let q = q + Math._dividePos(Math.abs(x), Math.abs(y));
         if (neg) { return -q; }
         return q;
     }
