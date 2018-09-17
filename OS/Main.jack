@@ -44,6 +44,21 @@ class Main {
 
         do Output.moveCursor(12, 0);
         do Output.printInt(-12345);
+        do Output.println();
+        do Output.printString("done 12345");
+        do Output.printChar(String.newLine());
+        do Output.printInt(32000);
+        do Output.println();
+
+        do Output.printInt(-(16384 + 16384));  // smallest num
+        do Output.println();
+
+        do Output.printInt(32767);  // biggest num
+        do Output.println();
+
+        do Output.printInt(-1);
+        do Output.println();
+
         return;
     }
 
@@ -312,6 +327,21 @@ class Main {
         do Output.println();
         do Output.printString("zero: ");
         do Output.printString(Utils.intToString(0));
+        do Output.println();
+        do Output.printString("20000: ");
+        do Output.printString(Utils.intToString(20000));
+        do Output.println();
+        do Output.printString("32000: ");
+        do Output.printString(Utils.intToString(32000));
+        do Output.println();
+        do Output.printString("32767: ");
+        do Output.printString(Utils.intToString(32767));
+        do Output.println();
+        do Output.printString("-1: ");
+        do Output.printString(Utils.intToString(-1));
+        do Output.println();
+        do Output.printString("-32768: ");
+        do Output.printString(Utils.intToString(-(16384 + 16384)));  // smallest num
         do Output.println();
         return;
     }

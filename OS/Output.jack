@@ -245,10 +245,7 @@ class Output {
      *  and advances the cursor appropriately. */
     function void printInt(int i) {
         var String iStr;
-        if (i < 0) {
-            let i = -i;
-            do Output.printChar(45);  // minus sign
-        }
+        // TODO: use String.setInt() after moving intToString functionality there.
         let iStr = Utils.intToString(i);
         do Output.printString(iStr);
         do iStr.dispose();

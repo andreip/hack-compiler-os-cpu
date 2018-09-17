@@ -38,7 +38,6 @@ class Sys {
     /** Displays the given error code in the form "ERR<errorCode>",
      *  and halts the program's execution. */
     function void error(int errorCode) {
-        // TODO: can we use chars here? to avoid leaky string
         do Output.printString("ERR");
         do Output.printInt(errorCode);
         do Sys.halt();
