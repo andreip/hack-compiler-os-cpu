@@ -242,6 +242,8 @@ class Main {
         do Output.println();
         do Output.printInt(15 / -6);
         do Output.println();
+        do Output.printInt(32000 / 10);
+        do Output.println();
         // causes it to halt
         do Output.printInt(15 / 0);
         do Output.println();

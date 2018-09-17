@@ -83,21 +83,29 @@ class Math {
      */
     function int divide(int x, int y) {
         var boolean neg;
+        var int q;
+
+        let neg = ((x < 0) & (y > 0)) | ((x > 0) & (y < 0));
+        let q = Math._dividePos(Math.abs(x), Math.abs(y));
+        if (neg) { return -q; }
+        return q;
+    }
+
+    /* Called internally, use divide() or '/' operand instead. */
+    function int _dividePos(int x, int y) {
         var int q, reminder, tmp;
 
         if (y = 0) { do Sys.error(ERR); } // division by 0
-
-        let neg = ((x < 0) & (y > 0)) | ((x > 0) & (y < 0));
-        let x = Math.abs(x);
-        let y = Math.abs(y);
 
         // The actual algorithm: if x / y = q1, reminder r1
         // and we know through recursivity that x / 2y = q2 r2
         // then x = y * q1 + r1 = 2 * y * q2 + r2
         // and need to figure out if r2 has a y in it or not
         // so final result is either (2 * q2) or (2 * q2 + 1)
-        if (y > x) { return 0; }
-        let q = Math.divide(x, y + y);
+        // also put y < 0 since y starts as positive and if it
+        // is now negative, we overflowed.
+        if ((y > x) | (y < 0)) { return 0; }
+        let q = Math._dividePos(x, y + y);
         let tmp = y * q;
         let reminder = x - (tmp + tmp);  // x % (2y)
         // reminder is < 2y for sure; but how is it compared to y?
@@ -107,7 +115,6 @@ class Math {
             let q = (q + q) + 1;
         }
 
-        if (neg) { return -q; }
         return q;
     }
 
