@@ -1,6 +1,7 @@
 class Main {
     function void main() {
-        do Main.testOutput();
+        do Main.testKeyboard();
+        //do Main.testOutput();
         //do Main.testScreenDraw2();
         //do Main.testScreenDraw1();
         //do Main.testScreenDrawPixel();
@@ -16,9 +17,41 @@ class Main {
         return;
     }
 
+    function void testKeyboard() {
+        var String msg;
+        var char c;
+        var int i;
+
+        do Output.printString("Enter a character: ");
+        let c = Keyboard.readChar();
+        do Output.println();
+        do Output.printString("Pressed: ");
+        do Output.printChar(c);
+        do Output.println();
+
+        let msg = Keyboard.readLine("Enter a message: ");
+        do Output.printString(msg);
+        do Output.println();
+
+        let i = Keyboard.readInt("Enter your age: ");
+        do Output.printInt(i);
+        do Output.println();
+
+        let i = Keyboard.readInt("Enter a negative number: ");
+        do Output.printInt(i);
+        do Output.println();
+
+        return;
+    }
+
     function void testOutput() {
         var int i;
         let i = 30;
+
+        do Output.printChar(33);
+        do Output.printChar(34);
+        do Output.backSpace();
+
         while (i < 127) {
             do Output.printChar(i);
             if (i = 50) {

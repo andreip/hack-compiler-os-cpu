@@ -206,6 +206,16 @@ class Output {
     function void printChar(char c) {
         var Array map;
         var int i, j, n, x, y;
+
+        if (c = String.backSpace()) {
+            do Output.backSpace();
+            return;
+        }
+        if (c = String.newLine()) {
+            do Output.println();
+            return;
+        }
+
         let map = Output.getMap(c);
         let x = col * WIDTH;
         let y = row * HEIGHT;
