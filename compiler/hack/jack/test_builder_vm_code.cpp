@@ -303,6 +303,49 @@ BOOST_FIXTURE_TEST_CASE(test_call_methods_on_objects, fixture) {
   compute_vmcode(stream);
 }
 
+BOOST_FIXTURE_TEST_CASE(test_function_call_with_string_arguments, fixture) {
+  istringstream stream(
+  "class Main {\n"
+    "function void main() {\n"
+      "do Main.print(\"a\", \"\");\n"
+      "return;\n"
+    "}\n"
+    "function void print(String a, String b) {\n"
+      "do Output.printString(a);\n"
+      "do Output.printString(b);\n"
+      "return;\n"
+    "}\n"
+  "}"
+  );
+  expected = {
+  // main()
+    VMCommands::Function("Main.main", 0),
+    VMCommands::Push("constant", 1),
+    VMCommands::Call("String.new", 1),
+    VMCommands::Push("constant", 97),
+    VMCommands::Call("String.appendChar", 2),   // created string "a"
+    VMCommands::Push("constant", 0),
+    VMCommands::Call("String.new", 1),          // creates empty string ""
+    VMCommands::Call("Main.print", 2),
+    VMCommands::Pop("temp", 0),
+    VMCommands::Push("constant", 0),
+    VMCommands::Return(),
+
+  // print(String a, String b)
+    VMCommands::Function("Main.print", 0),
+    VMCommands::Push("argument", 0),
+    VMCommands::Call("Output.printString", 1),
+    VMCommands::Pop("temp", 0),
+    VMCommands::Push("argument", 1),
+    VMCommands::Call("Output.printString", 1),
+    VMCommands::Pop("temp", 0),
+    VMCommands::Push("constant", 0),
+    VMCommands::Return(),
+  };
+
+  compute_vmcode(stream);
+}
+
 BOOST_FIXTURE_TEST_CASE(test_while_statement, fixture) {
   istringstream stream(
   "class Test {\n"
