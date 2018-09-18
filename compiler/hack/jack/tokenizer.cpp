@@ -81,16 +81,24 @@ void JackTokenizer::tokenizeLine(std::string line, ContainerT &out) {
   // also preserve double-quotes in split array, to be able to
   // tell when we're inside a double-quoted string constant or outside.
   split_by_any_char(temp, line, "\"", true);
-  bool in_quote = false;
+  bool in_quoted = false;
+  std::string quoted;
+
   for (std::string &s : temp) {
     // if we found a quote, toggle if we're in quote or not currently.
     if (s == "\"") {
-      in_quote = !in_quote;
+      // we're in quoted string, just exiting; add it
+      if (in_quoted) {
+        out.push_back(Token::fromString("\"" + quoted + "\"", _lineNo));
+      // we're not in quoted string, just entering one
+      } else {
+        quoted = "";
+      }
+      in_quoted = !in_quoted;
     } else {
-      // if inside a quote, add the raw string including quotes
-      // as a token string constant.
-      if (in_quote)
-        out.push_back(Token::fromString("\"" + s + "\"", _lineNo));
+      // remember the string for when we see the end of quotes.
+      if (in_quoted)
+        quoted = s;
       // otherwise this string is string-constants free, so
       // we can pass it to be parsed by the other symbols of
       // the language and populate the out container.

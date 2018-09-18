@@ -80,9 +80,16 @@ BOOST_FIXTURE_TEST_CASE(test_let_array_string, fixture) {
   tokenize(stream);
 }
 
-BOOST_FIXTURE_TEST_CASE(test_empty_string, fixture) {
+BOOST_FIXTURE_TEST_CASE(test_constant_string, fixture) {
   istringstream stream("{ let x = \" \"; }");
   expected = {"{", "let", "x", "=", "\" \"", ";", "}"};
+
+  tokenize(stream);
+}
+
+BOOST_FIXTURE_TEST_CASE(test_empty_string_as_param, fixture) {
+  istringstream stream("{ do Output.printString(\" \", \"\"); }");
+  expected = {"{", "do", "Output", ".", "printString", "(", "\" \"", ",", "\"\"", ")", ";", "}"};
 
   tokenize(stream);
 }
