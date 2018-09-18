@@ -80,6 +80,13 @@ BOOST_FIXTURE_TEST_CASE(test_let_array_string, fixture) {
   tokenize(stream);
 }
 
+BOOST_FIXTURE_TEST_CASE(test_empty_string, fixture) {
+  istringstream stream("{ let x = \" \"; }");
+  expected = {"{", "let", "x", "=", "\" \"", ";", "}"};
+
+  tokenize(stream);
+}
+
 BOOST_FIXTURE_TEST_CASE(test_line_comment, fixture) {
   istringstream stream("// some comments");
   expected = {};

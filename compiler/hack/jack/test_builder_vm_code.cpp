@@ -26,8 +26,6 @@ struct fixture {
   }
 
   ~fixture() {
-    std::cout << "Expected: " << expected << '\n';
-    std::cout << "Actual: " << actual << '\n';
     BOOST_CHECK_EQUAL_COLLECTIONS(
       expected.begin(), expected.end(),
       actual.begin(), actual.end()

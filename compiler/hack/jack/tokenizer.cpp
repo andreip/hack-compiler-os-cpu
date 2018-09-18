@@ -181,6 +181,18 @@ void JackTokenizer::stripComments(std::string &line) {
 // Token class related
 
 Token Token::fromString(const std::string &value, int lineNo) {
+  // Has to be first, to identify if the value is double-quotes wrapped.
+  // Inside there could be anything, including symbols keywords etc. but
+  // it would still be a string constant type.
+  if (value.front() == '"' && value.back() == '"') {
+    // make sure it doesn't contain double quote inside just for
+    // sanity checking.
+    if (value.substr(1, value.size() - 2).find('"') != std::string::npos)
+      throw_and_debug("String constant contains too many double quotes: " + value);
+
+    return Token(TokenType::STR_CONSTANT, value, lineNo);
+  }
+
   if (JackTokenizer::KEYWORDS.find(value) != JackTokenizer::KEYWORDS.end())
     return Token(TokenType::KEYWORD, value, lineNo);
 
@@ -193,15 +205,6 @@ Token Token::fromString(const std::string &value, int lineNo) {
     if (n >= 0 && n <= 32767)
       return Token(TokenType::INT_CONSTANT, value, lineNo);
     throw_and_debug("Number out of 16-bit range: " + value);
-  }
-
-  if (value.front() == '"' && value.back() == '"') {
-    // make sure it doesn't contain double quote inside just for
-    // sanity checking.
-    if (value.find("\"", 1, value.size() - 2) != std::string::npos)
-      throw_and_debug("String constant contains too many double quotes: " + value);
-
-    return Token(TokenType::STR_CONSTANT, value, lineNo);
   }
 
   if (value.front() == '_' || std::isalpha(value.front()))

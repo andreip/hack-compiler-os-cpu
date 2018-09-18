@@ -7,8 +7,7 @@ all: $(FILES)
 $(FILES): %.o: %.cpp
 	$(CC) -c $(CPPFLAGS) $< -o $@
 
-#test: test_tokenizer test_builder test_symbol_table test_builder_vm_code
-test: test_builder_vm_code
+test: test_tokenizer test_builder test_symbol_table test_builder_vm_code
 
 test_tokenizer: tokenizer.cpp test_tokenizer.cpp tokenizer.h ../../utils.cpp
 	$(CC) $(CPPFLAGS) tokenizer.cpp test_tokenizer.cpp ../../utils.cpp -o $@
