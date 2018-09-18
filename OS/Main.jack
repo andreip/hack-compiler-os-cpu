@@ -1,6 +1,7 @@
 class Main {
     function void main() {
         do Main.testKeyboard();
+        //do Main.testOutput2();
         //do Main.testOutput();
         //do Main.testScreenDraw2();
         //do Main.testScreenDraw1();
@@ -41,6 +42,15 @@ class Main {
         do Output.printInt(i);
         do Output.println();
 
+        return;
+    }
+
+    function void testOutput2() {
+        do Output.printChar(48);
+        do Output.printChar(48);
+        // adding a one should not erase the 2nd zero
+        do Output.moveCursor(0, 0);
+        do Output.printChar(49);
         return;
     }
 

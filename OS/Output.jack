@@ -192,12 +192,6 @@ class Output {
         if ((j < 0) | ~(j < COLS)) { do Sys.error(6); }
         let row = i;
         let col = j;
-        // clear the box of the character.
-        let x = col * WIDTH;
-        let y = row * HEIGHT;
-        do Screen.setColor(false);
-        do Screen.drawRectangle(x, y, x + (WIDTH - 1), y + (HEIGHT - 1));
-        do Screen.setColor(true);
         return;
     }
 
@@ -207,6 +201,14 @@ class Output {
         var Array map;
         var int i, j, n, x, y;
 
+        // clear the box of the character.
+        let x = col * WIDTH;
+        let y = row * HEIGHT;
+        do Screen.setColor(false);
+        do Screen.drawRectangle(x, y, x + (WIDTH - 1), y + (HEIGHT - 1));
+        do Screen.setColor(true);
+
+        // backspace/newline special case
         if (c = String.backSpace()) {
             do Output.backSpace();
             return;
@@ -216,6 +218,7 @@ class Output {
             return;
         }
 
+        // get its code from map and fill in bits in memory to draw it
         let map = Output.getMap(c);
         let x = col * WIDTH;
         let y = row * HEIGHT;
