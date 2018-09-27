@@ -1,0 +1,86 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/02/Inc16.hdl
+
+/**
+ * 16-bit incrementer:
+ * out = in + 1 (arithmetic addition)
+ */
+
+CHIP Inc16 {
+    IN in[16];
+    OUT out[16];
+
+    // flip bit until the first zero bit (including the zero bit).
+    // let the rest of the bits after that unchanged and you've
+    // just incremented a number.
+
+    PARTS:
+    // cannot use bus of internal componenet, so couldn't just
+    // Not16(in=in, out=notIn) and then use notIn[i]; not sure why.
+    Not(in=in[0], out=notIn0);
+    Not(in=in[1], out=notIn1);
+    Not(in=in[2], out=notIn2);
+    Not(in=in[3], out=notIn3);
+    Not(in=in[4], out=notIn4);
+    Not(in=in[5], out=notIn5);
+    Not(in=in[6], out=notIn6);
+    Not(in=in[7], out=notIn7);
+    Not(in=in[8], out=notIn8);
+    Not(in=in[9], out=notIn9);
+    Not(in=in[10], out=notIn10);
+    Not(in=in[11], out=notIn11);
+    Not(in=in[12], out=notIn12);
+    Not(in=in[13], out=notIn13);
+    Not(in=in[14], out=notIn14);
+    Not(in=in[15], out=notIn15);
+
+    // flip the first bit all the time.
+    Not(in=in[0], out=out[0]);
+
+    And(a=in[0], b=true, out=flip1);
+    Mux(a=in[1], b=notIn1, sel=flip1, out=out[1]);
+
+    And(a=in[1], b=flip1, out=flip2);
+    Mux(a=in[2], b=notIn2, sel=flip2, out=out[2]);
+
+    And(a=in[2], b=flip2, out=flip3);
+    Mux(a=in[3], b=notIn3, sel=flip3, out=out[3]);
+
+    And(a=in[3], b=flip3, out=flip4);
+    Mux(a=in[4], b=notIn4, sel=flip4, out=out[4]);
+
+    And(a=in[4], b=flip4, out=flip5);
+    Mux(a=in[5], b=notIn5, sel=flip5, out=out[5]);
+
+    And(a=in[5], b=flip5, out=flip6);
+    Mux(a=in[6], b=notIn6, sel=flip6, out=out[6]);
+
+    And(a=in[6], b=flip6, out=flip7);
+    Mux(a=in[7], b=notIn7, sel=flip7, out=out[7]);
+
+    And(a=in[7], b=flip7, out=flip8);
+    Mux(a=in[8], b=notIn8, sel=flip8, out=out[8]);
+
+    And(a=in[8], b=flip8, out=flip9);
+    Mux(a=in[9], b=notIn9, sel=flip9, out=out[9]);
+
+    And(a=in[9], b=flip9, out=flip10);
+    Mux(a=in[10], b=notIn10, sel=flip10, out=out[10]);
+
+    And(a=in[10], b=flip10, out=flip11);
+    Mux(a=in[11], b=notIn11, sel=flip11, out=out[11]);
+
+    And(a=in[11], b=flip11, out=flip12);
+    Mux(a=in[12], b=notIn12, sel=flip12, out=out[12]);
+
+    And(a=in[12], b=flip12, out=flip13);
+    Mux(a=in[13], b=notIn13, sel=flip13, out=out[13]);
+
+    And(a=in[13], b=flip13, out=flip14);
+    Mux(a=in[14], b=notIn14, sel=flip14, out=out[14]);
+
+    And(a=in[14], b=flip14, out=flip15);
+    Mux(a=in[15], b=notIn15, sel=flip15, out=out[15]);
+}

@@ -1,0 +1,59 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/05/Memory.hdl
+
+/**
+ * The complete address space of the Hack computer's memory,
+ * including RAM and memory-mapped I/O. 
+ * The chip facilitates read and write operations, as follows:
+ *     Read:  out(t) = Memory[address(t)](t)
+ *     Write: if load(t-1) then Memory[address(t-1)](t) = in(t-1)
+ * In words: the chip always outputs the value stored at the memory 
+ * location specified by address. If load==1, the in value is loaded 
+ * into the memory location specified by address. This value becomes 
+ * available through the out output from the next time step onward.
+ * Address space rules:
+ * Only the upper 16K+8K+1 words of the Memory chip are used. 
+ * Access to address>0x6000 is invalid. Access to any address in 
+ * the range 0x4000-0x5FFF results in accessing the screen memory 
+ * map. Access to address 0x6000 results in accessing the keyboard 
+ * memory map. The behavior in these addresses is described in the 
+ * Screen and Keyboard chip specifications given in the book.
+ */
+
+CHIP Memory {
+    IN in[16], load, address[15];
+    OUT out[16];
+
+    PARTS:
+    // Put your code here:
+
+    // load RAM if 14th bit is zero
+    // else if bits 14th and 13th are 10xxxxx...xxx then we load
+    // the screen.
+    DMux4Way(in=load, sel=address[13..14],
+             a=loadRAMa, b=loadRAMb, c=loadScreen, d=maybeLoadKBD);
+
+    // load ram if 14th bit is zero, so 00 or 01 for 13..14 bits in dmux.
+    Or(a=loadRAMa, b=loadRAMb, out=loadRAM);
+
+    // keyboard should be loaded only on one address,
+    // 110...0 (12 zeros)
+    Or8Way(in=address[0..7], out=notZero07);
+    Or8Way(in=address[5..12], out=notZero512);
+    Not(in=notZero07, out=zero07);
+    Not(in=notZero512, out=zero512);
+    And(a=zero07, b=zero512, out=zero012);
+    And(a=maybeLoadKBD, b=zero012, out=loadKBD);
+
+    // actual chips.
+
+    RAM16K(in=in, load=loadRAM, address=address[0..13], out=outRAM,
+out=outRAM2);
+    Screen(in=in, load=loadScreen, address=address[0..12], out=outScreen);
+    Keyboard(out=outKBD);
+
+    Mux4Way16(a=outRAM, b=outRAM2, c=outScreen, d=outKBD,
+              sel=address[13..14], out=out);
+}
