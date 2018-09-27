@@ -107,7 +107,7 @@ class String {
         // base case where it's already 0.
         if (val = 0) {
             do appendChar(OSUtils.getIntegerAscii(0));
-            return this;
+            return;
         }
 
         if (val < 0) {

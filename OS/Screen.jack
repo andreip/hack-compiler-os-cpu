@@ -273,7 +273,7 @@ class Screen {
     }
 
     /* Knows how to apply the mask for both colors. */
-    function int updateLocation(int addr, int mask) {
+    function void updateLocation(int addr, int mask) {
         var int val;
         let addr = addr + baseAddr;
         let val = Memory.peek(addr);
