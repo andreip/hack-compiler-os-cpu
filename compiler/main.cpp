@@ -4,8 +4,8 @@
 #include <string>
 #include <stdexcept>
 
-#include "compiler/utils.h"
-#include "compiler/translator.h"
+#include "utils.h"
+#include "translator.h"
 
 extern Translator* getTranslatorFromPath(const std::string &path);
 
