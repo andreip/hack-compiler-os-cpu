@@ -1,6 +1,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <stdexcept>
 
 #include "../../utils.h"
 #include "../utils.h"
@@ -38,13 +39,13 @@ HackSymbolTranslator::HackSymbolTranslator(const std::string &filename)
   : HackBuilder(filename) {
   init();
   initPredefinedSymbols();
-  _crtVariableNo = VARIABLE_START;
   _debugFilename = replaceExtension(filename, "asm_debug");
 }
 
 void HackSymbolTranslator::init() {
   _firstPass = true;
   _crtInstructionNo = 0;
+  _crtVariableNo = VARIABLE_START;
 }
 
 std::list<std::string>* HackSymbolTranslator::getResult() {
@@ -70,7 +71,7 @@ void HackSymbolTranslator::visit(Label *i) {
 void HackSymbolTranslator::visit(CInstruction *i) {
   if (_firstPass) {
     writeDebugInstruction(i);
-    _crtInstructionNo++;
+    incrementInstructionNo();
   } else
     output->push_back(i->toString());
 }
@@ -78,7 +79,7 @@ void HackSymbolTranslator::visit(CInstruction *i) {
 void HackSymbolTranslator::visit(AInstruction *i) {
   if (_firstPass) {
     writeDebugInstruction(i);
-    _crtInstructionNo++;
+    incrementInstructionNo();
   } else {
     // if it's not a numeric value, then we look it up in the table.
     // if it's present, we just replace it, otherwise we assume
@@ -89,8 +90,8 @@ void HackSymbolTranslator::visit(AInstruction *i) {
       if (_symbolsTable.find(val) != _symbolsTable.end()) {
         newVal = _symbolsTable[val];
       } else {
-        newVal = toString(_crtVariableNo++);
-        _symbolsTable[val] = newVal;
+        _symbolsTable[val] = newVal = toString(_crtVariableNo);;
+        incrementVariableNo();
       }
       i->setValue(newVal);
     }
@@ -126,6 +127,16 @@ void HackSymbolTranslator::writeDebugOutputFile() {
 
 void HackSymbolTranslator::writeDebugInstruction(Instruction *i) {
   _debugStream << _crtInstructionNo << " " << i->toString() << '\n';
+}
+
+void HackSymbolTranslator::incrementInstructionNo() {
+  if (++_crtInstructionNo > MAX_INT)
+    throw std::runtime_error("File is too big to disassemble.\n");
+}
+
+void HackSymbolTranslator::incrementVariableNo() {
+  if (++_crtVariableNo >= VARIABLE_END)
+    throw std::runtime_error("File is too big to disassemble.\n");
 }
 
 // HackBinaryTranslator

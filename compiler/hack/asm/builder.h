@@ -37,6 +37,8 @@ private:
   void initPredefinedSymbols();
   void writeDebugOutputFile();
   void writeDebugInstruction(Instruction *i);
+  void incrementInstructionNo();
+  void incrementVariableNo();
 private:
   bool _firstPass;
   int _crtInstructionNo;
@@ -47,8 +49,13 @@ private:
   std::string _debugFilename;
   std::ostringstream _debugStream;
 
-  // memory address where variables start.
+  // memory address for variables are in [start,end)
   static constexpr int VARIABLE_START = 16;
+  static constexpr int VARIABLE_END = 256;
+  // this is the maximum number we can load in
+  // an A-Instruction since we only have 15 out of 16 bits
+  // for the value.
+  static constexpr int MAX_INT = (1 << 15) - 1;
 };
 
 class HackBinaryTranslator: public HackBuilder {

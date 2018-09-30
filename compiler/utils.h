@@ -84,6 +84,19 @@ std::vector<T>& concat(std::vector<T> &v1, const std::vector<T> &v2) {
   return concat(v1, { v2 });
 }
 
+// breaks the recursion of variadic arguments call. This will
+// get chosen over defining a template w/ no arguments.
+void debug();
+
+template <typename T, typename ... Args>
+void debug(T first, Args ... args) {
+#ifdef DEBUG
+  std::cout << first << ' ';
+  debug(args ...);
+#endif
+}
+
+
 // prints before throwing
 #ifdef UTILS_DEBUG
 #define throw_and_debug(msg) \

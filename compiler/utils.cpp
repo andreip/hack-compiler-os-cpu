@@ -305,3 +305,9 @@ void split_by_any_char(ContainerT &parts,
 }
 
 template void split_by_any_char<std::deque<std::string>>(std::deque<std::string>&, const std::string&, const std::string&, bool);
+
+void debug() {
+#ifdef DEBUG
+  std::cout << '\n';
+#endif
+}

@@ -6,6 +6,7 @@
 
 #include "builder.h"
 #include "instruction.h"
+#include "utils.h"
 
 Builder::Builder()
   : _filename(""), _function("") {
@@ -53,6 +54,7 @@ void Builder::processLines(const std::list<std::string> *lines) {
     // name is that gets called.
     if (instr) {
       if (!instr->isValid()) {
+        debug("Invalid line", line);
         std::ostringstream oss;
         oss << "Error parsing line: " << lineNo << '\n';
         std::string msg = oss.str();
