@@ -12,6 +12,10 @@ if (NOT CONFIGURED_ONCE)
       CACHE STRING "Flags used by the compiler during all build types." FORCE)
 endif()
 
+# Uncomment this to get debug() function working and
+# get a lot of verbosity in each translator.
+#add_compile_definitions(DEBUG)
+
 add_subdirectory(hack)
 
 # Find all the cpp files in current directory.

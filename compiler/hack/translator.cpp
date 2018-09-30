@@ -18,7 +18,7 @@ void HackTranslator::translate() {
   for (const std::string &inputFile: getInputFiles()) {
     std::cout << "Translating single file " << inputFile << "\n";
     crtLines = translateFile(inputFile);
-    std::cout << "Got back " << crtLines->size() << " lines\n";
+    debug("Got back", crtLines->size(), "lines");
     std::copy(
       crtLines->cbegin(), crtLines->cend(),
       std::back_inserter(allLines)

@@ -87,29 +87,28 @@ void HackBuilderVMTranslator::visit(MemorySegment *i) {
 
 void HackBuilderVMTranslator::visit(ArithmeticLogic *i) {
   HackBuilderVMTranslator::defaultVisit(i);
-  std::cout << "in arithm instr visit: " << i->toString() << "\n";
+  debug("in arithm instr visit: ", i->toString());
 }
 
 void HackBuilderVMTranslator::visit(BranchingInstruction *i) {
   HackBuilderVMTranslator::defaultVisit(i);
-  std::cout << "in branch instr visit: " << i->toString() << "\n";
+  debug("in branch instr visit:", i->toString());
 }
 
 void HackBuilderVMTranslator::visit(FunctionInstruction *i) {
   HackBuilderVMTranslator::defaultVisit(i);
-  std::cout << "in function visit: " << i->name()
-            << ", nVars: " << i->nVars() << "\n";
+  debug("in function visit:", i->name(), "nVars:", i->nVars());
   setCurrentFunction(i->name());
 }
 
 void HackBuilderVMTranslator::visit(ReturnInstruction *i) {
   HackBuilderVMTranslator::defaultVisit(i);
-  std::cout << "in return visit: " << i->toString() << '\n';
+  debug("in return visit:", i->toString());
 }
 
 void HackBuilderVMTranslator::visit(CallInstruction *i) {
   HackBuilderVMTranslator::defaultVisit(i);
-  std::cout << "in call visit: " << i->toString() << '\n';
+  debug("in call visit:", i->toString());
 }
 
 void HackBuilderVMTranslator::defaultVisit(VMTranslationInstruction *i) {
