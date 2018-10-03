@@ -1,0 +1,3 @@
+[submodule "jack-chess"]
+	path = jack-chess
+	url = https://github.com/andreip/jack-chess
