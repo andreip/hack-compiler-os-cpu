@@ -6,11 +6,11 @@
 #define BOOST_TEST_MAIN
 #include <boost/test/included/unit_test.hpp>
 
-#include "builder.h"
-#include "grammar.h"
-#include "tokenizer.h"
-#include "symbol_table.h"
-#include "vm_commands.h"
+#include "hack/jack/builder.h"
+#include "hack/jack/grammar.h"
+#include "hack/jack/tokenizer.h"
+#include "hack/jack/symbol_table.h"
+#include "hack/jack/vm_commands.h"
 
 using namespace std;
 

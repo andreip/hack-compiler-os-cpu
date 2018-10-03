@@ -1,15 +1,6 @@
 *.sw*
 *.o
-VMTranslator
-AsmHack
-JackAnalyzer
-JackCompiler
 lang.txt
-test_tokenizer
-test_builder
-test_symbol_table
-test_builder_vm_code
-test/
 compiler/build/
 
 *.vm
