@@ -131,12 +131,12 @@ void HackSymbolTranslator::writeDebugInstruction(Instruction *i) {
 
 void HackSymbolTranslator::incrementInstructionNo() {
   if (++_crtInstructionNo > MAX_INT)
-    throw std::runtime_error("File is too big to disassemble.\n");
+    throw std::runtime_error("File has too many lines.\n");
 }
 
 void HackSymbolTranslator::incrementVariableNo() {
   if (++_crtVariableNo >= VARIABLE_END)
-    throw std::runtime_error("File is too big to disassemble.\n");
+    throw std::runtime_error("File uses too many variables, ran out of static memory.\n");
 }
 
 // HackBinaryTranslator
