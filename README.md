@@ -19,8 +19,9 @@ used to emulate the hack platform and cpu
 
 #### Compile and run the chess game ####
 
-I'll walk you through compiling a chess game and running it on a hack
-platform emulator. You'll need:
+I'll walk you through compiling [a chess game](https://github.com/andreip/jack-chess)
+and running it on a hack platform emulator.
+You'll need:
 * CMake and a C++ in order to compile the compiler
 * Java available on your system to run the VM Emulator
 * python to generate some files in jack-chess
@@ -43,22 +44,33 @@ $ ./JackCompiler ../jack-chess/
 # Generates a ../jack-chess/jack-chess.asm file
 $ ./VMTranslator ../jack-chess/
 
-# Running the virtual machine emulator and then load the 'jack-chess/' folder
-# altogether, not any individual file. That'll load all .vm files in memory.
+# Run the virtual machine emulator
 $ ../tools/VMEmulator.sh
-# Then click Animate --> No Animation select at the top
-# Hit the ">>" button to start and it should work
+
+#
+# Then:
+# - click File -> Load Program in the VM Emulator
+# - navigate to the 'jack-chess/', select it and hit Load Program
+#   (Make sure you select the actual folder and hit Load Program without
+#    going inside it; and don't select an individual .vm file, you actually
+#    want all .vm files to be loaded in memory)
+# - change "Program flow" to "No animation" in the select widget at the top
+# - hit the ">>" button to start and it should work
+#
 
 # Compiling further from asm down to binary code won't
 # work because the asm file is too large (~130K lines of code)
 # to fit in memory and be addressable by a 16bit computer. At most
 # it can compile something up to ~32K lines asm, since that's the max
-# address a goto instruction can jump to. This is a 16-bit computer.
+# address a goto instruction can jump to with 16-bit instructions
+# (15bits actually used for address).
+# So this won't work, you can try and see it fail :)
 $ ./AsmHack ../jack-chess/jack-chess.asm
 
-# But hey, don't get sad, you can compile a smaller file
-# Will create a ../cpu\_hdl/04/Fill.hack file
-$ ./AsmHack ../cpu\_hdl/04/Fill.asm
+# But hey, don't get sad, you can assemble a smaller file.
+# Will create a Fill.hack file in same directory with original .asm
+$ ./AsmHack ../cpu_hdl/04/Fill.asm
+# Its contents aren't that interesting.
 ```
 
 You can compile the operating system files the same way, but you'll run into
