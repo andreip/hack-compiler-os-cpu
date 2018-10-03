@@ -1,8 +1,9 @@
 *.sw*
 *.o
 lang.txt
-compiler/build/
+build/
 
+*.dat
 *.vm
 *.asm
 *.asm_debug
