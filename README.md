@@ -14,7 +14,7 @@ its logical gates, MUXes, DEMUXes, ALU, Registers ; simpler than verilog & vhdl
 * `OS/` is a simple operating system written in Jack for math primitives, heap
 memory allocation and deallocation, drawing pixels on the screen, drawing text
 on the screen with a custom font, reading input from user keyboard and others
-* `tools/` is a set of java binaries and shell utilities from [nand2tetris.org](https://www.nand2tetris.org/software)
+* `tools/` is a set of [java binaries and shell utilities taken from here](https://www.nand2tetris.org/software)
 used to emulate the hack platform and cpu
 
 #### Compile and run the chess game ####
